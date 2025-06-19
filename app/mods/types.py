@@ -1,4 +1,4 @@
-from typed import TypedFuncType
+from typed import Str, TypedFuncType
 from app.helper.meta import __JinjaStr, __Component
 
 JinjaStr  = __JinjaStr('JinjaStr', (Str,), {})
