@@ -1,0 +1,16 @@
+[project]
+name = "app"
+version = "0.0.0"
+description = "A typed solution to quickly create websites"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "BSD"}
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+

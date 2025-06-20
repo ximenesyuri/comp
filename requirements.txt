@@ -1,0 +1,5 @@
+fastapi
+sphinx
+jinja2
+git+https://github.com/pythonalta/typed
+git+https://github.com/pythonalta/utils
