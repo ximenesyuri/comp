@@ -1,3 +1,4 @@
 import re
+from app.helper.helper import _jinja_regex
 
-JINJA_BLOCK_REGEX = re.compile(r'^\s*jinja\n(.*?)\s*$', re.DOTALL)
+JINJA_STR_REGEX = re.compile(_jinja_regex(), re.DOTALL)

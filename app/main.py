@@ -1,2 +1,2 @@
-from app.mods.comp import component
-from app.mods.types import JinjaStr, Component
+from app.mods.comp import *
+from app.mods.types import *

@@ -1,12 +1,23 @@
-from typed import Str
+from typed import Str, List, TypedFunc, Any
 from app.main import *
 
+import re
+
 @component
-def my_component(aa: Str) -> JinjaStr:
+def my_tag_component(aa: Str) -> TagStr('header'):
     return """jinja
-        <div> {{aa}} </div>
+        <header> 
+            {{aa}}
+        </header>
     """
 
-jinja_str = """jinja
-        <div> {{aa}} </div>
+tag_str = """jinja
+    <header> 
+        {{aa}}
+    </header>
     """
+#print(isinstance(tag_str, TagStr('header')))
+#print(issubclass(TagStr('tag-name'),  JinjaStr))
+print(isinstance(my_tag_component, Component))
+#print(issubclass(Tag('tag-name'), Component))
+print(isinstance(my_tag_component, Tag('header')))
