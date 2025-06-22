@@ -1,13 +1,13 @@
 from jinja2 import Environment
-from typed import Str, Any, TypedFunc, TypedFuncType
-from app.vars import JINJA_STR_REGEX
+from app.mods.helper import _jinja_regex
 
 class _JinjaStr(type(Str)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, Str):
             return False
 
-        match = JINJA_STR_REGEX.match(instance)
+        regex_str = re.compile(_jinja_regex(), re.DOTALL)
+        match = regex_str.match(instance)
         if not match:
             return False
 

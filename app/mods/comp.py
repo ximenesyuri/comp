@@ -2,15 +2,10 @@ import functools
 from inspect import signature
 from typed import typed, nill, TypedFuncType, Callable
 from jinja2 import Environment, DictLoader, StrictUndefined
+from app.mods.helper import _jinja_regex
 from app.err import ComponentErr
-from app.vars import JINJA_STR_REGEX
 
 def component(definer=nill):
-    """
-    Decorator that applies @typed and wraps the function to render JinjaStr.
-    Extracts the Jinja content from the special string block.
-    Supports "depends_on" param: a list/tuple/set of components to be made available in the template.
-    """
     from app.mods.types import JinjaStr, Component
     typed_function = typed(definer)
 
@@ -24,14 +19,12 @@ def component(definer=nill):
     @functools.wraps(definer)
     def _component(*args, **kwargs):
         sig = signature(definer)
-        # get default depends_on if not passed:
         if 'depends_on' in sig.parameters:
             depends_on_default = sig.parameters['depends_on'].default
             depends_on = kwargs.pop('depends_on', depends_on_default)
         else:
             depends_on = []
 
-        # call the base function without depends_on in its signature
         params = list(sig.parameters.values())
         bound_args = {}
         param_names = [p.name for p in params]
@@ -40,7 +33,6 @@ def component(definer=nill):
                 pname = param_names[i]
                 bound_args[pname] = arg
         bound_args.update(kwargs)
-        # Remove depends_on for the base function if present
         if 'depends_on' in bound_args:
             del bound_args['depends_on']
 
@@ -49,7 +41,8 @@ def component(definer=nill):
         if not isinstance(template_block_string, JinjaStr):
             raise TypeError("Invalid value returned by typed function.")
 
-        match = JINJA_STR_REGEX.match(template_block_string)
+        regex_str = re.compile(_jinja_regex(), re.DOTALL)
+        match = regex_str.match(template_block_string)
         if not match:
             raise TypeError("Invalid Jinja block string format.")
 
@@ -61,7 +54,6 @@ def component(definer=nill):
         )
         template = env.get_template(template_name)
 
-        # Validate & inject depends_on
         if depends_on is None:
             depends_on = []
         if not isinstance(depends_on, (list, tuple, set)):
@@ -72,10 +64,8 @@ def component(definer=nill):
                 raise TypeError(f"Dependency {dep} is not a valid component (not an instance of Component)!")
             dep_context[dep.__name__] = dep
 
-        # Now, re-bind (for call signature correctness):
         bound = sig.bind_partial(*args, **kwargs)
         bound.apply_defaults()
-        # Remove 'depends_on' if in the signature/binding
         bound.arguments.pop('depends_on', None)
         context = dict(bound.arguments)
         context.update(dep_context)

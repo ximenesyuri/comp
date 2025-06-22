@@ -1,6 +1,6 @@
 from functools import lru_cache
 from typed import typed, Str, Any, Type
-from app.helper.helper import _jinja_regex
+from app.mods.helper import _jinja_regex
 
 @lru_cache(maxsize=None)
 @typed

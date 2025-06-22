@@ -10,7 +10,7 @@ class App(FastAPI):
         self._templates = None # Initialize _templates attribute
 
     def include_static(self, path: str, dir: str, name: str):
-        """ 
+        """
         Mounts a StaticFiles instance to the application.
 
         Args:
