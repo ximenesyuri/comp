@@ -1,3 +1,5 @@
+import re
+from typed import Str, Any, TypedFunc, TypedFuncType
 from jinja2 import Environment
 from app.mods.helper import _jinja_regex
 
@@ -12,13 +14,15 @@ class _JinjaStr(type(Str)):
             return False
 
         jinja_content = match.group(1)
-
         try:
             Environment().parse(jinja_content)
             return True
         except Exception as e:
             return False
 
-class _Component(type):
+class _Definer(type(TypedFuncType)):
     def __instancecheck__(cls, instance):
-        return getattr(instance, 'is_component', False)
+        if not isinstance(instance, TypedFuncType):
+            return False
+        from app.mods.types import JinjaStr
+        return issubclass(instance.codomain, JinjaStr)

@@ -1,10 +1,8 @@
-from functools import lru_cache
-from typed import typed, Str, Any, Type
-from app.mods.helper import _jinja_regex
+from typed import belongs, subtype, factory, Str, Any, Type
+from app.mods.helper import _jinja_regex, _nill_jinja
 
-@lru_cache(maxsize=None)
-@typed
-def TagStr(tag_name: str) -> type:
+@factory
+def TagStr(tag_name: Str) -> Type:
     from app.mods.types import JinjaStr
     import re
 
@@ -12,32 +10,38 @@ def TagStr(tag_name: str) -> type:
     pattern_str = _jinja_regex(tag_name)
     tag_regex = re.compile(pattern_str, re.DOTALL)
 
-    class _TagStrMeta(type(JinjaStr)):
+    class _TagStr(type(JinjaStr)):
         def __instancecheck__(cls, instance):
-            if not isinstance(instance, str):
+            if not isinstance(instance, Str):
                 return False
+            if instance == _nill_jinja:
+                return True
             return bool(tag_regex.match(instance))
 
-        def __subclasscheck__(cls, subclass):
-            return issubclass(subclass, JinjaStr)
-    return _TagStrMeta(f'TagStr_{tag_name}', (JinjaStr,), {'__display__': f'TagStr({tag_name})'})
+    return _TagStr(f'TagStr({tag_name})', (JinjaStr,), {'__display__': f'TagStr({tag_name})'})
 
-@lru_cache(maxsize=None)
-def Tag(tag_name: str) -> type:
+@factory
+def TagDefiner(tag_name: Str) -> Type:
+    from app.mods.types import Definer
+    class _TagDefiner(type(Definer)):
+        def __instancecheck__(cls, instance):
+            if not isinstance(instance, Definer):
+                return False
+            return issubclass(instance.codomain, TagStr(tag_name))
+
+    return _TagDefiner(f'TagDefiner({tag_name})', (Definer,), {'__display__': f'TagDefiner({tag_name})'})
+
+@factory
+def Tag(tag_name: Str) -> Type:
     tag_name = str(tag_name)
     TagStrType = TagStr(tag_name)
     from app.mods.types import Component
-    class _TagMeta(type(Component)):
+
+    class _Tag(type(Component)):
         def __instancecheck__(cls, instance):
-            return (
-                isinstance(instance, Component) and typed(instance).codomain is TagStrType
-            )
-        def __subclasscheck__(cls, subclass):
-            return (
-                issubclass(subclass, Component)
-            )
-    return _TagMeta(
-        f'Tag',
-        (Component,),
-        {'__display__': f'Tag({tag_name})'}
-    )
+            if not isinstance(instance, Component):
+                return False
+            return isinstance(instance.get("definer"), TagDefiner(tag_name))
+
+    return _Tag(f'Tag({tag_name})', (Component,), {'__display__': f'Tag({tag_name})'})
+
