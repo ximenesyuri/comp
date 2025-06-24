@@ -1,77 +1,77 @@
+import re
 import functools
 from inspect import signature
-from typed import typed, nill, TypedFuncType, Callable
+from typed import typed, Str
 from jinja2 import Environment, DictLoader, StrictUndefined
 from app.mods.helper import _jinja_regex
 from app.err import ComponentErr
+from app.mods.types import Component, JinjaStr
 
-def component(definer=nill):
-    from app.mods.types import JinjaStr, Component
-    typed_function = typed(definer)
+@typed
+def render(component: Component) -> str:
+    definer = component.get('definer')
+    context = dict(component.get('context', {}))
 
-    if not issubclass(typed_function.codomain, JinjaStr):
-        raise TypeError(
-            f"Function '{definer.__name__}' decorated with @component "
-            "must have a codomain (return type hint) of JinjaStr. "
-            f"Found: {getattr(typed_function.codomain, '__name__', str(typed_function.codomain))}"
-        )
+    typed_function = getattr(definer, "func", definer)
+    sig = signature(typed_function)
+    params = list(sig.parameters.values())
+    depends_on = []
+    if 'depends_on' in sig.parameters:
+        depends_on_default = sig.parameters['depends_on'].default
+        depends_on = context.pop('depends_on', depends_on_default) or []
+    if depends_on is None:
+        depends_on = []
+    if not isinstance(depends_on, (list, tuple, set)):
+        raise TypeError("depends_on must be a list, tuple, or set.")
 
-    @functools.wraps(definer)
-    def _component(*args, **kwargs):
-        sig = signature(definer)
-        if 'depends_on' in sig.parameters:
-            depends_on_default = sig.parameters['depends_on'].default
-            depends_on = kwargs.pop('depends_on', depends_on_default)
-        else:
-            depends_on = []
+    call_args = {}
+    for param in params:
+        if param.name == 'depends_on':
+            continue
+        if param.name in context:
+            call_args[param.name] = context[param.name]
+        elif param.default is param.empty:
+            raise TypeError(f"Missing required parameter '{param.name}' for definer '{definer}'")
+    template_block_string = definer(**call_args, depends_on=depends_on) if 'depends_on' in sig.parameters else definer(**call_args)
+    if not isinstance(template_block_string, JinjaStr):
+        raise TypeError("Invalid value returned by definer function (not JinjaStr).")
 
-        params = list(sig.parameters.values())
-        bound_args = {}
-        param_names = [p.name for p in params]
-        for i, arg in enumerate(args):
-            if i < len(params):
-                pname = param_names[i]
-                bound_args[pname] = arg
-        bound_args.update(kwargs)
-        if 'depends_on' in bound_args:
-            del bound_args['depends_on']
+    regex_str = re.compile(_jinja_regex(), re.DOTALL)
+    match = regex_str.match(template_block_string)
+    if not match:
+        raise TypeError("Invalid Jinja block string format.")
+    jinja_content = match.group(1)
+    template_name = getattr(definer, '__name__', 'template')
 
-        template_block_string = typed_function.func(**bound_args)
+    dep_context = {}
 
-        if not isinstance(template_block_string, JinjaStr):
-            raise TypeError("Invalid value returned by typed function.")
+    def make_rendered_dep_func(dep):
+        def _inner(**values):
+            child_context = dict(context)      # parent context
+            child_context.update(values)
+            dep_template_str = dep()
+            dep_match = re.compile(_jinja_regex(), re.DOTALL).match(dep_template_str)
+            if not dep_match:
+                raise TypeError(f"Invalid Jinja block string format in dependency {dep.__name__}")
+            dep_jinja_content = dep_match.group(1)
+            env2 = Environment(undefined=StrictUndefined)
+            dep_template = env2.from_string(dep_jinja_content)
+            return dep_template.render(**child_context)
+        return _inner
 
-        regex_str = re.compile(_jinja_regex(), re.DOTALL)
-        match = regex_str.match(template_block_string)
-        if not match:
-            raise TypeError("Invalid Jinja block string format.")
+    for dep in depends_on:
+        if not callable(dep):
+            raise TypeError(f"Dependency {repr(dep)} is not a definer (function)")
+        dep_name = getattr(dep, '__name__', str(dep))
+        dep_context[dep_name] = make_rendered_dep_func(dep)
 
-        jinja_content = match.group(1)
-        template_name = typed_function.__name__
-        env = Environment(
-            loader=DictLoader({template_name: jinja_content}),
-            undefined=StrictUndefined
-        )
-        template = env.get_template(template_name)
+    jinja_context = {}
+    jinja_context.update(dep_context)
+    jinja_context.update(context)
 
-        if depends_on is None:
-            depends_on = []
-        if not isinstance(depends_on, (list, tuple, set)):
-            raise TypeError("depends_on must be a list, tuple, or set.")
-        dep_context = {}
-        for dep in depends_on:
-            if not isinstance(dep, Component):
-                raise TypeError(f"Dependency {dep} is not a valid component (not an instance of Component)!")
-            dep_context[dep.__name__] = dep
-
-        bound = sig.bind_partial(*args, **kwargs)
-        bound.apply_defaults()
-        bound.arguments.pop('depends_on', None)
-        context = dict(bound.arguments)
-        context.update(dep_context)
-
-        return template.render(**context)
-
-    _component.is_component = True
-
-    return _component
+    env = Environment(
+        loader=DictLoader({template_name: jinja_content}),
+        undefined=StrictUndefined
+    )
+    template = env.get_template(template_name)
+    return template.render(**jinja_context)

@@ -24,5 +24,7 @@ class _Definer(type(TypedFuncType)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, TypedFuncType):
             return False
+        if not instance.is_definer:
+            return False
         from app.mods.types import JinjaStr
         return issubclass(instance.codomain, JinjaStr)
