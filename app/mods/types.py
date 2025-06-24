@@ -1,3 +1,4 @@
+import re
 from typed import typed, Str, TypedFuncType, Any, List, Json, Bool, Filter
 from typed.models import Model, Optional
 from app.mods.meta import _JinjaStr, _Definer, _Markdown
@@ -6,6 +7,7 @@ from app.mods.helper import (
     _nill_jinja,
     _nill_component,
     _nill_static,
+    _nill_definer,
     _collect_definer_variables_map
 )
 
@@ -53,6 +55,12 @@ _Component = Model(
     context=Json
 )
 
+_Static = Model(
+    __extends__=Component,
+    marker=Optional(Str, "content"),
+    content=Markdown
+)
+
 @typed
 def _check_context(component: _Component) -> Bool:
     definer = component.get('definer')
@@ -88,34 +96,54 @@ def _check_context(component: _Component) -> Bool:
     )
     raise ValueError(message)
 
+@typed
+def _check_static_context(static: _Static) -> Bool:
+    definer = static.get('definer', _nill_definer())
+    marker = static.get('marker', 'content')
+    context = static.get('context', {})
+
+    params = set(inspect.signature(definer).parameters)
+    if marker in params:
+        return False
+
+    if marker in context:
+        return False
+
+    kwargs = {k: context[k] for k in params if k in context}
+    try:
+        jinja_str = definer(**kwargs)
+    except Exception:
+        return False
+
+    pattern = r"\{\{\s*" + re.escape(marker) + r"\s*\}\}"
+    found = re.search(pattern, jinja_str) is not None
+    return found
+
 Component = Filter(_Component, _check_context)
+Static    = Filter(_Static, _check_static_context)
 Head      = Tag('head')
 Body      = Tag('body')
 Header    = Tag('header')
 Footer    = Tag('footer')
 Aside     = Tag('left-sidebar')
-Static    = Model(
-    __extends__=Component,
-    content=Markdown
-)
 
 Component.__display__ = "Component"
+Static.__display__    = "Static"
 Head.__display__      = "Head"
 Body.__display__      = "Body"
 Nav.__display__       = "Nav"
 Header.__display__    = "Header"
 Footer.__display__    = "Footer"
 Aside.__display__     = "Aside"
-Static.__display__    = "Static"
 
 # ---------------------------
 #       NILL COMPONENTS
 # --------------------------- 
 nill_comp   = _nill_component()
+nill_static = _nill_static
 nill_head   = _nill_component('head')
 nill_body   = _nill_component('body')
 nill_nav    = _nill_component('nav')
 nill_header = _nill_component('header')
 nill_footer = _nill_component('footer')
 nill_aside  = _nill_component('aside')
-nill_static = _nill_static
