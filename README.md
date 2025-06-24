@@ -1,11 +1,22 @@
 ```python
-from app import component, JinjaStr
+from typed.models import Model, Instance
+from app import JinjaStr
 
-Component = Model(
+StaticComponent = JinjaStr
+
+PreComponent=Model(
     definer=Definer,
-    context=Optional(Json, {}),
     depends_on=Optional(List(Definer), [])
 )
+
+ComponentCore = Model(
+    precomponent=PreComponent,
+    context=Json
+)
+
+Component = Filter(ComponentCore, "context contains definer arguments")
+
+CONSTRUCTION: every definer defines a component
 
 @typed
 def component_definer(var_1: SomeType) -> JinjaStr:
@@ -13,13 +24,19 @@ def component_definer(var_1: SomeType) -> JinjaStr:
         ...
     """
 
+@component
+def component_definer(var_1: SomeType) -> JinjaStr:
+    return """jinja
+        ...
+    """
+
 component = Instance(
-    model=ComponentModel,
+    model=Component,
     instance={
         "definer": component_definer_1,
         "context": ...,
         "depends_on": [component_2, component_3]
-    }
+    }  
 )
 
 PageStructure = Model(
@@ -45,7 +62,7 @@ StaticPage = Model(
 
 
 ```python
-from app import App
+from app import App, Render
 app = App()
 
 @app.get("/...")
@@ -58,7 +75,6 @@ def endpoint_callback(some_var: SomeType ...) -> Render
 @app.post("/...")
 def endpoint_callback(some_var: SomeType ...) -> Json
     return Json(
-
     )
 ```
 
