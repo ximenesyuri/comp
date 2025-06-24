@@ -1,14 +1,14 @@
 import re
 import functools
 from inspect import signature
-from typed import typed, Str
+from typed import typed, Union, Str
 from jinja2 import Environment, DictLoader, StrictUndefined
 from app.mods.helper import _jinja_regex
 from app.err import ComponentErr
-from app.mods.types import Component, JinjaStr
+from app.mods.types import Component, JinjaStr, Static
 
 @typed
-def render(component: Component) -> str:
+def render(component: Component) -> Str:
     definer = component.get('definer')
     context = dict(component.get('context', {}))
 
@@ -75,3 +75,8 @@ def render(component: Component) -> str:
     )
     template = env.get_template(template_name)
     return template.render(**jinja_context)
+
+@typed
+def build(static_page: Static) -> Component:
+    pass
+

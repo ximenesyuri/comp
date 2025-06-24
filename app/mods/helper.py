@@ -30,6 +30,13 @@ def _nill_component(tag_name: Str="") -> Json:
         "definer": _nill_definer(tag_name)
     }
 
+@typed
+def _nill_static() -> Json:
+    return {
+        "definer": _nill_definer(),
+        "content": ""
+    }
+
 def _find_jinja_vars(source: str):
     regex_str = re.compile(_jinja_regex(), re.DOTALL)
     match = regex_str.match(source)

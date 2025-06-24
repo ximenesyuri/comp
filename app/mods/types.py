@@ -1,43 +1,56 @@
 from typed import typed, Str, TypedFuncType, Any, List, Json, Bool, Filter
 from typed.models import Model, Optional
-from app.mods.meta import _JinjaStr, _Definer
+from app.mods.meta import _JinjaStr, _Definer, _Markdown
 from app.mods.factories import TagStr, TagDefiner, Tag
 from app.mods.helper import (
     _nill_jinja,
     _nill_component,
+    _nill_static,
     _collect_definer_variables_map
 )
 
-# content string types
-JinjaStr        = _JinjaStr('JinjaStr', (Str,), {})
-HeaderStr       = TagStr('header')
-FooterStr       = TagStr('footer')
-LeftSidebarStr  = TagStr('left-sidebar')
-RightSidebarStr = TagStr('right-sidebar')
+# ---------------------------
+#    CONTENT STRING TYPES
+# ---------------------------
+JinjaStr  = _JinjaStr('JinjaStr', (Str,), {})
+HeadStr   = TagStr('head')
+BodyStr   = TagStr('body')
+HeaderStr = TagStr('header')
+FooterStr = TagStr('footer')
+AsideStr  = TagStr('aside')
+Markdown  = _JinjaStr('Markdown', (Str,), {})
 
-JinjaStr.__display__        = "JinjaStr"
-HeaderStr.__display__       = "HeaderStr"
-FooterStr.__display__       = "HeaderStr"
-LeftSidebarStr.__display__  = "LeftSidebarStr"
-RightSidebarStr.__display__ = "RightSidebarStr"
+JinjaStr.__display__  = "JinjaStr"
+HeadStr.__display__   = "HeadStr"
+BodyStr.__display__   = "BodyStr"
+HeaderStr.__display__ = "HeaderStr"
+FooterStr.__display__ = "HeaderStr"
+AsideStr.__display__  = "AsideStr"
+Markdown.__display__  = "Markdown"
 
-# definer types
-Definer             = _Definer('Definer', (TypedFuncType,), {})
-HeaderDefiner       = TagDefiner('header')
-FooterDefiner       = TagDefiner('footer')
-LeftSidebarDefiner  = TagDefiner('left-sidebar')
-RightSidebarDefiner = TagDefiner('right-sidebar')
+# ---------------------------
+#       DEFINER TYPES
+# ---------------------------
+Definer       = _Definer('Definer', (TypedFuncType,), {})
+HeadDefiner   = TagDefiner('head')
+BodyDefiner   = TagDefiner('body')
+HeaderDefiner = TagDefiner('header')
+FooterDefiner = TagDefiner('footer')
+AsideDefiner  = TagDefiner('aside')
 
-Definer.__display__            = "Definer"
-HeaderDefiner.__display__      = "HeaderDefiner"
-FooterDefiner.__display__      = "FooterDefiner"
-LeftSidebarDefiner.__display_  = "LeftSidebarDefiner"
-RightSidebarDefiner.__display_ = "RightSidebarDefiner"
+Definer.__display__       = "Definer"
+HeadDefiner.__display__   = "HeadDefiner"
+BodyDefiner.__display__   = "BodyDefiner"
+HeaderDefiner.__display__ = "HeaderDefiner"
+FooterDefiner.__display__ = "FooterDefiner"
+AsideDefiner.__display_   = "AsideDefiner"
 
-# component types
+# ---------------------------
+#       COMPONENT TYPES
+# ---------------------------
 _Component = Model(
     definer=Definer,
-    context=Optional(Json, {})
+    context=Json
 )
 
 @typed
@@ -76,16 +89,33 @@ def _check_context(component: _Component) -> Bool:
     raise ValueError(message)
 
 Component = Filter(_Component, _check_context)
+Head      = Tag('head')
+Body      = Tag('body')
+Header    = Tag('header')
+Footer    = Tag('footer')
+Aside     = Tag('left-sidebar')
+Static    = Model(
+    __extends__=Component,
+    content=Markdown
+)
 
-Header       = Tag('header')
-Footer       = Tag('footer')
-LeftSidebar  = Tag('left-sidebar')
-RightSidebar = Tag('right-sidebar')
+Component.__display__ = "Component"
+Head.__display__      = "Head"
+Body.__display__      = "Body"
+Nav.__display__       = "Nav"
+Header.__display__    = "Header"
+Footer.__display__    = "Footer"
+Aside.__display__     = "Aside"
+Static.__display__    = "Static"
 
-Component.__display__    = "Component"
-Header.__display__       = "Header"
-Footer.__display__       = "Footer"
-LeftSidebar.__display__  = "LeftSidebar"
-RightSidebar.__display__ = "RightSidebar"
-
-
+# ---------------------------
+#       NILL COMPONENTS
+# --------------------------- 
+nill_comp   = _nill_component()
+nill_head   = _nill_component('head')
+nill_body   = _nill_component('body')
+nill_nav    = _nill_component('nav')
+nill_header = _nill_component('header')
+nill_footer = _nill_component('footer')
+nill_aside  = _nill_component('aside')
+nill_static = _nill_static
