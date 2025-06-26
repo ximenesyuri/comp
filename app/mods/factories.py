@@ -1,9 +1,8 @@
-from typed import belongs, subtype, factory, Str, Any, Type
-from app.mods.helper import _jinja_regex, _nill_jinja
+from typed import factory, Str, Any, Type
 
 @factory
 def TagStr(tag_name: Str) -> Type:
-    from app.mods.types import JinjaStr
+    from app.mods.helper import JinjaStr, _jinja_regex, _nill_jinja
     import re
 
     tag_name = str(tag_name)
@@ -22,7 +21,7 @@ def TagStr(tag_name: Str) -> Type:
 
 @factory
 def TagDefiner(tag_name: Str) -> Type:
-    from app.mods.types import Definer
+    from app.mods.helper import Definer
     class _TagDefiner(type(Definer)):
         def __instancecheck__(cls, instance):
             if not isinstance(instance, Definer):
@@ -35,7 +34,7 @@ def TagDefiner(tag_name: Str) -> Type:
 def Tag(tag_name: Str) -> Type:
     tag_name = str(tag_name)
     TagStrType = TagStr(tag_name)
-    from app.mods.types import Component
+    from app.mods.helper import Component
 
     class _Tag(type(Component)):
         def __instancecheck__(cls, instance):
