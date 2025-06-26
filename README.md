@@ -1,64 +1,136 @@
 ```python
-from typed.models import Model, Instance
-from app import JinjaStr
+  /$$$$$$   /$$$$$$   /$$$$$$
+ |____  $$ /$$__  $$ /$$__  $$
+  /$$$$$$$| $$  \ $$| $$  \ $$
+ /$$__  $$| $$  | $$| $$  | $$
+|  $$$$$$$| $$$$$$$/| $$$$$$$/
+ \_______/| $$____/ | $$____/
+          | $$      | $$
+          | $$      | $$
+          |__/      |__/
+```
+# About
 
-StaticComponent = JinjaStr
+`app` is a Python framework to build web applications presenting type safety, from APIs to static pages.
+ 
+# Overview
 
-PreComponent=Model(
-    definer=Definer,
-    depends_on=Optional(List(Definer), [])
-)
+The lib is an extension of [fastapi](https://github.com/fastapi/fastapi), constructed using [pythonaltal/typed](https://github.com/pythonalta/typed) to ensure type safety. The lib includes a component system compatible with [jinja2](https://jinja.palletsprojects.com/en/stable/) and with [markdown](https://github.com/Python-Markdown/markdown) (for static components), and provides a lot of ready to use components in `app.components`.
 
-ComponentCore = Model(
-    precomponent=PreComponent,
-    context=Json
-)
+# Install
 
-Component = Filter(ComponentCore, "context contains definer arguments")
+With `pip`:
+```bash
+pip install git+https://github.com/pythonalta/  
+```
 
-CONSTRUCTION: every definer defines a component
+With [py](https://github.com/ximenesyuri/py):
+```bash
+py i pythonalta/app  
+```
+
+# Components
+
+In `app` component system, the unities are the `components`, which are objects of type `Component`. They are defined by two data:
+1. `definer`: a typed function `f: Any -> JinjaStr` returning a `jinja string`, which is any string starting with `"""jinja` and containing [jinja2](https://jinja.palletsprojects.com/en/stable/) syntax;
+2. `context`: a dictionary whose keys contains, at least, the definer variables.
+
+A typical `definer` is as follows: 
+```python
+@typed
+def my_definer(x: SomeType, y: OtherType, ...) -> JinjaStr:
+    return """jinja
+{{ for i in x }}
+    <something>
+        {{ if y is True }}
+             <more html>
+             ...
+        {{ endif }}
+    </something>
+{{ endfor }}
+"""
+```
+
+Notice that its variables are incorporated in the `jinja string`. Naturally, you could also manipulate these variables before passing them to the `jinja str`, e.g, by calling other external functions. The `jinja string` could also contains "free variables", which are not directly assigned by the `definer`:
+
+```python
+@typed
+def my_definer(x: SomeType, y: OtherType, ...) -> JinjaStr:
+    return """jinja
+{{ for i in x }}
+    <something>
+        {{ if y is True }}
+             <more html>
+             ...
+             {{ a_free_var }}
+             ...
+        {{ endif }}
+    </something>
+{{ endfor }}
+"""
+```
+
+> See [jinja2](https://jinja.palletsprojects.com/en/stable/) to discover the full valid syntax.
+
+The `context` of a component is a dictionary that provides values for all the variables in the `jinja string`:
+1. the assigned by the `definer`
+2. and those are "free variables". 
+
+So, a context for the example above should be something as:
+
+```python
+my_context = {
+    "x": some_value,
+    "y": other_value,
+    "a_free_var": another_value
+}
+```
+
+The defined `component` is then given by:
+
+```python
+my_component = {
+    "definer": my_definer,
+    "context": my_context
+}
+```
+
+If you then check `isinstance(my_component, Component)` this will return `True` if all the above conditions are satisfied. It will be `False` or will raise a `TypeError` depending on which condition is not satisfied.
+
+### Rendering
+
+One time constructed, components can be `rendered`: the process of evaluating the `context` of the `component` in the `jinja string` of the underlying `definer`, producing raw `html`.
+
+The `render` process is implemented as a typed function `render: Component -> HTML`, available in `app.service`. It can be called directly, or as part of the construction of the return type of certain `endpoints`, as will be discussed later.
+
+### Nested Components
+
+Components can depend on other components, which is realized at the `definer` level. More precisely, a `definer` can be endowed with a special `depends_on` variable, which lists other already defined `definer`s. In this case, the dependent `definer`s can be called inside the `jinja string` of the main `definer`.
+
+```python
+@typed
+def definer_1(...) -> JinjaStr:
+    return """jinja
+    ...
+"""
 
 @typed
-def component_definer(var_1: SomeType) -> JinjaStr:
+def definer_2(...) -> JinjaStr:
     return """jinja
-        ...
-    """
+    ...
+"""
 
-@component
-def component_definer(var_1: SomeType) -> JinjaStr:
+@typed
+def definer_3(..., depends_on=[definer_1, definer_2]) -> JinjaStr:
     return """jinja
-        ...
-    """
-
-component = Instance(
-    model=Component,
-    instance={
-        "definer": component_definer_1,
-        "context": ...,
-        "depends_on": [component_2, component_3]
-    }  
-)
-
-PageStructure = Model(
-    metadata=Metadata,
-    header=Header,
-    footer=Footer,
-    left_sidebar=Optional(LeftSidebar, jinill),
-    right_sidebar=Optional(RightSidebar, jinill),
-)
-
-Page = Model(
-    structure=PageStructure,
-    context=Optional(Json, {})
-    definer=Definer
-)
-
-StaticPage = Model(
-    structure=PageStructure,
-    context=Optional(Json, {})
-    definer=StaticDefiner
-)
+    ...
+{{ definer_1(...) }}
+    ...
+{{ definer_2(...) }}
+"""
 ```
+
+# Statics
 
 
 ```python
