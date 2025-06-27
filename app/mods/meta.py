@@ -2,7 +2,7 @@ import re
 from typed import Str, Any, TypedFunc, TypedFuncType
 from jinja2 import Environment
 
-class _JinjaStr(type(Str)):
+class _Jinja(type(Str)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, Str):
             return False
@@ -24,5 +24,5 @@ class _Definer(type(TypedFuncType)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, TypedFuncType):
             return False
-        from app.mods.types import JinjaStr
-        return issubclass(instance.codomain, JinjaStr)
+        from app.mods.types import Jinja
+        return issubclass(instance.codomain, Jinja)

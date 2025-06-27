@@ -7,7 +7,7 @@ from jinja2 import Environment, DictLoader, StrictUndefined
 from bs4 import BeautifulSoup, Tag
 from app.mods.helper import _jinja_regex
 from app.err import RenderErr, BuildErr
-from app.mods.types import Component, JinjaStr, Static, Page, StaticPage
+from app.mods.types import Component, Jinja, Static, Page, StaticPage
 
 @typed
 def render(component: Component) -> Str:
@@ -36,8 +36,8 @@ def render(component: Component) -> Str:
             elif param.default is param.empty:
                 raise TypeError(f"Missing required parameter '{param.name}' for definer '{definer}'")
         template_block_string = definer(**call_args, depends_on=depends_on) if 'depends_on' in sig.parameters else definer(**call_args)
-        if not isinstance(template_block_string, JinjaStr):
-            raise TypeError("Invalid value returned by definer function (not JinjaStr).")
+        if not isinstance(template_block_string, Jinja):
+            raise TypeError("Invalid value returned by definer function (not Jinja).")
 
         regex_str = re.compile(_jinja_regex(), re.DOTALL)
         match = regex_str.match(template_block_string)
@@ -125,7 +125,7 @@ def build(static: Static) -> Component:
         new_jinja_content = re.sub(marker_regex, str(html), jinja_content, count=1)
 
         @typed
-        def new_definer() -> JinjaStr:
+        def new_definer() -> Jinja:
             return f"jinja\n{new_jinja_content}"
 
         context = static.get('context', {}).copy()
@@ -564,10 +564,10 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
     # --- FINALIZE
     modified_html = str(soup)
     original_definer = page["definer"]
-    from app.mods.types import JinjaStr
+    from app.mods.types import Jinja
     final_jinja_str = f"jinja\n{modified_html}"
 
-    def new_definer_func() -> JinjaStr:
+    def new_definer_func() -> Jinja:
         return final_jinja_str
 
     if hasattr(original_definer, '__name__'):

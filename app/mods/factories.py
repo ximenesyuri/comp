@@ -2,14 +2,14 @@ from typed import factory, Str, Any, Type
 
 @factory
 def TagStr(tag_name: Str) -> Type:
-    from app.mods.helper import JinjaStr, _jinja_regex, _nill_jinja
+    from app.mods.helper import Jinja, _jinja_regex, _nill_jinja
     import re
 
     tag_name = str(tag_name)
     pattern_str = _jinja_regex(tag_name)
     tag_regex = re.compile(pattern_str, re.DOTALL)
 
-    class _TagStr(type(JinjaStr)):
+    class _TagStr(type(Jinja)):
         def __instancecheck__(cls, instance):
             if not isinstance(instance, Str):
                 return False
@@ -17,7 +17,7 @@ def TagStr(tag_name: Str) -> Type:
                 return True
             return bool(tag_regex.match(instance))
 
-    return _TagStr(f'TagStr({tag_name})', (JinjaStr,), {'__display__': f'TagStr({tag_name})'})
+    return _TagStr(f'TagStr({tag_name})', (Jinja,), {'__display__': f'TagStr({tag_name})'})
 
 @factory
 def TagDefiner(tag_name: Str) -> Type:

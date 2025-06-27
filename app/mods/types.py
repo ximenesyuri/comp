@@ -2,7 +2,7 @@ from typed import Bool
 from typed.models import Model, Optional
 from app.mods.factories import TagStr, TagDefiner, Tag
 from app.mods.helper import (
-    JinjaStr,
+    Jinja,
     Markdown,
     Content,
     Definer,
@@ -21,7 +21,7 @@ HeaderStr = TagStr('header')
 FooterStr = TagStr('footer')
 AsideStr  = TagStr('aside')
 
-JinjaStr.__display__  = "JinjaStr"
+Jinja.__display__  = "Jinja"
 HeadStr.__display__   = "HeadStr"
 BodyStr.__display__   = "BodyStr"
 HeaderStr.__display__ = "HeaderStr"

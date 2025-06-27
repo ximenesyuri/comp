@@ -4,7 +4,7 @@ from app.mods.helper import Page
 from typed import *
 
 @typed
-def definer_1(y: Str) -> JinjaStr:
+def h1(y: Str) -> TagStr('h1'):
     return """jinja
     <h1 class="pt-20px fz-30px fs-it phone:bg-[#000000]">
         {{ y }}
@@ -12,7 +12,7 @@ def definer_1(y: Str) -> JinjaStr:
 """
 
 @typed
-def definer(x: Str, depends_on: List(Definer)=[definer_1,]) -> JinjaStr:
+def definer(x: Str, depends_on: List(Definer)=[definer_1,]) -> Jinja:
     return """jinja
 <html>
 <head>

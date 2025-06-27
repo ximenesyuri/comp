@@ -20,11 +20,11 @@ from typed.models import Model, Optional, Instance, Conditional
 from typed.examples import Markdown
 from jinja2 import Environment, meta
 from utils import md, file, json, to
-from app.mods.meta import _JinjaStr, _Definer
+from app.mods.meta import _Jinja, _Definer
 
-JinjaStr  = _JinjaStr('JinjaStr', (Str,), {})
-Content   = Union(Markdown, Extension('md'))
-Definer   = _Definer('Definer', (TypedFuncType,), {})
+Jinja   = _Jinja('Jinja', (Str,), {})
+Content = Union(Markdown, Extension('md'))
+Definer = _Definer('Definer', (TypedFuncType,), {})
 
 _Component = Model(
     definer=Definer,
@@ -102,10 +102,9 @@ Static = Conditional(
     __extends__=_Static
 )
 
-@typed
 def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
-        return rf"^jinja\s*\n?\s*<{tag_name}>(.*?)</{tag_name}>\s*$"
+        return rf"^jinja\s*\n?\s*<{tag_name}\b[^>]*>(.*?)</{tag_name}>\s*$"
     return r"^jinja\s*\n?\s*(.*?)\s*$"
 
 _nill_jinja  = """jinja """
@@ -117,7 +116,7 @@ def _nill_definer(tag_name: Str="") -> Definer:
         def wrapper() -> TagStr(tag_name):
             return _nill_jinja
     else:
-        def wrapper() -> JinjaStr:
+        def wrapper() -> Jinja:
             return _nill_jinja
     return typed(wrapper)
 
