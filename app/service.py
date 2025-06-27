@@ -154,15 +154,28 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
     html_content = render(component_to_render)
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    PREFIXES = {
+    def escape_class_selector(cls):
+        return cls.replace(':', '\\:').replace('#', '\\#').replace('[', '\\[').replace(']', '\\]').replace('.', '\\.')
+
+    PREFIXES_MAP = {
         "phone":   "(min-width: 0px) and (max-width: 767px)",
         "tablet":  "(min-width: 768px) and (max-width: 1024px)",
-        "mobile":  "(min-width: 0px) and (max-width: 1024px)",   # phone or tablet
+        "mobile":  "(min-width: 0px) and (max-width: 1024px)", # phone or tablet
         "desktop": "(min-width: 1025px) and (max-width: 10000px)"
     }
-    VALID_PREFIXES = set(PREFIXES.keys())
+    ALIAS_MAP = {
+        "p": "phone",
+        "t": "tablet",
+        "m": "mobile",
+        "d": "desktop",
+        "n": "not"
+    }
+    VALID_MEDIA_PREFIXES_AND_ALIASES = set(PREFIXES_MAP.keys()).union(ALIAS_MAP.keys())
+    IMPORTANT_FLAG = "!"
+    NOT_FLAG = "not" # Canonical name for 'not'
+    NOT_ALIASES = ["n"] # Just 'n'
 
-    found_styles = {} # e.g., {'mt-10px': 'margin-top: 10px;'}
+    found_styles = {} # e.g., {(media_prefix, is_important, is_not), 'mt-10px': 'margin-top: 10px;'}
 
     patterns = {
         'margin_padding': re.compile(r'(m[tblr]|p[tblr])-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)'),
@@ -286,6 +299,7 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
         'center': 'center', 'cnt': 'center',
     }
 
+
     def style_for_base_class(class_name):
         css_rule = None
         match = patterns['margin_padding'].match(class_name)
@@ -321,9 +335,10 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
         if not css_rule:
             match = patterns['font_family'].match(class_name)
             if match:
-                font_families_raw = match.group(1)
+                font_families_encoded = match.group(1)
+                font_families_decoded = font_families_encoded.replace('_', ' ')
                 prop = style_property_map['ff']
-                css_rule = f"{prop}: {font_families_raw};"
+                css_rule = f"{prop}: {font_families_decoded};"
         if not css_rule:
             match = patterns['font_style'].match(class_name)
             if match:
@@ -499,56 +514,97 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
                 css_rule = "position: fixed; overflow-x: auto; overflow-y: auto; max-height: 100vh;"
         return css_rule
 
-    # --- SCAN CLASSES: detects and extracts prefix/base, records rules for each
     for tag in soup.find_all(True):
         if tag.has_attr('class'):
-            new_classes = []
             for class_name in tag['class']:
-                # Always keep class as originally present
-                new_classes.append(class_name)
-                pref = None
-                base = class_name
-                if ':' in class_name:
-                    pref_candidate, base_candidate = class_name.split(':', 1)
-                    if pref_candidate in VALID_PREFIXES:
-                        pref = pref_candidate
-                        base = base_candidate
-                else:
-                    pref = None
-                    base = class_name
-                # Generate style from just the "base" portion,
-                # but record full class_name for the css selector (for correct match)
-                css_rule = style_for_base_class(base)
+                media_pref = Non
+                is_important = False
+                is_not_prefixed = False
+                parts = class_name.split(':')
+                current_parts_idx = 0
+
+                if parts[current_parts_idx] == IMPORTANT_FLAG:
+                    is_important = True
+                    current_parts_idx += 1
+
+                if current_parts_idx < len(parts) and (parts[current_parts_idx] == NOT_FLAG or parts[current_parts_idx] in NOT_ALIASES):
+                    is_not_prefixed = True
+                    current_parts_idx += 1
+
+                if current_parts_idx < len(parts):
+                    potential_media_prefix = parts[current_parts_idx]
+                    if potential_media_prefix in VALID_MEDIA_PREFIXES_AND_ALIASES:
+                        media_pref = ALIAS_MAP.get(potential_media_prefix, potential_media_prefix)
+                        current_parts_idx += 1
+                base_class_name = ":".join(parts[current_parts_idx:])
+
+                css_rule = style_for_base_class(base_class_name)
                 if css_rule:
-                    found_styles[(pref, class_name)] = css_rule
-            tag['class'] = new_classes
+                    if is_important:
+                        css_rule = css_rule.replace(';', ' !important;')
+                    found_styles[(media_pref, is_important, is_not_prefixed, class_name)] = css_rule
 
-    css_buckets = {None: [], "phone": [], "tablet": [], "mobile": [], "desktop": []}
+    CANONICAL_MEDIA_NAMES = ["phone", "tablet", "mobile", "desktop"]
+    css_buckets = {
+        name: {
+            False: {False: [], True: []},
+            True: {False: [], True: []}
+        } for name in CANONICAL_MEDIA_NAMES
+    }
+    css_buckets[None] = {
+        False: {False: [], True: []},
+        True: {False: [], True: []}
+    }
 
-    def escape_class_selector(cls):
-        return cls.replace(':', '\\:').replace('#', '\\#').replace('[', '\\[').replace(']', '\\]')
-
-    for (prefix, class_name), css_rule in found_styles.items():
-        selector = '.' + escape_class_selector(class_name)
+    for (pref, is_important, is_not_prefixed, original_class_name), css_rule in found_styles.items():
+        canonical_pref_for_bucket = pref 
+        selector = '.' + escape_class_selector(original_class_name)
         rule_str = f"{selector} {{\n    {css_rule}\n}}"
-        css_buckets[prefix].append(rule_str) 
+        if canonical_pref_for_bucket in css_buckets and \
+           is_important in css_buckets[canonical_pref_for_bucket] and \
+           is_not_prefixed in css_buckets[canonical_pref_for_bucket][is_important]:
+            css_buckets[canonical_pref_for_bucket][is_important][is_not_prefixed].append(rule_str)
+        else:    
+            print(f"Warning: Rule for '{original_class_name}' with (pref={pref}, imp={is_important}, not={is_not_prefixed}) could not be placed in bucket. Defaulting to global non-important non-not.")
+            css_buckets[None][False][False].append(rule_str)
+    new_css_rules_list = []
+    new_css_rules_list.extend(css_buckets[None][False][False]) 
+    new_css_rules_list.extend(css_buckets[None][True][False]) # Important global rules
+    for canonical_media_name in CANONICAL_MEDIA_NAMES:
+        mq_expression = PREFIXES_MAP[canonical_media_name] # e.g., "(min-width: 0px) and (max-width: 767px)"
 
-    # Compose global CSS, then per-media-query CSS
-    new_css_rules = ""
-    # Global (no prefix)
-    if css_buckets[None]:
-        new_css_rules += "\n".join(css_buckets[None]) + "\n"
-    # Media (with prefix)
-    for pref in ("phone", "tablet", "mobile", "desktop"):
-        if css_buckets[pref]:
-            mq = PREFIXES[pref]
-            new_css_rules += f"@media {mq} {{\n" + "\n".join(css_buckets[pref]) + "\n}\n"
+        rules_for_this_mq = []
+        rules_for_this_mq.extend(css_buckets[canonical_media_name][False][False])
+        rules_for_this_mq.extend(css_buckets[canonical_media_name][True][False])
 
-    # --- INJECT CSS
+        if rules_for_this_mq:
+            new_css_rules_list.append(f"@media {mq_expression} {{\n" + "\n".join(rules_for_this_mq) + "\n}\n")
+        not_rules_for_this_mq = []
+        not_rules_for_this_mq.extend(css_buckets[canonical_media_name][False][True])
+        not_rules_for_this_mq.extend(css_buckets[canonical_media_name][True][True])
+
+        if not_rules_for_this_mq:
+            not_mq_expression = ""
+            if canonical_media_name == "phone": # (0px - 767px)
+                not_mq_expression = "(min-width: 768px)"
+            elif canonical_media_name == "tablet": # (768px - 1024px)
+                not_mq_expression = "(max-width: 767px), (min-width: 1025px)"
+            elif canonical_media_name == "mobile": # (0px - 1024px) -> Inverse is anything > 1024px
+                not_mq_expression = "(min-width: 1025px)"
+            elif canonical_media_name == "desktop": # (1025px - 10000px) -> Inverse is anything <= 1024px
+                not_mq_expression = "(max-width: 1024px)" # This covers 0px to 1024px
+
+            if not_mq_expression:
+                new_css_rules_list.append(f"@media {not_mq_expression} {{\n" + "\n".join(not_rules_for_this_mq) + "\n}\n")
+            else:
+                print(f"Warning: Could not create 'not' media query for '{canonical_media_name}' for classes: {not_rules_for_this_mq}")
+
+    new_css_rules = "\n".join(new_css_rules_list)
+
     head_tag = soup.find('head')
     if not head_tag:
         print("Warning: No <head> tag found in the HTML. Cannot inject styles.")
-        return page
+        return page 
 
     style_tag = head_tag.find('style')
     if style_tag:
@@ -561,7 +617,6 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
         new_style_tag.string = new_css_rules
         head_tag.append(new_style_tag)
 
-    # --- FINALIZE
     modified_html = str(soup)
     original_definer = page["definer"]
     from app.mods.types import Jinja
@@ -574,7 +629,8 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
         new_definer_func.__name__ = original_definer.__name__ + "_styled"
     if hasattr(original_definer, '__annotations__'):
         new_definer_func.__annotations__ = original_definer.__annotations__
-    from typed import typed
+
+    from typed import typed # This line was original, keeping it.
     styled_definer = typed(new_definer_func)
     modified_page = page.copy()
     modified_page["definer"] = styled_definer
