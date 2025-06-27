@@ -7,8 +7,11 @@ requires-python = ">=3.9"
 license = {text = "BSD"}
 dependencies = [
     "typed @ git+https://github.com/pythonalta/typed",
+    "utils @ git+https://github.com/pythonalta/typed",
     "fastapi",
-    "markdown"
+    "markdown",
+    "pyyaml",
+    "beautifulsoup4"
 ]
 
 [build-system]

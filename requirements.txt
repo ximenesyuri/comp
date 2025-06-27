@@ -1,5 +1,6 @@
 fastapi
-sphinx
 jinja2
+pyyaml
 git+https://github.com/pythonalta/typed
 git+https://github.com/pythonalta/utils
+beautfulsoup

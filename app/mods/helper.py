@@ -13,6 +13,7 @@ from typed import (
     Union,
     Any,
     Path,
+    List,
     null
 )
 from typed.models import Model, Optional, Instance, Conditional
@@ -33,8 +34,9 @@ _Component = Model(
 @typed
 def _check_context(component: _Component) -> Bool:
     definer = component.get('definer')
-    context = json.get('context', component)
-
+    context = component.get('context', {})
+    if not isinstance(context, dict):
+        context = {}
     from inspect import signature
     depends_on = []
     sig = signature(getattr(definer, "func", definer))
@@ -45,14 +47,9 @@ def _check_context(component: _Component) -> Bool:
         depends_on = []
     if not isinstance(depends_on, (list, tuple, set)):
         raise TypeError("depends_on must be list, tuple, or set.")
-
-    context_keys = set(context)
-    for dep in depends_on:
-        if callable(dep):
-            context_keys.add(getattr(dep, '__name__', str(dep)))
-
     variables_needed_map = _get_variables_map(set(), definer)
-    missing = [v for v in variables_needed_map if v not in context_keys]
+    dep_names = [getattr(dep, '__name__', str(dep)) for dep in depends_on]
+    missing = [v for v in variables_needed_map if v not in context and v not in dep_names]
     if not missing:
         return True
     messages = []
@@ -151,16 +148,9 @@ def _find_jinja_vars(source: Str) -> Set(Str):
     return meta.find_undeclared_variables(ast)
 
 @typed
-def _get_variables_map(seen: Set(Str), definer: Definer, path: Path='') -> Json:
-    """
-    Recursively collect undeclared jinja variables, mapping variable->path of definers.
-    path: stack of definer names for message
-    Returns: dict { variable_name: [definer_name, ...] }
-    """
-    if path is None:
+def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]) -> Json:
+    if not path:
         path = [getattr(definer, "__name__", str(definer))]
-    if seen is None:
-        seen = set()
     if definer in seen:
         return {}
     seen.add(definer)
@@ -201,7 +191,7 @@ def _get_variables_map(seen: Set(Str), definer: Definer, path: Path='') -> Json:
 
     for dep in depends_on:
         dep_name = getattr(dep, "__name__", str(dep))
-        result_dep = _get_variables_map(dep, path + [dep_name], seen)
+        result_dep = _get_variables_map(seen, dep, path + [dep_name])
         result.update(result_dep)
     return result
 
