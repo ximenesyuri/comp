@@ -207,28 +207,10 @@ _StaticPage = Model(
 )
 
 @typed
-def _underlying_component(page: _Page) -> Component:
-    return json.rm(
-        json_data=page,
-        entries=["auto_style", "static_dir"]
-    )
-
-@typed
-def _underlying_static(page: _StaticPage) -> Static:
-    return json.rm(
-        json_data=page,
-        entries=["auto_style", "static_dir"]
-    )
-
-@typed
 def _check_page(page: Union(_Page, _Static)) -> Bool:
-    if isinstance(page, _Page):
-        component = _underlying_component(page)
-    else:
-        component = _underlying_static(page)
     from app.service import render
     errors = []
-    html = render(component)
+    html = render(page)
     html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
     head_match = re.search(r"<head[^>]*>(.*?)</head>", html, flags=re.IGNORECASE | re.DOTALL)
     body_match = re.search(r"<body[^>]*>(.*?)</body>", html, flags=re.IGNORECASE | re.DOTALL)

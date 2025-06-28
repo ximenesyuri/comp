@@ -517,7 +517,7 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
     for tag in soup.find_all(True):
         if tag.has_attr('class'):
             for class_name in tag['class']:
-                media_pref = Non
+                media_pref = None
                 is_important = False
                 is_not_prefixed = False
                 parts = class_name.split(':')
@@ -632,6 +632,4 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
 
     from typed import typed # This line was original, keeping it.
     styled_definer = typed(new_definer_func)
-    modified_page = page.copy()
-    modified_page["definer"] = styled_definer
-    return modified_page
+    return page.__class__({**page, "definer": styled_definer}) 
