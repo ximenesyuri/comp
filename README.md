@@ -46,15 +46,16 @@ from app import definer, Jinja
 
 @definer
 def my_definer(x: SomeType, y: OtherType, ...) -> Jinja:
+    ...
     return """jinja
 {% for i in x %}
-    <something>
-        {% if y is True %}
-             <more html>
-                ...
-             </more html>
-        {% endif %}
-    </something>  
+<something>
+    {% if y is True %}
+    <more html>
+    ...
+    </more html>
+    {% endif %}
+</something>
 {% endfor %}
 """
 ```
@@ -72,15 +73,15 @@ from app import Jinja
 def my_definer(x: SomeType, y: OtherType, ...) -> Jinja:
     return """jinja
 {% for i in x %}
-    <something>
-        {% if y is True %}
-             <more html>
-                ...
-                {{ a_free_var }}
-                ...
-             </more html>
-        {% endif %}
-    </something>
+<something>
+    {% if y is True %}
+    <more html>
+    ...
+    {{ free_var }}
+    ...
+    </more html>
+    {% endif %}
+</something>
 {% endfor %}
 """
 ```
@@ -95,7 +96,7 @@ So, a context for the example above should be something as:
 my_context = {
     "x": some_value,
     "y": other_value,
-    "a_free_var": another_value
+    "free_var": another_value
 }
 ```
 
@@ -159,10 +160,10 @@ Typically, `components` are delimited by a HTML tag. In `app` one can create cus
 So, for example, an instance of `Tag(h1)` is any `component`
 
 ```python
-my_component = {
-    "definer": my_definer,
-    "context": my_context
-}
+my_component = Component(
+    definer=my_definer,
+    context=my_context
+)
 ```
 
 such that `my_definer` is defined as follows:
@@ -173,6 +174,7 @@ from app import definer, TagStr
 
 @definer
 def my_definer(x: SomeType, y: OtherType, ...) -> TagStr('h1'):
+    ...
     return """jinja
 <h1 class="...">
     ...
@@ -219,18 +221,21 @@ from app import Jinja, TagStr, definer
 
 @definer
 def definer_1(...) -> Jinja:
+    ...
     return """jinja
     ...
 """
 
 @definer
 def definer_2(...) -> TagStr('tag_name'):
+    ...
     return """jinja
     ...
 """
 
 @definer
 def definer_3(..., depends_on=[definer_1, definer_2]) -> Jinja:
+    ...
     return """jinja
     ...
 {{ definer_1(...) }}
