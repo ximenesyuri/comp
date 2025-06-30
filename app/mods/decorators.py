@@ -2,7 +2,7 @@ from functools import wraps
 from inspect import signature, Parameter
 from typed import typed, List
 from typing import get_origin
-from app.mods.types import Jinja
+from app.mods.types import Jinja, Definer
 
 def definer(arg):
     """Decorator that creates a definer"""
