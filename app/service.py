@@ -1,11 +1,11 @@
 import re
 import functools
 from inspect import signature
-from typed import typed, Union, Str
-from utils import md
+from typed import typed, Union, Str, Nill
+from utils import md, file, cmd, path
 from jinja2 import Environment, DictLoader, StrictUndefined
 from bs4 import BeautifulSoup, Tag
-from app.mods.helper import _jinja_regex
+from app.mods.helper import _jinja_regex, _Page, _StaticPage
 from app.err import RenderErr, BuildErr
 from app.mods.types import Component, Jinja, Static, Page, StaticPage
 
@@ -67,7 +67,7 @@ def render(component: Component) -> Str:
                 env2 = Environment(undefined=StrictUndefined)
                 dep_template = env2.from_string(dep_jinja_content)
                 return dep_template.render(**child_context)
-            return _inner 
+            return _inner
 
         for dep in depends_on:
             if not callable(dep):
@@ -160,7 +160,7 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
     PREFIXES_MAP = {
         "phone":   "(min-width: 0px) and (max-width: 767px)",
         "tablet":  "(min-width: 768px) and (max-width: 1024px)",
-        "mobile":  "(min-width: 0px) and (max-width: 1024px)", # phone or tablet
+        "mobile":  "(min-width: 0px) and (max-width: 1024px)",
         "desktop": "(min-width: 1025px) and (max-width: 10000px)"
     }
     ALIAS_MAP = {
@@ -172,23 +172,25 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
     }
     VALID_MEDIA_PREFIXES_AND_ALIASES = set(PREFIXES_MAP.keys()).union(ALIAS_MAP.keys())
     IMPORTANT_FLAG = "!"
-    NOT_FLAG = "not" # Canonical name for 'not'
-    NOT_ALIASES = ["n"] # Just 'n'
+    NOT_FLAG = "not"
+    NOT_ALIASES = ["n"]
 
-    found_styles = {} # e.g., {(media_prefix, is_important, is_not), 'mt-10px': 'margin-top: 10px;'}
+    found_styles = {}
 
     patterns = {
         'margin_padding': re.compile(r'(m[tblr]|p[tblr])-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)'),
-        'border': re.compile(r'b(t|b|r|l)-(\d+(?:\.\d+)?)(px|em|rem|%)?-(\w+)'), # bt-1px-solid, btl-2px-dashed
+        'border': re.compile(r'b(t|b|r|l)-(\d+(?:\.\d+)?)(px|em|rem|%)?-(\w+)'),
         'font_size': re.compile(r'fz-(\d+(?:\.\d+)?)(px|em|rem|%)'),
         'font_weight': re.compile(r'fw-(extra-light|el|light|l|normal|n|bold|b|extra-bold|eb|black|B|\d{3})'),
-        'font_family': re.compile(r'ff-\[(.+?)\]'), # ff-[Roboto Mono, monospace]
+        'font_family': re.compile(r'ff-\[(.+?)\]'),
         'font_style': re.compile(r'fs-(italic|it|normal|oblique)'),
         'text_decoration': re.compile(r'td-(underline|u|overline|o|line-through|lt|none)'),
         'letter_spacing': re.compile(r'ls-(\d+(?:\.\d+)?)(em|px|rem|%)'),
-        'color_hex_rgb': re.compile(r'fc-\[(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\s*\d{1,3},\s*\d{1,3})\))\]'),
+        'color_hex_rgb': re.compile(r'fc-(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\d{1,3},\d{1,3})\))'),
         'color_var': re.compile(r'fc-([a-zA-Z][a-zA-Z0-9_\-]+)'),
-        'text_transform': re.compile(r'tt-(cap|up|upper|lw|low|lower)'), # text-transform
+        'fill_hex_rgb': re.compile(r'fill-(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\d{1,3},\d{1,3})\))'),
+        'fill_var': re.compile(r'fill-([a-zA-Z][a-zA-Z0-9_\-]+)'),
+        'text_transform': re.compile(r'tt-(cap|up|upper|lw|low|lower)'),
         'width': re.compile(r'w-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'), # width
         'height': re.compile(r'h-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'), # height
         'min_width': re.compile(r'mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # min-width
@@ -198,8 +200,7 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
         'gap': re.compile(r'gap-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # gap
         'border_radius': re.compile(r'(radius|bR)-(\d+(?:\.\d+)?)(px|%|em|rem)'), # border-radius
         'z_index': re.compile(r'z-(full|none|\d+)'), # z-index
-
-        'background_color_hex_rgb': re.compile(r'bg-\[(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\s*\d{1,3},\s*\d{1,3})\))\]'),
+        'background_color_hex_rgb': re.compile(r'bg-(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\s*\d{1,3},\s*\d{1,3})\))'),
         'background_size': re.compile(r'bg-sz-(\d+(?:\.\d+)?)(px|%|em|rem)'),
         'background_blur': re.compile(r'(?:bg-blur|blur)-(\d+(?:\.\d+)?)(px|em|rem|%)'),
         'display': re.compile(r'^(?:flex|fl|inline|inl|block|blk|table|tab|inline-block|inl-blk|inline-flex|inl-fl)$'),
@@ -371,6 +372,17 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
                 var_name = match.group(1).replace('-', '_')
                 prop = style_property_map['fc']
                 css_rule = f"{prop}: var(--{var_name});"
+        if not css_rule:
+            match = patterns['fill_hex_rgb'].match(class_name)
+            if match:
+                color_val = match.group(1)
+                css_rule = f"fill: {color_val};"
+        if not css_rule:
+            match = patterns['fill_var'].match(class_name)
+            if match:
+                var_name = match.group(1).replace('-', '_')
+                prop = style_property_map['fill']
+                css_rule = f"fill: var(--{var_name});"
         if not css_rule:
             match = patterns['text_transform'].match(class_name)
             if match:
@@ -630,6 +642,76 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
     if hasattr(original_definer, '__annotations__'):
         new_definer_func.__annotations__ = original_definer.__annotations__
 
-    from typed import typed # This line was original, keeping it.
+    from typed import typed
     styled_definer = typed(new_definer_func)
-    return page.__class__({**page, "definer": styled_definer}) 
+    return page.__class__({**page, "definer": styled_definer})
+
+@typed
+def mock(component: Union(Component, Static)) -> Union(Page, StaticPage):
+    """
+    1. If the component (resp. static) is not a page (resp. static page), 
+       turn it into a page (resp. static page) with auto_style=True by adding 
+       <html>, <head>, and <body> blocks. The original content of the component 
+       should be introduced inside the <body> block.
+    2. If the component is a page (resp. static page), do nothing.
+    """
+
+    if isinstance(component, Static):
+        component_to_render = build(component)
+    else:
+        component_to_render = component
+
+    html = render(component_to_render)
+    html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
+    head_match = re.search(r"<head[^>]*>(.*?)</head>", html, flags=re.IGNORECASE | re.DOTALL)
+    body_match = re.search(r"<body[^>]*>(.*?)</body>", html, flags=re.IGNORECASE | re.DOTALL)
+
+    if html_match and head_match and body_match:
+        return component
+
+    definer = component_to_render["definer"]
+    context = component_to_render["context"]
+
+    @typed
+    def new_definer() -> Jinja:
+        return f"""jinja
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mocked Page</title>
+</head>
+<body>
+{html}
+</body>
+</html>
+"""
+    if isinstance(component, Component):
+        return Page({
+            "definer": new_definer,
+            "context": context,
+            "static_dir": "",
+            "auto_style": True
+        })
+    elif isinstance(component, Static): # It started as a Static component
+        return StaticPage({
+            "definer": new_definer,
+            "context": context,
+            "static_dir": "",
+            "auto_style": True,
+            "marker": component.get("marker", "content"), # Preserve original static properties
+            "content": component.get("content", ""),
+            "frontmatter": component.get("frontmatter", {})
+        })
+
+@typed
+def preview(component: Component) -> Nill:
+    import webbrowser
+    html = render(style(mock(component)))
+    temp_file = cmd.mktemp.file(extension="html")
+    file.write(
+        filepath=temp_file,
+        content=html
+    )
+    webbrowser.open_new_tab(f'file://{path.abs(temp_file)}')
+    cmd.rm(temp_file)

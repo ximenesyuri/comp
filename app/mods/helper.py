@@ -266,7 +266,6 @@ def _check_page(page: Union(_Page, _Static)) -> Bool:
         raise AssertionError(f"[check_page] HTML structure validation failed:\n{err_text}\nActual HTML:\n{html[:500]}...")
     return True
 
-
 Page = Conditional(
     __conditionals__=[_check_page],
     __extends__=_Page
