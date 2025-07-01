@@ -1,6 +1,6 @@
 import re
 import functools
-from inspect import signature
+from inspect import signature, Parameter
 from typed import typed, Union, Str, Nill
 from utils import md, file, cmd, path
 from jinja2 import Environment, DictLoader, StrictUndefined
@@ -29,16 +29,20 @@ def render(component: Component) -> Str:
 
         call_args = {}
         for param in params:
-            if param.name == 'depends_on':
-                continue
-            if param.name in context:
-                call_args[param.name] = context[param.name]
-            elif param.default is param.empty:
-                raise TypeError(f"Missing required parameter '{param.name}' for definer '{definer}'")
+            if param.name == "depends_on": continue
+            param_type = param.annotation
+            if param.name in call_args:
+                val = call_args[param.name]
+                if isinstance(param_type, type) and param_type.__name__.startswith("Model"):
+                    if not isinstance(val, param_type):
+                        call_args[param.name] = param_type(val or {})
+
         template_block_string = definer(**call_args, depends_on=depends_on) if 'depends_on' in sig.parameters else definer(**call_args)
         if not isinstance(template_block_string, Jinja):
             raise TypeError("Invalid value returned by definer function (not Jinja).")
 
+        import re
+        from app.mods.helper import _jinja_regex
         regex_str = re.compile(_jinja_regex(), re.DOTALL)
         match = regex_str.match(template_block_string)
         if not match:
@@ -64,6 +68,7 @@ def render(component: Component) -> Str:
                 if not dep_match:
                     raise TypeError(f"Invalid Jinja block string format in dependency {dep.__name__}")
                 dep_jinja_content = dep_match.group(1)
+                from jinja2 import Environment, StrictUndefined
                 env2 = Environment(undefined=StrictUndefined)
                 dep_template = env2.from_string(dep_jinja_content)
                 return dep_template.render(**child_context)
@@ -75,17 +80,25 @@ def render(component: Component) -> Str:
             dep_name = getattr(dep, '__name__', str(dep))
             dep_context[dep_name] = make_rendered_dep_func(dep)
 
-        jinja_context = {}
-        jinja_context.update(dep_context)
-        jinja_context.update(context)
+        full_jinja_context = {}
+        full_jinja_context.update(dep_context)
+        for param in params:
+            if param.name == 'depends_on':
+                continue
+            if param.name in context:
+                full_jinja_context[param.name] = context[param.name]
+            elif param.default is not param.empty:
+                full_jinja_context[param.name] = param.default
 
+        from jinja2 import Environment, DictLoader, StrictUndefined
         env = Environment(
             loader=DictLoader({template_name: jinja_content}),
             undefined=StrictUndefined
         )
         template = env.get_template(template_name)
-        return template.render(**jinja_context)
+        return template.render(**full_jinja_context)
     except Exception as e:
+        from app.err import RenderErr
         raise RenderErr(e)
 
 @typed

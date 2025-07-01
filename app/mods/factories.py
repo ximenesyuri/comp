@@ -1,4 +1,4 @@
-from typed import factory, Str, Any, Type
+from typed import factory, Str, Any, Type, Tuple
 
 @factory
 def TagStr(tag_name: Str) -> Type:
@@ -44,3 +44,16 @@ def Tag(tag_name: Str) -> Type:
 
     return _Tag(f'Tag({tag_name})', (Component,), {'__display__': f'Tag({tag_name})'})
 
+
+@factory
+def Free(*vars: Tuple(Str)) -> Type:
+    processed_vars = frozenset(str(v) for v in vars)
+    from app.mods.meta import _Free
+    from app.mods.types import Definer
+
+    type_name = f"Free({', '.join(processed_vars)})"
+
+    return _Free(type_name, (Definer,), {
+        '_free_vars': processed_vars,
+        '__display__': type_name
+    })

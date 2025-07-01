@@ -7,7 +7,7 @@ from app.mods.helper import (
 )
 
 # ---------------------------
-#       NILL INSTANCES
+#   NILL JINJA INSTANCES
 # --------------------------- 
 nill_jinja   = _nill_jinja
 nill_definer = _nill_definer()
@@ -18,3 +18,8 @@ nill_body    = _nill_component('body')
 nill_header  = _nill_component('header')
 nill_footer  = _nill_component('footer')
 nill_aside   = _nill_component('aside')
+
+# ---------------------------
+#   NILL MODEL INSTANCES
+# ---------------------------
+
