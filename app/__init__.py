@@ -1,10 +1,26 @@
 from typed import *
 from app.main import *
+from app.service import render
 
 @definer
-def test(x: Str) -> Jinja:
+def free(x: Str) -> Jinja:
     return """jinja
-    {{x}}
+    {{x}} {{y}}
 """
 
-print(isinstance(test, FreeDefiner(-1)))
+
+@definer
+def test(z: Str) -> Jinja:
+    return """jinja
+    </{{ z }}>
+"""
+
+
+aa = concat(free, test)
+
+component = Component(
+    definer=aa,
+    context={"x": "aaa", "z": "bbbb"}
+)
+
+print(render(component))

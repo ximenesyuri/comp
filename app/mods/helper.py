@@ -168,7 +168,6 @@ def _find_jinja_vars(source: Str) -> Set(Str):
 @typed
 def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]) -> Json:
     if not path:
-        # Use the function's name if available, otherwise its string representation
         path = [getattr(definer, "__name__", str(definer))]
 
     if definer in seen:
@@ -183,10 +182,6 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
         final_target_obj = initial_target_obj
 
     if not callable(final_target_obj):
-        # Handle cases where the definer might not be a simple function
-        # (e.g., a class instance with __call__). You might need to
-        # inspect differently depending on the structure.
-        # For now, raising an error as it indicates an unexpected definer type.
         raise TypeError(
             f"Expected a callable object for definer, but got {final_target_obj!r} "
             f"of type {type(final_target_obj)}"
@@ -197,77 +192,42 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
     depends_on = []
     if "depends_on" in sig.parameters:
         default = sig.parameters["depends_on"].default
-        # Use the default value if it's not inspect.Parameter.empty
         if default is not inspect.Parameter.empty:
             depends_on = default
 
-    # To find undeclared variables in the Jinja template *without* providing values
-    # for required parameters, we need to handle the function call carefully.
-    # We'll try calling the definer with dummy values only for parameters *without* defaults.
     call_args = {}
     for n, p in sig.parameters.items():
-        if n != "depends_on" and p.default is inspect.Parameter.empty:
-            # Provide a dummy value for required parameters without defaults
-            # This allows the templating to proceed and reveal undeclared variables
-            # within the template content.
-            # The specific dummy value (like "required_param_placeholder") can be
-            # a distinctive string to clearly identify these if they somehow remain
-            # in the final template string *before* Jinja parsing.
-            call_args[n] = "required_param_placeholder"
-
+        if n != "depends_on":
+            if p.default is inspect.Parameter.empty:
+                call_args[n] = "required_param_placeholder"
+            else:
+                call_args[n] = p.default
     try:
-        # If depends_on is a parameter, include it with its (potentially default) value
         if 'depends_on' in sig.parameters:
             jinja = definer(depends_on=depends_on, **call_args)
         else:
             jinja = definer(**call_args)
 
-    except TypeError as e:
-         # If the definer call fails with a TypeError despite providing dummy values
-         # for non-default params, it might indicate a more complex parameter requirement
-         # or an issue with how the typed decorator wraps the function.
-         # Re-raise with more context.
-         raise TypeError(f"Error calling definer '{getattr(definer, '__name__', str(definer))}' to find Jinja variables: {e}")
     except Exception as e:
-        # Catch other potential errors during the definer call.
-        print(f"Warning: Could not call definer '{getattr(definer, '__name__', str(definer))}' to find all Jinja variables (might have dynamic requirements): {e}")
-        # As a fallback, we'll try calling it without any args, which might miss
-        # variables that are only exposed when specific parameters result in different Jinja.
-        try:
-            if 'depends_on' in sig.parameters:
-                # If depends_on has no default and isn't in context, this will likely fail later,
-                # but we try to proceed to find other variables.
-                jinja = definer(depends_on=depends_on)
-            else:
-                jinja = definer()
-        except Exception:
-            # If even calling with defaults or no args fails, we can't reliably get the Jinja.
-            # Return empty, but this means missing variables won't be detected.
-            return {}
-
-
+        raise RuntimeError(f"Failed to call definer '{getattr(definer, '__name__', str(definer))}' "
+                           f"to determine Jinja variables: {e}")
     vars_ = _find_jinja_vars(jinja)
     argnames = set(
         n for n in sig.parameters if n != "depends_on"
     )
-    # Variables found in the Jinja template that are NOT among the definer's
-    # own parameters (excluding 'depends_on'). These are the variables that
-    # must be provided in the context or come from dependencies.
     undeclared_in_definer_params = vars_ - argnames
 
     result = {}
     for v in undeclared_in_definer_params:
-        result[v] = list(path) # Record the path where this variable was found
+        result[v] = list(path)
 
-    # Recursively collect variables from dependencies
     for dep in depends_on:
         if isinstance(dep, Definer):
             dep_name = getattr(dep, "__name__", str(dep))
             result_dep = _get_variables_map(seen.copy(), dep, path + [dep_name])
-            result.update(result_dep) # Merge results from dependencies
+            result.update(result_dep)
         else:
             print(f"Warning: Dependency '{dep}' is not a valid Definer and cannot be inspected for variables.")
-
     return result
 
 _Page = Model(
