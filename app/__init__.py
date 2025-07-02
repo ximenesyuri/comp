@@ -1,11 +1,10 @@
 from typed import *
 from app.main import *
-from app.mods.factories import Free
 
 @definer
 def test(x: Str) -> Jinja:
     return """jinja
-    {{x}} {{y}} 
+    {{x}}
 """
 
-print(isinstance(test, Free('z', 'y')))
+print(isinstance(test, FreeDefiner(-1)))

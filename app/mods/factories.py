@@ -1,4 +1,4 @@
-from typed import factory, Str, Any, Type, Tuple
+from typed import factory, Union, Str, Int, Type, Tuple
 
 @factory
 def TagStr(tag_name: Str) -> Type:
@@ -46,14 +46,23 @@ def Tag(tag_name: Str) -> Type:
 
 
 @factory
-def Free(*vars: Tuple(Str)) -> Type:
-    processed_vars = frozenset(str(v) for v in vars)
-    from app.mods.meta import _Free
+def FreeDefiner(*args: Union(Tuple(Str), Tuple(Int))) -> Type:
+    if len(args) == 1 and isinstance(args[0], int):
+        num_vars = args[0]
+        if num_vars >= 0:
+            processed_vars = num_vars
+            type_name = f"Free({num_vars})"
+        else:
+            processed_vars = None
+            type_name = f"Free(Any)"
+    else:
+        processed_vars = frozenset(str(v) for v in args)
+        type_name = f"Free({', '.join(processed_vars)})" if processed_vars else "Free()"
+
+    from app.mods.meta import _FreeDefiner
     from app.mods.types import Definer
 
-    type_name = f"Free({', '.join(processed_vars)})"
-
-    return _Free(type_name, (Definer,), {
+    return _FreeDefiner(type_name, (Definer,), {
         '_free_vars': processed_vars,
         '__display__': type_name
     })
