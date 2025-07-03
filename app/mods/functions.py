@@ -1,9 +1,8 @@
 import re
 from typed import typed, Str, List, Tuple, Dict, Any
 from inspect import signature, Parameter, getmodule
-from app.mods.helper import _jinja_regex, _get_variables_map, _find_jinja_vars
+from app.mods.helper import _jinja_regex, _get_variables_map, _find_jinja_vars, _definer
 from app.mods.factories import FreeDefiner
-from app.mods.decorators import definer
 from app.mods.types import Definer, Jinja
 
 @typed
@@ -118,4 +117,4 @@ def concat(free_definer: FreeDefiner(1), definer_: Definer) -> Definer:
     concat_forwarder.__annotations__ = concat_definer.__annotations__
     concat_forwarder.__name__ = concat_definer.__name__
 
-    return definer(concat_forwarder) 
+    return _definer(concat_forwarder) 

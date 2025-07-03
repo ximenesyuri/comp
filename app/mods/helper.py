@@ -1,6 +1,7 @@
 import re
-import inspect
+from inspect import signature, Parameter
 import yaml
+from functools import wraps
 from typed import (
     typed,
     Str,
@@ -38,7 +39,7 @@ def _check_context(component: _Component) -> Bool:
     if not isinstance(context, dict):
         context = {}
 
-    sig = inspect.signature(getattr(definer, "func", definer))
+    sig = signature(getattr(definer, "func", definer))
     depends_on = []
     if 'depends_on' in sig.parameters:
         depends_on_default = sig.parameters['depends_on'].default
@@ -99,7 +100,7 @@ def _check_static_context(static: _Static) -> Bool:
     marker = static.get('marker', 'content')
     context = static.get('context', {})
 
-    params = set(inspect.signature(definer).parameters)
+    params = set(signature(definer).parameters)
     if marker in params:
         return False
 
@@ -187,18 +188,18 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
             f"of type {type(final_target_obj)}"
         )
 
-    sig = inspect.signature(final_target_obj)
+    sig = signature(final_target_obj)
 
     depends_on = []
     if "depends_on" in sig.parameters:
         default = sig.parameters["depends_on"].default
-        if default is not inspect.Parameter.empty:
+        if default is not Parameter.empty:
             depends_on = default
 
     call_args = {}
     for n, p in sig.parameters.items():
         if n != "depends_on":
-            if p.default is inspect.Parameter.empty:
+            if p.default is Parameter.empty:
                 call_args[n] = "required_param_placeholder"
             else:
                 call_args[n] = p.default
@@ -311,3 +312,40 @@ StaticPage = Conditional(
     __conditionals__=[_check_page],
     __extends__=_Static
 )
+
+_FREE_DEFINER_REGISTRY = {}
+
+def _definer(arg):
+    """base decorator to create a definer"""
+    if callable(arg):
+        original_sig = signature(arg)
+        if "depends_on" in original_sig.parameters:
+            param = original_sig.parameters["depends_on"]
+            expected_type_hint = List(Definer)
+            if param.annotation is Parameter.empty:
+                arg.__annotations__["depends_on"] = expected_type_hint
+            else:
+                if issubclass(arg.__annotations__["depends_on"], expected_type_hint):
+                    pass
+                else:
+                    raise TypeError(
+                        f"In a definer, argument 'depends_on' must be of type List(Definer).\n"
+                        f" ==> '{arg.__name__}': has 'depends_on' of wrong type\n"
+                        f"     [received_type]: '{param.annotation.__name__}'"
+                    )
+        typed_arg = typed(arg)
+        if not issubclass(typed_arg.codomain, Jinja):
+            raise TypeError(
+                "A definer should create a Jinja string:\n"
+                f" ==> '{arg.__name__}' codomain is not a subclass of Jinja\n"
+                f"     [received_type]: '{typed_arg.codomain.__name__}'"
+            )
+        res = wraps(arg)(typed(arg))
+        _FREE_DEFINER_REGISTRY[arg.__name__] = res
+        return res
+    raise TypeError(
+        "Definer decorator can only be applied to callable objects:\n"
+        f" ==> '{arg.__name__}': is not callable\n"
+        f"     [received_type] '{type(arg).__name__}'"
+    )
+

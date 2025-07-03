@@ -1,5 +1,5 @@
 from typed import Bool
-from typed.models import Model, Optional
+from typed.models import Model
 from app.mods.factories import TagStr, TagDefiner, Tag
 from app.mods.helper import (
     Jinja,
@@ -67,3 +67,8 @@ Aside.__display__     = "Aside"
 # ---------------------------
 Page.__display__       = "Page"
 StaticPage.__display__ = "StaticPage"
+
+# ---------------------------
+#       OTHER TYPES
+# ---------------------------
+Context = Model()
