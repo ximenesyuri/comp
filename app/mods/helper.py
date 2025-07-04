@@ -1,5 +1,5 @@
 import re
-from inspect import signature, Parameter
+from inspect import signature, Parameter, getsource, isclass
 import yaml
 from functools import wraps
 from typed import (
@@ -15,17 +15,17 @@ from typed import (
     Any,
     Path,
     List,
-    null
+    null,
 )
-from typed.models import Model, Optional, Instance, Conditional
+from typed.models import Model, Optional, Instance, Conditional, MODEL
 from typed.examples import Markdown
 from jinja2 import Environment, meta
 from utils import md, file, json, to
-from app.mods.meta import _Jinja, _Definer
+from app.mods.definer import Definer
+from app.mods.meta import _Jinja
 
 Jinja   = _Jinja('Jinja', (Str,), {})
 Content = Union(Markdown, Extension('md'))
-Definer = _Definer('Definer', (TypedFuncType,), {})
 
 _Component = Model(
     definer=Definer,
@@ -126,6 +126,13 @@ def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
         return rf"^jinja\s*\n?\s*<{tag_name}\b[^>]*>(.*?)</{tag_name}>\s*$"
     return r"^jinja\s*\n?\s*(.*?)\s*$"
+
+def _extract_raw_jinja(jinja_string: Str) -> Str:
+    regex_str = re.compile(_jinja_regex(), re.DOTALL)
+    match = regex_str.match(jinja_string)
+    if match:
+        return match.group(1)
+    return ""
 
 _nill_jinja  = """jinja """
 
@@ -312,40 +319,3 @@ StaticPage = Conditional(
     __conditionals__=[_check_page],
     __extends__=_Static
 )
-
-_FREE_DEFINER_REGISTRY = {}
-
-def _definer(arg):
-    """base decorator to create a definer"""
-    if callable(arg):
-        original_sig = signature(arg)
-        if "depends_on" in original_sig.parameters:
-            param = original_sig.parameters["depends_on"]
-            expected_type_hint = List(Definer)
-            if param.annotation is Parameter.empty:
-                arg.__annotations__["depends_on"] = expected_type_hint
-            else:
-                if issubclass(arg.__annotations__["depends_on"], expected_type_hint):
-                    pass
-                else:
-                    raise TypeError(
-                        f"In a definer, argument 'depends_on' must be of type List(Definer).\n"
-                        f" ==> '{arg.__name__}': has 'depends_on' of wrong type\n"
-                        f"     [received_type]: '{param.annotation.__name__}'"
-                    )
-        typed_arg = typed(arg)
-        if not issubclass(typed_arg.codomain, Jinja):
-            raise TypeError(
-                "A definer should create a Jinja string:\n"
-                f" ==> '{arg.__name__}' codomain is not a subclass of Jinja\n"
-                f"     [received_type]: '{typed_arg.codomain.__name__}'"
-            )
-        res = wraps(arg)(typed(arg))
-        _FREE_DEFINER_REGISTRY[arg.__name__] = res
-        return res
-    raise TypeError(
-        "Definer decorator can only be applied to callable objects:\n"
-        f" ==> '{arg.__name__}': is not callable\n"
-        f"     [received_type] '{type(arg).__name__}'"
-    )
-

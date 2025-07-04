@@ -62,29 +62,7 @@ def my_definer(x: SomeType, y: OtherType, ...) -> Jinja:
  
 > 1. A `definer` is a "typed function" is the sense of [typed](https://github.com/pythonalta/typed). This means that all its arguments must have type hints (i.e type annotations), which are automatically verified at runtime. 
 > 2. Notice that the variables of a `definer` are incorporated in the `jinja string`. Naturally, you could also manipulate these variables before passing them to the `jinja str`, e.g, by calling other external functions inside the body of the function defining the `definer`.
-> 3. The `jinja string` could also contains "free variables", which are not directly assigned by the `definer`, as below.
-> 4. See [jinja2](https://jinja.palletsprojects.com/en/stable/) to discover the full valid syntax for `jinja strings`. 
-
-```python
-from typed import typed, SomeType, OtherType
-from app import Jinja
-
-@typed
-def my_definer(x: SomeType, y: OtherType, ...) -> Jinja:
-    return """jinja
-{% for i in x %}
-<something>
-    {% if y is True %}
-    <more html>
-    ...
-    {{ free_var }}
-    ...
-    </more html>
-    {% endif %}
-</something>
-{% endfor %}
-"""
-```
+> 3. See [jinja2](https://jinja.palletsprojects.com/en/stable/) to discover the full valid syntax for `jinja strings`. 
 
 The `context` of a component is a dictionary that provides values for all the variables in the `jinja string`:
 1. the assigned by the `definer`
@@ -100,7 +78,7 @@ my_context = {
 }
 ```
 
-> There is also a `Context` factory, which can be used to define a context is a type safety way, using both `Json` or `kwargs` approaches, as below.
+> There is also a `Context` factory, which can be used to define a context in a type safety way, using both `Json` or `kwargs` approaches, as below.
 ```python
 from app import Context
 ...
@@ -155,22 +133,13 @@ my_component = Component(
 
 ## Tags
 
-Typically, `components` are delimited by a HTML tag. In `app` one can create custom subtypes of `Component` associated with a HTML tag through the factory `Tag`. More precisely, an entity of `Tag('tag_name')` is a component whose `definer` is of type `TagDefiner('tag_name')`. In turn, a `definer` is an instance of `TagDefiner('tag_name')` precisely if its `codomain` is an instance of `TagStr('tag_name')`, which means that it returns a `jinja string` that is enclosed with the tag `<tag_name>`.
+Typical `components` are delimited by a HTML tag. In `app` one can create custom subtypes of `Component` associated with a HTML tag through the factory `Tag`. More precisely, an entity of `Tag('tag_name')` is a component whose `definer` is of type `TagDefiner('tag_name')`. In turn, a `definer` is an instance of `TagDefiner('tag_name')` precisely if its `codomain` is an instance of `TagStr('tag_name')`, which means that it returns a `jinja string` that is enclosed with the tag `<tag_name>`.
 
-So, for example, an instance of `Tag(h1)` is any `component`
-
-```python
-my_component = Component(
-    definer=my_definer,
-    context=my_context
-)
-```
-
-such that `my_definer` is defined as follows:
+So, for example, an instance of `Tag(h1)` is instance `my_component` of `Component` defined as follows 
 
 ```python
 from typed import SomeType, OtherType
-from app import definer, TagStr
+from app import definer, TagStr, Component, Context
 
 @definer
 def my_definer(x: SomeType, y: OtherType, ...) -> TagStr('h1'):
@@ -180,6 +149,14 @@ def my_definer(x: SomeType, y: OtherType, ...) -> TagStr('h1'):
     ...
 </h1>
 """
+
+my_component = Component(
+    definer=my_definer,
+    context=Context(
+        x=something,
+        y=something_else
+    )
+)
 ```
 
 There are certain predefined tag subtypes of `Component`, as follows:
@@ -202,7 +179,8 @@ One time constructed, components can be `rendered`: which is the process of eval
 The `render` process is implemented as a typed function `render: Component -> HTML`, available in `app.service`. It can be called directly, as below, or as part of the construction of the return type of certain `endpoints`, as will be discussed later.
 
 ```python
-from app.service import Component, render
+from app import Component
+from app.service import render
 ...
 my_component = Component(
     definer=my_definer,
@@ -212,7 +190,7 @@ my_component = Component(
 html = render(my_component)
 ```
 
-## Nested Components
+## Dependences 
 
 Components can depend on other components. This is realized at the `definer` level. More precisely, a `definer` can be endowed with a special `depends_on` variable, which lists other already defined `definer`s. In this case, the dependent `definer`s can be called inside the `jinja string` of the main `definer`.
 
@@ -245,7 +223,58 @@ def definer_3(..., depends_on=[definer_1, definer_2]) -> Jinja:
 ```
 
 > Recall that `definer`s are "typed functions", which means that all their arguments must have type hints, which are checked at runtime. There is an exception: the `depends_on` variable. Indeed, if a type hint is not provided, then `List(Definer)` is automatically attached to it. On the other hand, if a type hint is provided, it must be a subtype of `List(Definer)`.
-  
+
+## Free Definers
+
+There is a special class of `definer`s, the so-called `free definer`s. They are characterized by the fact that their `jinja string` contain _free variables_, i.e, `jinja` variables which are not associated with arguments of the `definer`, as follows:
+
+```python
+from typed import SomeType, OtherType
+from app import definer, Jinja
+
+@definer
+def my_definer(x: SomeType, y: OtherType, ...) -> Jinja:
+    ...
+    return """jinja
+{% for i in x %}
+<something>
+    {% if y is True %}
+    <more html>
+    ...
+        {{ free_var }}
+    ...
+    </more html>
+    {% endif %}
+</something>
+{% endfor %}
+"""
+```
+
+There is a type factory `FreeDefiner` which accepts both `str` and `int` arguments. For the case of `str`, `FreeDefiner('arg1', 'arg2', ...)` is the subtype of `Definer` given by all `definer`s which have precisely `{{ arg1 }}`, `{{ arg2 }}`, etc, as free `jinja` variables. In the integer case, `FreeDefiner(N)` is the subtype of `Definer` of all `definer`s which have precisely `N>=0` free `jinja` variables. 
+
+> 1. In the negative case, any number of free `jinja` variables is allowed, so that `Definer` and `FreeDefiner(N<0)` have essentially the same instances.
+> 2. In order to construct a `component` from a `free definer` one wants to include in the `context` a value for each of its free `jinja` variables.
+
+So, for example, the `my_definer` above is an instance of both types `FreeDefiner('free_arg')` and of `FreeDefiner(1)`. Also, a valid component having it as a `definer` should include a value for `{{ free_arg }}`, as below:
+
+```python
+from app import Component, Context
+...
+my_component = Component(
+    definer=my_definer,
+    context=Context(
+        x=something,
+        y=something_else,
+        free_var=other_thing
+    )
+)
+```
+
+## Concatenation
+
+There is a main operation between `free definer`s and `definer`s: the _concatenation_. It consists in replacing a free `jinja` var of the `free definer` with the `jinja string` of the given `definer`. It is realized through a typed function `concat: FreeDefiner(1) x Definer -> Definer`.
+
+
 ## Assets
 
 While defining a `component`, it should be needed to include assets. 

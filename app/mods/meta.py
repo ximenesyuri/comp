@@ -1,5 +1,6 @@
 import re
-from typed import Str, Any, TypedFunc, TypedFuncType
+from inspect import signature, Parameter, getsource
+from typed import Str, Int, Bool, Any, TypedFunc, TypedFuncType, Json
 from jinja2 import Environment
 
 class _Jinja(type(Str)):
@@ -29,40 +30,14 @@ class _Definer(type(TypedFuncType)):
 
 class _FreeDefiner(_Definer):
     def __instancecheck__(cls, instance):
-        if not super().__instancecheck__(instance):
-            return False
+        effective_free_vars_in_definer = instance.jinja_free_vars
         free_vars_spec = getattr(cls, '_free_vars', frozenset())
-        if free_vars_spec is None or (isinstance(free_vars_spec, frozenset) and not free_vars_spec):
+        if free_vars_spec is None:
             return True
-        definer_func = getattr(instance, 'func', instance)
-        if not callable(definer_func):
-            return False
-        from inspect import signature, Parameter
-        sig = signature(definer_func)
-        definer_params = {p.name for p in sig.parameters.values()}
-        call_args = {}
-        for name, param in sig.parameters.items():
-            if param.default is Parameter.empty:
-                call_args[name] = "DUMMY_VALUE_FOR_FREE_CHECK"
-        try:
-            jinja_str_instance = definer_func(**call_args)
-        except Exception:
-            return False
-
-        if not isinstance(jinja_str_instance, Str):
-            return False
-
-        from app.mods.helper import _find_jinja_vars
-        template_variables = _find_jinja_vars(jinja_str_instance)
-        effective_free_vars_in_definer = template_variables - definer_params
-
-        if isinstance(free_vars_spec, int):
-            return len(effective_free_vars_in_definer) == free_vars_spec
+        elif isinstance(free_vars_spec, int):
+            result = len(effective_free_vars_in_definer) == free_vars_spec
+            return result
         elif isinstance(free_vars_spec, frozenset):
-            for var in free_vars_spec:
-                if var in definer_params:
-                    return False
-                if var not in template_variables:
-                    return False
-            return True
+            result = frozenset(effective_free_vars_in_definer) == free_vars_spec
+            return result
         return False
