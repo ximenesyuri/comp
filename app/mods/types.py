@@ -1,32 +1,34 @@
 from typed import Bool
 from typed.models import Model
-from app.mods.factories import TagStr, TagDefiner, Tag
+from app.mods.factories import Tag, TagDefiner, TAG
 from app.mods.helper import (
     Jinja,
     Markdown,
     Content,
-    Definer,
-    Component,
-    Static,
-    Page,
-    StaticPage
+    Definer,   
+    COMPONENT,
+    STATIC,
+    PAGE,
+    STATIC_PAGE
 )
 
 # ---------------------------
 #    CONTENT STRING TYPES
 # ---------------------------
-HeadStr   = TagStr('head')
-BodyStr   = TagStr('body')
-HeaderStr = TagStr('header')
-FooterStr = TagStr('footer')
-AsideStr  = TagStr('aside')
+Head   = Tag('head')
+Body   = Tag('body')
+Header = Tag('header')
+Footer = Tag('footer')
+Aside  = Tag('aside')
+Div    = Tag('div')
+Button = Tag('button')
 
 Jinja.__display__  = "Jinja"
-HeadStr.__display__   = "HeadStr"
-BodyStr.__display__   = "BodyStr"
-HeaderStr.__display__ = "HeaderStr"
-FooterStr.__display__ = "HeaderStr"
-AsideStr.__display__  = "AsideStr"
+Head.__display__   = "Head"
+Body.__display__   = "Body"
+Header.__display__ = "Header"
+Footer.__display__ = "Header"
+Aside.__display__  = "Aside"
 Markdown.__display__  = "Markdown"
 
 # ---------------------------
@@ -48,25 +50,25 @@ AsideDefiner.__display_   = "AsideDefiner"
 # ---------------------------
 #       COMPONENT TYPES
 # ---------------------------
-Head   = Tag('head')
-Body   = Tag('body')
-Header = Tag('header')
-Footer = Tag('footer')
-Aside  = Tag('left-sidebar')
+HEAD   = TAG('head')
+BODY   = TAG('body')
+HEADER = TAG('header')
+FOOTER = TAG('footer')
+ASIDE  = TAG('left-sidebar')
 
-Component.__display__ = "Component"
-Static.__display__    = "Static"
-Head.__display__      = "Head"
-Body.__display__      = "Body"
-Header.__display__    = "Header"
-Footer.__display__    = "Footer"
-Aside.__display__     = "Aside"
+COMPONENT.__display__ = "COMPONENT"
+STATIC.__display__    = "STATIC"
+HEAD.__display__      = "HEAD"
+BODY.__display__      = "BODY"
+HEADER.__display__    = "HEADER"
+FOOTER.__display__    = "FOOTER"
+ASIDE.__display__     = "ASIDE"
 
 # ---------------------------
 #       PAGE TYPES
 # ---------------------------
-Page.__display__       = "Page"
-StaticPage.__display__ = "StaticPage"
+PAGE.__display__       = "PAGE"
+STATIC_PAGE.__display__ = "STATIC_PAGE"
 
 # ---------------------------
 #       OTHER TYPES

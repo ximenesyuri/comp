@@ -1,15 +1,17 @@
 import re
 from typed import typed, Str, List, Tuple, Dict, Any
+from typed.models import MODEL
 from inspect import signature, Parameter, getmodule
 from jinja2 import Environment, DictLoader, StrictUndefined
-from app.mods.helper import _jinja_regex, _get_variables_map, _find_jinja_vars, _definer
-from app.mods.factories import FreeDefiner
+from app.mods.helper import _jinja_regex, _get_variables_map, _find_jinja_vars
+from app.mods.definer import _definer
+from app.mods.factories import Free
 from app.mods.types import Definer, Jinja
 
 @typed
-def concat(free_definer: FreeDefiner(1), definer_: Definer) -> Definer:
+def concat(free_definer: Free(1), definer_: Definer) -> Definer:
     """
-    Concatenates a 'FreeDefiner(1)' definer with another definer.
+    Concatenates a 'Free(1)' definer with another definer.
         1. The 'free' must have exactly one free variable.
         2. If 'free' has parameters '(y1 ..., free_var)' and
           'definer' has parameters '(x1, ...)', then `concat` will have
@@ -19,12 +21,41 @@ def concat(free_definer: FreeDefiner(1), definer_: Definer) -> Definer:
           Common parameters between free_definer and definer_ are merged,
           with 'definer_' taking precedence for type and default if common.
     """
-    sig_free = signature(getattr(free_definer, 'func', free_definer))
-    free_params: Dict[str, Parameter] = {p.name:p for p in sig_free.parameters.values() if p.name != "depends_on"}
 
-    free_kwargs_for_raw_template = {k: f"{{{{ {k} }}}}" for k in free_params.keys()}
+    def _make_placeholder_model(param_name, annotation):
+        if isinstance(annotation, type) and isinstance(annotation, MODEL):
+            fields = getattr(annotation, '__fields__', {})
+            field_kwargs = {}
+            for fname in fields:
+                field_kwargs[fname] = f"{{{{ {param_name}.{fname} }}}}"
+            return annotation(field_kwargs)
+        else:
+            return f"{{{{ {param_name} }}}}"
+
+    sig_free = signature(getattr(free_definer, 'func', free_definer))
+    free_params = {p.name:p for p in sig_free.parameters.values() if p.name != "depends_on"}
+
+    sig_def = signature(getattr(definer_, 'func', definer_))
+    def_params = {p.name:p for p in sig_def.parameters.values() if p.name != "depends_on"}
+
+    free_kwargs_for_raw_template = {}
+    for k, param in free_params.items():
+        if k == "depends_on":
+            continue
+        annotation = param.annotation
+        free_kwargs_for_raw_template[k] = _make_placeholder_model(k, annotation)
     if "depends_on" in sig_free.parameters:
         free_kwargs_for_raw_template["depends_on"] = []
+
+    # For definer_
+    def_kwargs_for_raw = {}
+    for k, param in def_params.items():
+        if k == "depends_on":
+            continue
+        annotation = param.annotation
+        def_kwargs_for_raw[k] = _make_placeholder_model(k, annotation)
+    if "depends_on" in sig_def.parameters:
+        def_kwargs_for_raw["depends_on"] = []
 
     jinja_src_free_definer_raw = free_definer(**free_kwargs_for_raw_template)
 
@@ -32,12 +63,9 @@ def concat(free_definer: FreeDefiner(1), definer_: Definer) -> Definer:
     free_template_vars = vars_in_template - set(free_params.keys())
 
     if len(free_template_vars) != 1:
-        raise ValueError(f"FreeDefiner for concat must have exactly one free variable in its template "
+        raise ValueError(f"Free for concat must have exactly one free variable in its template "
                          f"that is not one of its function arguments. Found: {free_template_vars}")
     free_var = next(iter(free_template_vars))
-
-    sig_def = signature(getattr(definer_, 'func', definer_))
-    def_params = {p.name:p for p in sig_def.parameters.values() if p.name != "depends_on"}
 
     combined_params_dict = {}
     for name, param in free_params.items():
@@ -59,9 +87,6 @@ def concat(free_definer: FreeDefiner(1), definer_: Definer) -> Definer:
         )
         new_params_final.append(depends_on_param)
 
-    def_kwargs_for_raw = {k: f"{{{{ {k} }}}}" for k in def_params.keys()}
-    if "depends_on" in sig_def.parameters:
-        def_kwargs_for_raw['depends_on'] = []
 
     jinja_src_definer_raw = definer_(**def_kwargs_for_raw)
 
@@ -74,7 +99,7 @@ def concat(free_definer: FreeDefiner(1), definer_: Definer) -> Definer:
     if not m_free:
         raise ValueError("free_definer did not return a valid Jinja template for raw extraction.")
     free_jinja_content_raw_template = m_free.group(1)
-
+         
     free_var_re = r"(\{\{\s*" + re.escape(free_var) + r"\s*\}\})"
     combined_raw_jinja_content = re.sub(free_var_re, def_jinja_content_raw, free_jinja_content_raw_template, count=1)
 

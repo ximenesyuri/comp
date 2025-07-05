@@ -27,13 +27,13 @@ from app.mods.meta import _Jinja
 Jinja   = _Jinja('Jinja', (Str,), {})
 Content = Union(Markdown, Extension('md'))
 
-_Component = Model(
+_COMPONENT = Model(
     definer=Definer,
     context=Json
 )
 
 @typed
-def _check_context(component: _Component) -> Bool:
+def _check_context(component: _COMPONENT) -> Bool:
     definer = component.get('definer')
     context = component.get('context', {})
     if not isinstance(context, dict):
@@ -82,20 +82,20 @@ def _check_context(component: _Component) -> Bool:
     )
     raise ValueError(message)
 
-Component = Conditional(
+COMPONENT = Conditional(
     __conditionals__=_check_context,
-    __extends__=_Component
+    __extends__=_COMPONENT
 )
 
-_Static = Model(
-    __extends__=Component,
+_STATIC = Model(
+    __extends__=COMPONENT,
     marker=Optional(Str, "content"),
     content=Content,
     frontmatter=Optional(Json, {})
 )
 
 @typed
-def _check_static_context(static: _Static) -> Bool:
+def _check_static_context(static: _STATIC) -> Bool:
     definer = static.get('definer', _nill_definer())
     marker = static.get('marker', 'content')
     context = static.get('context', {})
@@ -117,9 +117,9 @@ def _check_static_context(static: _Static) -> Bool:
     found = re.search(pattern, jinja_str) is not None
     return found
 
-Static = Conditional(
+STATIC = Conditional(
     __conditionals__=[_check_static_context],
-    __extends__=_Static
+    __extends__=_STATIC
 )
 
 def _jinja_regex(tag_name: Str = "") -> Pattern:
@@ -139,23 +139,24 @@ _nill_jinja  = """jinja """
 @typed
 def _nill_definer(tag_name: Str="") -> Definer:
     if tag_name:
-        from app.mods.factories import TagStr
-        def wrapper() -> TagStr(tag_name):
+        from app.mods.factories import Tag
+        def wrapper() -> Tag(tag_name):
             return _nill_jinja
     else:
         def wrapper() -> Jinja:
             return _nill_jinja
-    return typed(wrapper)
+    from app.mods.definer import _definer
+    return _definer(wrapper)
 
 @typed
-def _nill_component(tag_name: Str="") -> _Component:
+def _nill_comp(tag_name: Str="") -> _COMPONENT:
     return {
         "definer": _nill_definer(tag_name),
         "context": {}
     }
 
 @typed
-def _nill_static() -> _Static:
+def _nill_static() -> _STATIC:
     return {
         "definer": _nill_definer(),
         "context": {},
@@ -238,20 +239,20 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
             print(f"Warning: Dependency '{dep}' is not a valid Definer and cannot be inspected for variables.")
     return result
 
-_Page = Model(
-    __extends__=Component,
+_PAGE = Model(
+    __extends__=COMPONENT,
     auto_style=Optional(Bool, False),
     static_dir=Optional(Path, "")
 )
 
-_StaticPage = Model(
-    __extends__=Static,
+_STATIC_PAGE = Model(
+    __extends__=STATIC,
     auto_style=Optional(Bool, False),
     static_dir=Optional(Path, "")
 )
 
 @typed
-def _check_page(page: Union(_Page, _Static)) -> Bool:
+def _check_page(page: Union(_PAGE, _STATIC)) -> Bool:
     from app.service import render
     errors = []
     html = render(page)
@@ -310,12 +311,12 @@ def _check_page(page: Union(_Page, _Static)) -> Bool:
         raise AssertionError(f"[check_page] HTML structure validation failed:\n{err_text}\nActual HTML:\n{html[:500]}...")
     return True
 
-Page = Conditional(
+PAGE = Conditional(
     __conditionals__=[_check_page],
-    __extends__=_Page
+    __extends__=_PAGE
 )
 
-StaticPage = Conditional(
+STATIC_PAGE = Conditional(
     __conditionals__=[_check_page],
-    __extends__=_Static
+    __extends__=_STATIC_PAGE
 )

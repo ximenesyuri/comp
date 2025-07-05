@@ -28,7 +28,7 @@ class _Definer(type(TypedFuncType)):
         from app.mods.types import Jinja
         return issubclass(instance.codomain, Jinja)
 
-class _FreeDefiner(_Definer):
+class _Free(_Definer):
     def __instancecheck__(cls, instance):
         effective_free_vars_in_definer = instance.jinja_free_vars
         free_vars_spec = getattr(cls, '_free_vars', frozenset())
