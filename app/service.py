@@ -6,12 +6,12 @@ from typed import typed, Union, Str, Nill
 from utils import md, file, cmd, path
 from jinja2 import Environment, DictLoader, StrictUndefined
 from bs4 import BeautifulSoup, Tag
-from app.mods.helper import _jinja_regex, _Page, _StaticPage
+from app.mods.helper import _jinja_regex, _PAGE, _STATIC_PAGE
 from app.err import RenderErr, BuildErr, StyleErr
-from app.mods.types import Component, Jinja, Static, Page, StaticPage
+from app.mods.types import COMPONENT, Jinja, STATIC, PAGE, STATIC_PAGE
 
 @typed
-def render(component: Component) -> Str:
+def render(component: COMPONENT) -> Str:
     try:
         definer = component.get('definer')
         context = dict(component.get('context', {}))
@@ -88,12 +88,9 @@ def render(component: Component) -> Str:
                 return dep_template.render(**child_context)
             return _inner
 
-        full_jinja_context = {}
-        for param in params:
-            if param.name == 'depends_on':
-                continue
-            if param.name in call_args:
-                full_jinja_context[param.name] = call_args[param.name]
+        # FIX: All user context keys are included, not just formal arguments
+        full_jinja_context = dict(context)
+        full_jinja_context.update(call_args)
 
         for dep in depends_on:
             if not callable(dep):
@@ -111,7 +108,7 @@ def render(component: Component) -> Str:
         raise RenderErr(e)
 
 @typed
-def build(static: Static) -> Component:
+def build(static: STATIC) -> COMPONENT:
     try:
         definer = static.get('definer')
         marker = static.get('marker', 'content')
@@ -162,13 +159,13 @@ def build(static: Static) -> Component:
         raise BuildErr(e)
 
 @typed
-def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
+def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
     try:
         if not page.get("auto_style", False):
             return page
 
         current_page = page
-        if isinstance(page, StaticPage):
+        if isinstance(page, STATIC_PAGE):
             from app.service import build
             component_to_render = build(page)
         else:
@@ -672,7 +669,7 @@ def style(page: Union(Page, StaticPage)) -> Union(Page, StaticPage):
         raise StyleErr(e)
 
 @typed
-def mock(component: Union(Component, Static)) -> Union(Page, StaticPage):
+def mock(component: Union(COMPONENT, STATIC)) -> Union(PAGE, STATIC_PAGE):
     """
     1. If the component (resp. static) is not a page (resp. static page), 
        turn it into a page (resp. static page) with auto_style=True by adding 
@@ -681,7 +678,7 @@ def mock(component: Union(Component, Static)) -> Union(Page, StaticPage):
     2. If the component is a page (resp. static page), do nothing.
     """
     try:
-        if isinstance(component, Static):
+        if isinstance(component, STATIC):
             component_to_render = build(component)
         else:
             component_to_render = component
@@ -704,22 +701,22 @@ def mock(component: Union(Component, Static)) -> Union(Page, StaticPage):
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mocked Page</title>
+    <title>Mocked PAGE</title>
 </head>
 <body>
 {html}
 </body>
 </html>
 """
-        if isinstance(component, Component):
-            return Page({
+        if isinstance(component, COMPONENT):
+            return PAGE({
                 "definer": new_definer,
                 "context": context,
                 "static_dir": "",
                 "auto_style": True
             })
-        elif isinstance(component, Static): # It started as a Static component
-            return StaticPage({
+        elif isinstance(component, STATIC): # It started as a STATIC component
+            return STATIC_PAGE({
                 "definer": new_definer,
                 "context": context,
                 "static_dir": "",
@@ -732,7 +729,7 @@ def mock(component: Union(Component, Static)) -> Union(Page, StaticPage):
         raise MockErr(e)
 
 @typed
-def preview(component: Component) -> Nill:
+def preview(component: COMPONENT) -> Nill:
     try:
         html = render(style(mock(component)))
         temp_file = cmd.mktemp.file(extension="html")

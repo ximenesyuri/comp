@@ -1,4 +1,11 @@
 from app.main import *
 from app.components import div, button
+from app.service import render
 
-print((div * button).jinja)
+component = COMPONENT(
+    definer=div + button,
+    context={}
+)
+
+print(render(component))
+

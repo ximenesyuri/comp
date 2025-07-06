@@ -99,20 +99,16 @@ def _check_static_context(static: _STATIC) -> Bool:
     definer = static.get('definer', _nill_definer())
     marker = static.get('marker', 'content')
     context = static.get('context', {})
-
     params = set(signature(definer).parameters)
     if marker in params:
         return False
-
     if marker in context:
         return False
-
     kwargs = {k: context[k] for k in params if k in context}
     try:
         jinja_str = definer(**kwargs)
     except Exception:
         return False
-
     pattern = r"\{\{\s*" + re.escape(marker) + r"\s*\}\}"
     found = re.search(pattern, jinja_str) is not None
     return found
@@ -184,7 +180,6 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
     seen.add(definer)
 
     initial_target_obj = getattr(definer, "func", definer)
-
     if isinstance(initial_target_obj, tuple) and len(initial_target_obj) == 1:
         final_target_obj = initial_target_obj[0]
     else:
@@ -195,9 +190,7 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
             f"Expected a callable object for definer, but got {final_target_obj!r} "
             f"of type {type(final_target_obj)}"
         )
-
     sig = signature(final_target_obj)
-
     depends_on = []
     if "depends_on" in sig.parameters:
         default = sig.parameters["depends_on"].default
@@ -213,19 +206,36 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
                 call_args[n] = p.default
     try:
         if 'depends_on' in sig.parameters:
-            jinja = definer(depends_on=depends_on, **call_args)
+            jinja_src = definer(depends_on=depends_on, **call_args)
         else:
-            jinja = definer(**call_args)
-
-    except Exception as e:
-        raise RuntimeError(f"Failed to call definer '{getattr(definer, '__name__', str(definer))}' "
-                           f"to determine Jinja variables: {e}")
-    vars_ = _find_jinja_vars(jinja)
-    argnames = set(
-        n for n in sig.parameters if n != "depends_on"
-    )
+            jinja_src = definer(**call_args)
+    except Exception:
+        jinja_vars = set()
+        if hasattr(definer, 'jinja'):
+            jinja_str = definer.jinja
+            from jinja2 import Environment, meta
+            env = Environment()
+            try:
+                ast = env.parse(jinja_str)
+                jinja_vars = meta.find_undeclared_variables(ast)
+            except Exception:
+                jinja_vars = set()
+        jinja_src = ""
+    vars_ = set()
+    if jinja_src:
+        vars_ = _find_jinja_vars(jinja_src)
+    argnames = set(n for n in sig.parameters if n != "depends_on")
     undeclared_in_definer_params = vars_ - argnames
 
+    if not jinja_src and hasattr(definer, 'jinja'):
+        jinja_str = definer.jinja
+        env = Environment()
+        try:
+            ast = env.parse(jinja_str)
+            all_template_vars = meta.find_undeclared_variables(ast)
+            undeclared_in_definer_params = set(all_template_vars) - argnames
+        except Exception:
+            undeclared_in_definer_params = set()
     result = {}
     for v in undeclared_in_definer_params:
         result[v] = list(path)
@@ -320,3 +330,13 @@ STATIC_PAGE = Conditional(
     __conditionals__=[_check_page],
     __extends__=_STATIC_PAGE
 )
+
+def _make_placeholder_model(param_name, annotation):
+    if isinstance(annotation, type) and issubclass(annotation, MODEL):
+        fields = getattr(annotation, '__fields__', {})
+        field_kwargs = {}
+        for fname in fields:
+            field_kwargs[fname] = f"{{{{ {param_name}.{fname} }}}}"
+        return annotation(field_kwargs)
+    else:
+        return f"{{{{ {param_name} }}}}"

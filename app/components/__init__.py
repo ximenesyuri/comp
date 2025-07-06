@@ -1,6 +1,6 @@
 from typed import null
 from app import definer, Div, Button
-from app.models import ElementModel, AlpineModel, ButtonModel 
+from app.models import ElementModel, AlpineModel, ButtonModel
 from app.nill import nill_jinja
 
 @definer
@@ -22,6 +22,6 @@ def button(b: ButtonModel=null(ButtonModel)) -> Button:
     {%if b['on_click']%}@click="{{b['on_click']}}"{%endif%}
     {%if b['click_away']%}@click="{{b['click_away']}}"{%endif%}
 >       
-    {{inner}}
+    {{button_inner}}
 </button>
 """
