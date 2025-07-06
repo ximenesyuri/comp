@@ -75,9 +75,9 @@ def concat(definer1: Free(1), definer2: Definer) -> Definer:
 
     return dyn_typed
 
-def join(*definers):
+@typed
+def join(*definers: Tuple(Definer)) -> Definer:
     if not definers:
-        # Return an "empty" definer if nothing is joined!
         @typed
         def empty_join() -> str:
             return "jinja\n"
@@ -86,22 +86,19 @@ def join(*definers):
         empty_join._raw_combined_jinja = ""
         return empty_join
 
-    # 1. Combine raw Jinja blocks in order (static, i.e., not rendered now!)
     accumulated_raw_jinja_content = ""
     for d in definers:
         accumulated_raw_jinja_content += d.jinja
 
-    # 2. Gather all unique arguments and types from all definers' signatures
     all_params = {}
     for d in definers:
         sig = signature(d)
         for n, p in sig.parameters.items():
-            if n == "depends_on":  # Skip generic depends for now
+            if n == "depends_on":
                 continue
             if n not in all_params:
-                all_params[n] = p  # Use first occurrence
+                all_params[n] = p
 
-    # 3. Add all free Jinja variables as well (in case they're not covered as function parameters)
     env = Environment()
     ast = env.parse(accumulated_raw_jinja_content)
     all_jinja_vars = set(meta.find_undeclared_variables(ast))
@@ -109,7 +106,6 @@ def join(*definers):
     param_names = set(all_params)
     missing_vars = all_jinja_vars - param_names
 
-    # 4. Build the signature!
     new_parameters = []
     for n, p in all_params.items():
         annotation = p.annotation if p.annotation != Parameter.empty else str
@@ -120,12 +116,10 @@ def join(*definers):
         else:
             default_val = ""
         new_parameters.append(Parameter(n, Parameter.KEYWORD_ONLY, default=default_val))
-    # Add any missing Jinja-only variables as string kwonly params (default "")
     for name in sorted(missing_vars):
         new_parameters.append(Parameter(name, Parameter.KEYWORD_ONLY, default=""))
 
     new_sig = Signature(new_parameters)
-    # Prepare annotation dict for introspection
     annotations = {p.name: (all_params[p.name].annotation
                             if p.name in all_params and all_params[p.name].annotation != Parameter.empty
                             else str)
@@ -135,12 +129,10 @@ def join(*definers):
 
     def dynamic_joined_definer(**kwargs):
         context = dict(kwargs)
-        # Fill in any missing params with placeholder models/defaults
         for param in new_parameters:
             if param.name not in context:
                 ann = all_params[param.name].annotation if param.name in all_params and all_params[param.name].annotation != Parameter.empty else str
                 context[param.name] = _make_placeholder_model(param.name, ann)
-        # Render the combined jinja
         return "jinja\n" + Environment(undefined=StrictUndefined).from_string(accumulated_raw_jinja_content).render(**context)
 
     dynamic_joined_definer.__signature__ = new_sig
