@@ -1,26 +1,34 @@
 from typed import null
-from app import definer, Div, Button
-from app.models import ElementModel, AlpineModel, ButtonModel
+from app import definer
+from app.models import Div, Alpine, Button
 from app.nill import nill_jinja
 
 @definer
-def div(div: ElementModel=null(ElementModel), alpine: AlpineModel=null(AlpineModel)) -> Div:
+def div(div: Div=null(Div), alpine: Alpine=null(Alpine)) -> Tag('div'):
     return """jinja
-<div{%if div.id %} id="{{ div.id }}"{%endif %}{%if div.classes%} class="{{div.classes}}"{%endif%}{%if div.hover%} hover="{{div.hover}}"{%endif%}{%if alpine['x_init']%} x-init="{{alpine['x_init']}}"{%endif%}{%if alpine['x_show']%} x-show="{{alpine['x_show']}}"{%endif%}{%if alpine['x_data']%} x-data="{{alpine['x_data']}}"{%endif%}{%if alpine['x_cloak']%} x-cloak{%endif%}>
-    {{inner}}
+<div
+    {%if div['div_id'] %}id="{{ div['div_id'] }}"{%endif %}
+    {%if div['div_class']%}class="{{div['div_class']}}"{%endif%}
+    {%if div['div_hover']%}hover="{{div['div_hover']}}"{%endif%}
+    {%if alpine['x_init']%}x-init="{{alpine['x_init']}}"{%endif%}
+    {%if alpine['x_show']%}x-show="{{alpine['x_show']}}"{%endif%}
+    {%if alpine['x_data']%}x-data="{{alpine['x_data']}}"{%endif%}
+    {%if alpine['x_cloak']%}x-cloak{%endif%}
+>
+    {{div_inner}}
 </div>
 """
 
 @definer
-def button(b: ButtonModel=null(ButtonModel)) -> Button:
+def button(button: Button=null(Button)) -> Tag('button'):
     return """jinja
 <button 
-    {%if b['id']%}id="{{b['id']}}"{%endif%}
-    {%if b['classes']%}class="{{b['classes']}}"{%endif%}
-    {%if b['hover']%}class="{{b['hover']}}"{%endif%}
+    {%if button['button_id']%}id="{{button['button_id']}}"{%endif%}
+    {%if button['button_class']%}class="{{button['button_class']}}"{%endif%}
+    {%if button['button_hover']%}hover="{{button['button_hover']}}"{%endif%}
     type="button"
-    {%if b['on_click']%}@click="{{b['on_click']}}"{%endif%}
-    {%if b['click_away']%}@click="{{b['click_away']}}"{%endif%}
+    {%if button['on_click']%}@click="{{button['on_click']}}"{%endif%}
+    {%if button['click_away']%}@click_away="{{button['click_away']}}"{%endif%}
 >       
     {{button_inner}}
 </button>
