@@ -1,4 +1,17 @@
-from typed import typed, Int, Str, Bool, List, Json, Float, Maybe, Enum, Pattern
+from typed import (
+    typed,
+    Int,
+    Str,
+    Bool,
+    List,
+    Json,
+    Float,
+    Maybe,
+    Enum,
+    Pattern,
+    Dict,
+    Any
+)
 from typed.models import Model, Optional, MODEL
 from typed.examples import HEX
 
@@ -143,7 +156,7 @@ Input = Model(
     input_step=Optional(Str, ""), # Step increment for number/date
     input_aria_label=Optional(Str, ""),
     input_aria_describedby=Optional(Str, ""),
-    input_mime=Optional(List(Str), ""), # List of MIME types
+    input_mime=Optional(List(Str), []),
     input_checked=Optional(Bool, False),
     input_autofocus=Optional(Bool, False),
     input_tabindex=Optional(Int, 0),
