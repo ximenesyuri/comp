@@ -11,11 +11,11 @@
 ```
 # About
 
-`app` is a Python framework to build web applications presenting type safety, from APIs to static pages, providing a strong component system.
+`app` is a Python framework to build web applications presenting type safety, from APIs to static pages.
     
 # Overview
 
-The lib consists os two parts:
+The lib consists of two parts:
 1. a `component system`, which allows to define components and operate between them in a functional approach, being compatible with [jinja2](https://jinja.palletsprojects.com/en/stable/) and with [alpine.js]();
 2. an `app system`, which is an extension of [fastapi](https://github.com/fastapi/fastapi) to include, for example, the construction of static applications, all of that provided in a highly intuitive interface.
 

@@ -10,3 +10,6 @@ class StyleErr(Exception):
 class MockErr(Exception):
     pass
 
+class PreviewErr(Exception):
+    pass
+

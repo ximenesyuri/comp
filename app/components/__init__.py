@@ -1,5 +1,5 @@
 from typed import null
-from app import definer
+from app import definer, Tag
 from app.models import Div, Alpine, Button
 from app.nill import nill_jinja
 

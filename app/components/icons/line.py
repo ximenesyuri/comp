@@ -1,19 +1,78 @@
-from typed import typed, Str
-from app import Jinja
+from typed import typed, Str, null
+from app import definer, Tag
+from app.models import Icon
 
-@typed
-def search_1(size: Str="25px", fill: Str="#000000") -> Jinja:
+@definer
+def icon_search(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
-<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 30 30" style="background: transparent" class="w-{{size}} h-{{size}} fill-{{fill}}">
-    <path d="M 13 3 C 7.4889971 3 3 7.4889971 3 13 C 3 18.511003 7.4889971 23 13 23 C 15.396508 23 17.597385 22.148986 19.322266 20.736328 L 25.292969 26.707031 A 1.0001 1.0001 0 1 0 26.707031 25.292969 L 20.736328 19.322266 C 22.148986 17.597385 23 15.396508 23 13 C 23 7.4889971 18.511003 3 13 3 z M 13 5 C 1s7.430123 5 21 8.5698774 21 13 C 21 17.430123 17.430123 21 13 21 C 8.5698774 21 5 17.430123 5 13 C 5 8.5698774 8.5698774 5 13 5 z"></path>
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    {% if icon.icon_viewbox %}viewBox="{{icon.icon_viewbox}}"{%endif%}
+    {% if icon.icon_size %}width="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_size %}height="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_fill %}fill="{{icon.icon_fill}}"{%endif%}
+    {% if icon.icon_class %}class="{{icon.icon_class}}"{%endif%}
+> 
+<path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
 </svg>
 """
 
-@typed
-def search_2(size: Str="25px", fill: Str="#000000") -> Jinja:
+@definer
+def icon_menu(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-{{size}} h-{{size}} fill-{{fill}}">
-    <path d="m19.9 20.9751 -6.575 -6.575c-0.5 0.43335 -1.083 0.77085 -1.749 1.0125 -0.666 0.24165 -1.37465 0.3625 -2.126 0.3625 -1.80265 0 -3.32835 -0.625 -4.577 -1.875 -1.248665 -1.25 -1.873 -2.75835 -1.873 -4.525 0 -1.76665 0.625 -3.275 1.875 -4.525 1.25 -1.25 2.7625 -1.875 4.5375 -1.875 1.775 0 3.28335 0.625 4.525 1.875 1.24165 1.25 1.8625 2.7596 1.8625 4.52875 0 0.71415 -0.11665 1.4046 -0.35 2.07125 -0.23335 0.66665 -0.58335 1.29165 -1.05 1.875l6.6 6.55 -1.1 1.1Zm-10.475 -6.7c1.35415 0 2.50525 -0.47915 3.45325 -1.4375 0.94785 -0.95835 1.42175 -2.1125 1.42175 -3.4625s-0.4739 -2.50415 -1.42175 -3.4625c-0.948 -0.958335 -2.0991 -1.4375 -3.45325 -1.4375 -1.368 0 -2.53085 0.479165 -3.4885 1.4375C4.978835 6.87095 4.5 8.0251 4.5 9.3751s0.478835 2.50415 1.4365 3.4625c0.95765 0.95835 2.1205 1.4375 3.4885 1.4375Z" stroke-width="0.5">
-    </path>
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    {% if icon.icon_viewbox %}viewBox="{{icon.icon_viewbox}}"{%endif%}
+    {% if icon.icon_size %}width="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_size %}height="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_fill %}fill="{{icon.icon_fill}}"{%endif%}
+    {% if icon.icon_class %}class="{{icon.icon_class}}"{%endif%} 
+>
+<path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/>
+</svg>
+"""
+
+@definer
+def icon_close(icon: Icon=null(Icon)) -> Tag('svg'):
+    return """jinja
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    {% if icon.icon_viewbox %}viewBox="{{icon.icon_viewbox}}"{%endif%}
+    {% if icon.icon_size %}width="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_size %}height="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_fill %}fill="{{icon.icon_fill}}"{%endif%}
+    {% if icon.icon_class %}class="{{icon.icon_class}}"{%endif%} 
+>
+<path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+</svg>
+"""
+
+@definer
+def icon_home(icon: Icon=null(Icon)) -> Tag('svg'):
+    return """jinja
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    {% if icon.icon_viewbox %}viewBox="{{icon.icon_viewbox}}"{%endif%}
+    {% if icon.icon_size %}width="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_size %}height="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_fill %}fill="{{icon.icon_fill}}"{%endif%}
+    {% if icon.icon_class %}class="{{icon.icon_class}}"{%endif%} 
+>
+<path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"/>
+</svg>
+"""
+
+@definer
+def icon_theme_switcher(icon: Icon=null(Icon)) -> Tag('svg'):
+    return """jinja
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    {% if icon.icon_viewbox %}viewBox="{{icon.icon_viewbox}}"{%endif%}
+    {% if icon.icon_size %}width="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_size %}height="{{icon.icon_size}}"{%endif%}
+    {% if icon.icon_fill %}fill="{{icon.icon_fill}}"{%endif%}
+    {% if icon.icon_class %}class="{{icon.icon_class}}"{%endif%} 
+>
+<path d="M396-396q-32-32-58.5-67T289-537q-5 14-6.5 28.5T281-480q0 83 58 141t141 58q14 0 28.5-2t28.5-6q-39-22-74-48.5T396-396Zm57-56q51 51 114 87.5T702-308q-40 51-98 79.5T481-200q-117 0-198.5-81.5T201-480q0-65 28.5-123t79.5-98q20 72 56.5 135T453-452Zm290 72q-20-5-39.5-11T665-405q8-18 11.5-36.5T680-480q0-83-58.5-141.5T480-680q-20 0-38.5 3.5T405-665q-8-19-13.5-38T381-742q24-9 49-13.5t51-4.5q117 0 198.5 81.5T761-480q0 26-4.5 51T743-380ZM440-840v-120h80v120h-80Zm0 840v-120h80V0h-80Zm323-706-57-57 85-84 57 56-85 85ZM169-113l-57-56 85-85 57 57-85 84Zm671-327v-80h120v80H840ZM0-440v-80h120v80H0Zm791 328-85-85 57-57 84 85-56 57ZM197-706l-84-85 56-57 85 85-57 57Zm199 310Z"/>
 </svg>
 """

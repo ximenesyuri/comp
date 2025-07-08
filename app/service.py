@@ -7,7 +7,7 @@ from utils import md, file, cmd, path
 from jinja2 import Environment, DictLoader, StrictUndefined
 from bs4 import BeautifulSoup, Tag
 from app.mods.helper import _jinja_regex, _PAGE, _STATIC_PAGE
-from app.err import RenderErr, BuildErr, StyleErr
+from app.err import RenderErr, BuildErr, StyleErr, PreviewErr, MockErr
 from app.mods.types import COMPONENT, Jinja, STATIC, PAGE, STATIC_PAGE
 
 @typed
@@ -143,7 +143,8 @@ def build(static: STATIC) -> COMPONENT:
 
         new_jinja_content = re.sub(marker_regex, str(html), jinja_content, count=1)
 
-        @typed
+        from app import definer
+        @definer
         def new_definer() -> Jinja:
             return f"jinja\n{new_jinja_content}"
 
@@ -167,7 +168,7 @@ def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
         current_page = page
         if isinstance(page, STATIC_PAGE):
             from app.service import build
-            component_to_render = build(page)
+            component_to_render = build(STATIC(page))
         else:
             component_to_render = page
 
@@ -654,17 +655,17 @@ def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
         from app.mods.types import Jinja
         final_jinja_str = f"jinja\n{modified_html}"
 
-        def new_definer_func() -> Jinja:
+        from app import definer
+        @definer
+        def new_definer() -> Jinja:
             return final_jinja_str
 
         if hasattr(original_definer, '__name__'):
-            new_definer_func.__name__ = original_definer.__name__ + "_styled"
+            new_definer.__name__ = original_definer.__name__ + "_styled"
         if hasattr(original_definer, '__annotations__'):
-            new_definer_func.__annotations__ = original_definer.__annotations__
+            new_definer.__annotations__ = original_definer.__annotations__
 
-        from typed import typed
-        styled_definer = typed(new_definer_func)
-        return page.__class__({**page, "definer": styled_definer})
+        return page.__class__({**page, "definer": new_definer})
     except Exception as e:
         raise StyleErr(e)
 
@@ -694,14 +695,14 @@ def mock(component: Union(COMPONENT, STATIC)) -> Union(PAGE, STATIC_PAGE):
         definer = component_to_render["definer"]
         context = component_to_render["context"]
 
-        @typed
+        from app import definer
+        @definer
         def new_definer() -> Jinja:
             return f"""jinja
 <html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mocked PAGE</title>
 </head>
 <body>
 {html}
@@ -709,22 +710,23 @@ def mock(component: Union(COMPONENT, STATIC)) -> Union(PAGE, STATIC_PAGE):
 </html>
 """
         if isinstance(component, COMPONENT):
-            return PAGE({
-                "definer": new_definer,
-                "context": context,
-                "static_dir": "",
-                "auto_style": True
-            })
-        elif isinstance(component, STATIC): # It started as a STATIC component
-            return STATIC_PAGE({
-                "definer": new_definer,
-                "context": context,
-                "static_dir": "",
-                "auto_style": True,
-                "marker": component.get("marker", "content"), # Preserve original static properties
-                "content": component.get("content", ""),
-                "frontmatter": component.get("frontmatter", {})
-            })
+            page = PAGE(
+                definer=new_definer,
+                context=context,
+                static_dir="",
+                auto_style=True,
+            )
+            return page
+        elif isinstance(component, STATIC):
+            return STATIC_PAGE(
+                definer=new_definer,
+                context=context,
+                static_dir="",
+                auto_style=True,
+                marker=component.get("marker", "content"),
+                content=component.get("content", ""),
+                frontmatte=component.get("frontmatter", {})
+            )
     except Exception as e:
         raise MockErr(e)
 

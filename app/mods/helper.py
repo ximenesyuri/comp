@@ -262,10 +262,10 @@ _STATIC_PAGE = Model(
 )
 
 @typed
-def _check_page(page: Union(_PAGE, _STATIC)) -> Bool:
+def _check_page_core(page: Union(_PAGE, _STATIC)) -> Bool:
     from app.service import render
     errors = []
-    html = render(page)
+    html = render(COMPONENT(page))
     html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
     head_match = re.search(r"<head[^>]*>(.*?)</head>", html, flags=re.IGNORECASE | re.DOTALL)
     body_match = re.search(r"<body[^>]*>(.*?)</body>", html, flags=re.IGNORECASE | re.DOTALL)
@@ -321,13 +321,21 @@ def _check_page(page: Union(_PAGE, _STATIC)) -> Bool:
         raise AssertionError(f"[check_page] HTML structure validation failed:\n{err_text}\nActual HTML:\n{html[:500]}...")
     return True
 
+@typed
+def _check_page(page: _PAGE) -> Bool:
+    return _check_page_core(page) and not 'content' in page
+
+@typed
+def _check_static_page(page: _STATIC_PAGE) -> Bool:
+    return _check_page_core(page) and 'content' in page
+
 PAGE = Conditional(
     __conditionals__=[_check_page],
     __extends__=_PAGE
 )
 
 STATIC_PAGE = Conditional(
-    __conditionals__=[_check_page],
+    __conditionals__=[_check_static_page],
     __extends__=_STATIC_PAGE
 )
 
@@ -340,3 +348,11 @@ def _make_placeholder_model(param_name, annotation):
         return annotation(field_kwargs)
     else:
         return f"{{{{ {param_name} }}}}"
+
+def _get_annotation(param):
+        if param.annotation != Parameter.empty:
+            return param.annotation
+        elif param.default != Parameter.empty and isinstance(param.default, MODEL):
+            return type(param.default)
+        else:
+            return str
