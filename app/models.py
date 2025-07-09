@@ -13,7 +13,7 @@ from typed import (
     Any
 )
 from typed.models import Model, Optional, MODEL
-from typed.examples import HEX
+from typed.examples import HEX, Num
 
 
 Alpine = Model(
@@ -110,60 +110,108 @@ Icon = Model(
     icon_stroke=Optional(Float, 0.5)
 )
 
-InputType = Enum(
-    Str,
-    "button",
-    "checkbox",
-    "color",
-    "date",
-    "datetime-local",
-    "email",
-    "file",
-    "hidden",
-    "image",
-    "month",
-    "number",
-    "password",
-    "radio",
-    "range",
-    "reset",
-    "search",
-    "submit",
-    "tel",
-    "text",
-    "time",
-    "url",
-    "week"
-)
+_input_type_to_model = {
+    "text": TextInput,
+    "number": NumberInput,
+    "email": EmailInput,
+    "password": PasswordInput,
+    "checkbox": CheckboxInput,
+    "radio": RadioInput,
+    "file": FileInput,
+    "date": DateInput,
+    "datetime-local": DatetimeLocalInput,
+    "month": MonthInput,
+    "week": WeekInput,
+    "time": TimeInput,
+    "tel": TelInput,
+    "url": UrlInput,
+    "search": SearchInput,
+    "range": RangeInput,
+    "color": ColorInput,
+    "hidden": HiddenInput,
+    "submit": SubmitInput,
+    "reset": ResetInput,
+    "button": ButtonInput,
+    "image": ImageInput,
+}
 
-Input = Model(
+InputType = Enum(Str, *tuple(_input_type_to_model.keys()))
+
+InputBase = Model(
     input_id=Optional(Str, "input"),
     input_class=Optional(Str, ""),
-    input_type=Optional(InputType, "text"),
     input_placeholder=Optional(Str, ""),
     input_value=Optional(Str, ""),
     input_name=Optional(Str, ""),
     input_autocomplete=Optional(Bool, False),
     input_required=Optional(Bool, False),
-    input_minlength=Optional(Int, 0),
-    input_maxlength=Optional(Int, 524288),
-    input_pattern=Optional(Pattern, ""),
-    input_min=Optional(Str, ""), # For number/date, as string
-    input_max=Optional(Str, ""),
     input_disabled=Optional(Bool, False),
     input_readonly=Optional(Bool, False),
-    input_size=Optional(Int, 20), # Visible width
-    input_step=Optional(Str, ""), # Step increment for number/date
-    input_aria_label=Optional(Str, ""),
-    input_aria_describedby=Optional(Str, ""),
-    input_mime=Optional(List(Str), []),
-    input_checked=Optional(Bool, False),
     input_autofocus=Optional(Bool, False),
     input_tabindex=Optional(Int, 0),
     input_form_id=Optional(Str, ""),
 )
 
-FormEnctype = Enum(
+InputBaseText = Model(
+    __extends__=InputBase,
+    input_type=Optional(Str, "text"),
+    input_minlength=Optional(Int, 0),
+    input_maxlength=Optional(Int, 524288),
+    input_pattern=Optional(Pattern, r""),
+    input_size=Optional(Int, 20)
+)
+
+InputText = Model(
+    __extends__=InputBaseText,
+    input_type=Optional(Str, "text"),
+)
+
+InputPassword = Model(
+    __extends__=InputBaseText,
+    input_type=Optional(Str, "password")
+)
+
+InputSearch = Model(
+    __extends__=InputBaseText,
+    input_type=Optional(Str, "search")
+)
+
+InputEmail = Model(
+    __extends__=InputBaseText,
+    input_type=Optional(InputType, "email"),
+    input_multiple=Optional(Bool, False)
+)
+
+InputTextArea = Model(
+    __extends = InputBase,
+    input_rows=Optional(Int, 2),
+    input_cols=Optional(Int, 20),
+    input_wrap=Optional(Enum(Str, "soft", "hard"), "soft")
+
+)
+
+InputNumber = Model(
+    __extends__=Input,
+    input_min=Optional(Int, 0),
+    input_max=Optional(Int, 0),
+    input_step=Optional(Union(Single("any"), Num), ""),
+)
+
+InputDate = Model(
+    __extends__=Input,
+    input_min=Optional(Str, ""),
+    input_max=Optional(Str, ""),
+    input_step=Optional(Str, ""),
+)
+
+InputCheckbox = Model(
+    __extends__=Input,
+    input_checked=Optional(Bool, False),
+    input_value=Optional(Str, "on"),
+)
+
+
+FormEnc = Enum(
     Str,
     "application/x-www-form-urlencoded",
     "multipart/form-data",
@@ -177,12 +225,12 @@ Form = Model(
     form_name=Optional(Str, ""),
     form_action=Optional(Str, ""),          # Submission URL
     form_method=Optional(Str, "get"),       # 'get', 'post', etc.
-    form_enctype=Optional(FormEnctype, "application/x-www-form-urlencoded"),
+    form_enc=Optional(FormEnc, "application/x-www-form-urlencoded"),
     form_autocomplete=Optional(Bool, False),
     form_browser_validate=Optional(Bool, False),
     form_target=Optional(Str, ""), # Where to display response
     form_autofocus=Optional(Bool, False),
     form_charset=Optional(Str, "UTF-8"),
     form_rel=Optional(Str, ""),
-    form_fields=Optional(List(Any), []),
+    form_inputs=Optional(List(InputType), []),
 )
