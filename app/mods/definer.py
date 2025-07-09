@@ -1,5 +1,5 @@
 import re
-from inspect import signature, getsource
+from inspect import signature, getsource, Parameter
 from functools import wraps
 from typed import typed, List, TypedFuncType
 from jinja2 import Environment, meta
