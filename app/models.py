@@ -10,10 +10,13 @@ from typed import (
     Enum,
     Pattern,
     Dict,
-    Any
+    Any,
+    HEX,
+    Num,
+    Union,
+    Single
 )
 from typed.models import Model, Optional, MODEL
-from typed.examples import HEX, Num
 
 
 Alpine = Model(
@@ -110,38 +113,35 @@ Icon = Model(
     icon_stroke=Optional(Float, 0.5)
 )
 
-_input_type_to_model = {
-    "text": TextInput,
-    "number": NumberInput,
-    "email": EmailInput,
-    "password": PasswordInput,
-    "checkbox": CheckboxInput,
-    "radio": RadioInput,
-    "file": FileInput,
-    "date": DateInput,
-    "datetime-local": DatetimeLocalInput,
-    "month": MonthInput,
-    "week": WeekInput,
-    "time": TimeInput,
-    "tel": TelInput,
-    "url": UrlInput,
-    "search": SearchInput,
-    "range": RangeInput,
-    "color": ColorInput,
-    "hidden": HiddenInput,
-    "submit": SubmitInput,
-    "reset": ResetInput,
-    "button": ButtonInput,
-    "image": ImageInput,
-}
-
-InputType = Enum(Str, *tuple(_input_type_to_model.keys()))
+InputType = Enum(
+    Str,
+    "text",
+    "number",
+    "email",
+    "password",
+    "checkbox",
+    "radio",
+    "file",
+    "date",
+    "month",
+    "week",
+    "time",
+    "tel",
+    "url",
+    "search",
+    "range",
+    "color",
+    "hidden",
+    "submit",
+    "reset",
+    "button",
+    "image"
+)
 
 InputBase = Model(
     input_id=Optional(Str, "input"),
     input_class=Optional(Str, ""),
     input_placeholder=Optional(Str, ""),
-    input_value=Optional(Str, ""),
     input_name=Optional(Str, ""),
     input_autocomplete=Optional(Bool, False),
     input_required=Optional(Bool, False),
@@ -154,7 +154,6 @@ InputBase = Model(
 
 InputBaseText = Model(
     __extends__=InputBase,
-    input_type=Optional(Str, "text"),
     input_minlength=Optional(Int, 0),
     input_maxlength=Optional(Int, 524288),
     input_pattern=Optional(Pattern, r""),
@@ -191,21 +190,21 @@ InputTextArea = Model(
 )
 
 InputNumber = Model(
-    __extends__=Input,
+    __extends__=InputBase,
     input_min=Optional(Int, 0),
     input_max=Optional(Int, 0),
-    input_step=Optional(Union(Single("any"), Num), ""),
+    input_step=Optional(Union(Single("any"), Num), "any"),
 )
 
 InputDate = Model(
-    __extends__=Input,
+    __extends__=InputBase,
     input_min=Optional(Str, ""),
     input_max=Optional(Str, ""),
     input_step=Optional(Str, ""),
 )
 
 InputCheckbox = Model(
-    __extends__=Input,
+    __extends__=InputBase,
     input_checked=Optional(Bool, False),
     input_value=Optional(Str, "on"),
 )
