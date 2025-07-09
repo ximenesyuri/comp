@@ -3,7 +3,9 @@ from app.models import (
     InputText,
     InputPassword,
     InputEmail,
-    InputTextArea
+    InputTextArea,
+    InputSearch,
+
 )
 
 @definer
