@@ -5,7 +5,7 @@ from app.mods.helper import (
     Jinja,
     Markdown,
     Content,
-    Definer,   
+    Definer,
     COMPONENT,
     STATIC,
     PAGE,

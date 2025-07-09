@@ -1,7 +1,7 @@
-from typed import factory, Union, Str, Int, Type, Tuple
+from typed import factory, Union, Str, Int, TYPE, Tuple
 
 @factory
-def Tag(tag_name: Str) -> Type:
+def Tag(tag_name: Str) -> TYPE:
     from app.mods.helper import Jinja, _jinja_regex, _nill_jinja
     import re
 
@@ -20,7 +20,7 @@ def Tag(tag_name: Str) -> Type:
     return _Tag(f'Tag({tag_name})', (Jinja,), {'__display__': f'Tag({tag_name})'})
 
 @factory
-def TagDefiner(tag_name: Str) -> Type:
+def TagDefiner(tag_name: Str) -> TYPE:
     from app.mods.helper import Definer
     class _TagDefiner(type(Definer)):
         def __instancecheck__(cls, instance):
@@ -31,9 +31,9 @@ def TagDefiner(tag_name: Str) -> Type:
     return _TagDefiner(f'TagDefiner({tag_name})', (Definer,), {'__display__': f'TagDefiner({tag_name})'})
 
 @factory
-def TAG(tag_name: Str) -> Type:
+def TAG(tag_name: Str) -> TYPE:
     tag_name = str(tag_name)
-    TagStrType = Tag(tag_name)
+    TagStrTYPE = Tag(tag_name)
     from app.mods.helper import COMPONENT
 
     class _TAG(type(COMPONENT)):
@@ -46,7 +46,7 @@ def TAG(tag_name: Str) -> Type:
 
 
 @factory
-def Free(*args: Union(Tuple(Str), Tuple(Int))) -> Type:
+def Free(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
     if len(args) == 1 and isinstance(args[0], int):
         num_vars = args[0]
         if num_vars >= 0:
