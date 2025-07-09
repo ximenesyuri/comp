@@ -1,6 +1,6 @@
 [project]
 name = "app"
-version = "0.0.0"
+version = "0.1.2"
 description = "A typed solution to quickly create websites"
 readme = "README.md"
 requires-python = ">=3.9"
