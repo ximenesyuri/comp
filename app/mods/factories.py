@@ -1,12 +1,17 @@
+import re
 from typed import factory, Union, Str, Int, TYPE, Tuple
 
 @factory
 def Tag(tag_name: Str) -> TYPE:
     from app.mods.helper import Jinja, _jinja_regex, _nill_jinja
-    import re
 
     tag_name = str(tag_name)
-    pattern_str = _jinja_regex(tag_name)
+    void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
+
+    if tag_name in void_tags:
+        pattern_str = rf"^jinja\s*\n?\s*<({tag_name})\b[^>]*>(\s*)$"
+    else:
+        pattern_str = _jinja_regex(tag_name)
     tag_regex = re.compile(pattern_str, re.DOTALL)
 
     class _Tag(type(Jinja)):
