@@ -39,6 +39,11 @@ def _check_context(component: _COMPONENT) -> Bool:
     if not isinstance(context, dict):
         context = {}
 
+    local_vars = getattr(definer, "_local_vars", set())
+    for var in local_vars:
+        if var not in context:
+            context[var] = ""
+
     sig = signature(getattr(definer, "func", definer))
     depends_on = []
     if 'depends_on' in sig.parameters:

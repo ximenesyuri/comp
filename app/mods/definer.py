@@ -114,8 +114,16 @@ def _definer(arg):
                         f" ==> '{arg.__name__}': has 'depends_on' of wrong type\n"
                         f"     [received_type]: '{param.annotation}'"
                     )
+        def local_var_names(fn):
+            import dis
+            param_names = set(signature(fn).parameters)
+            return set(
+                instr.argval for instr in dis.get_instructions(fn)
+                if instr.opname == "STORE_FAST" and instr.argval not in param_names
+            )
         typed_arg = typed(arg)
         typed_arg.__class__ = Definer
+        typed_arg._local_vars = local_var_names(arg)
         from app.mods.types import Jinja
         if not issubclass(typed_arg.codomain, Jinja):
             raise TypeError(
@@ -132,6 +140,7 @@ def _definer(arg):
                 typed_arg._combined_params_dict = arg._combined_params_dict
         res = wraps(arg)(typed_arg)
         _FREE_DEFINER_REGISTRY[arg.__name__] = res
+        res._local_vars = typed_arg._local_vars
         return res
     raise TypeError(
         "Definer decorator can only be applied to callable objects:\n"
