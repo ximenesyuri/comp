@@ -40,7 +40,6 @@ def input_search(input: InputSearch) -> Tag('input'):
     {% if input['input_id'] %}id="{{ input['input_id'] }}"{% endif %}
     {% if input['input_class'] %}class="{{ input['input_class'] }}"{% endif %}
     {% if input['input_placeholder'] %}placeholder="{{ input['input_placeholder'] }}"{% endif %}
-    {% if input['input_value'] %}value="{{ input['input_value'] }}"{% endif %}
     {% if input['input_name'] %}name="{{ input['input_name'] }}"{% endif %}
     {% if input['input_autocomplete'] %}autocomplete="on"{% endif %}
     {% if input['input_required'] %}required{% endif %}
