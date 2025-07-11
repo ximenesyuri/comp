@@ -6,9 +6,10 @@ from typed import typed, Union, Str, Nill
 from utils import md, file, cmd, path
 from jinja2 import Environment, DictLoader, StrictUndefined
 from bs4 import BeautifulSoup, Tag
-from app.mods.helper import _jinja_regex, _PAGE, _STATIC_PAGE
-from app.err import RenderErr, BuildErr, StyleErr, PreviewErr, MockErr
-from app.mods.types import COMPONENT, Jinja, STATIC, PAGE, STATIC_PAGE
+from app.mods.helper.helper import _jinja_regex
+from app.mods.helper.types  import _PAGE, _STATIC_PAGE
+from app.mods.err import RenderErr, BuildErr, StyleErr, PreviewErr, MockErr
+from app.mods.types.base import COMPONENT, Jinja, STATIC, PAGE, STATIC_PAGE
 
 @typed
 def render(component: COMPONENT) -> Str:
@@ -88,7 +89,6 @@ def render(component: COMPONENT) -> Str:
                 return dep_template.render(**child_context)
             return _inner
 
-        # FIX: All user context keys are included, not just formal arguments
         full_jinja_context = dict(context)
         full_jinja_context.update(call_args)
 
@@ -597,14 +597,14 @@ def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
                is_important in css_buckets[canonical_pref_for_bucket] and \
                is_not_prefixed in css_buckets[canonical_pref_for_bucket][is_important]:
                 css_buckets[canonical_pref_for_bucket][is_important][is_not_prefixed].append(rule_str)
-            else:    
+            else:
                 print(f"Warning: Rule for '{original_class_name}' with (pref={pref}, imp={is_important}, not={is_not_prefixed}) could not be placed in bucket. Defaulting to global non-important non-not.")
                 css_buckets[None][False][False].append(rule_str)
         new_css_rules_list = []
-        new_css_rules_list.extend(css_buckets[None][False][False]) 
-        new_css_rules_list.extend(css_buckets[None][True][False]) # Important global rules
+        new_css_rules_list.extend(css_buckets[None][False][False])
+        new_css_rules_list.extend(css_buckets[None][True][False])
         for canonical_media_name in CANONICAL_MEDIA_NAMES:
-            mq_expression = PREFIXES_MAP[canonical_media_name] # e.g., "(min-width: 0px) and (max-width: 767px)"
+            mq_expression = PREFIXES_MAP[canonical_media_name]
 
             rules_for_this_mq = []
             rules_for_this_mq.extend(css_buckets[canonical_media_name][False][False])
@@ -618,14 +618,14 @@ def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
 
             if not_rules_for_this_mq:
                 not_mq_expression = ""
-                if canonical_media_name == "phone": # (0px - 767px)
+                if canonical_media_name == "phone":
                     not_mq_expression = "(min-width: 768px)"
-                elif canonical_media_name == "tablet": # (768px - 1024px)
+                elif canonical_media_name == "tablet":
                     not_mq_expression = "(max-width: 767px), (min-width: 1025px)"
-                elif canonical_media_name == "mobile": # (0px - 1024px) -> Inverse is anything > 1024px
+                elif canonical_media_name == "mobile":
                     not_mq_expression = "(min-width: 1025px)"
-                elif canonical_media_name == "desktop": # (1025px - 10000px) -> Inverse is anything <= 1024px
-                    not_mq_expression = "(max-width: 1024px)" # This covers 0px to 1024px
+                elif canonical_media_name == "desktop":
+                    not_mq_expression = "(max-width: 1024px)"
 
                 if not_mq_expression:
                     new_css_rules_list.append(f"@media {not_mq_expression} {{\n" + "\n".join(not_rules_for_this_mq) + "\n}\n")
@@ -637,7 +637,7 @@ def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
         head_tag = soup.find('head')
         if not head_tag:
             print("Warning: No <head> tag found in the HTML. Cannot inject styles.")
-            return page 
+            return page
 
         style_tag = head_tag.find('style')
         if style_tag:
@@ -672,9 +672,9 @@ def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):
 @typed
 def mock(component: Union(COMPONENT, STATIC)) -> Union(PAGE, STATIC_PAGE):
     """
-    1. If the component (resp. static) is not a page (resp. static page), 
-       turn it into a page (resp. static page) with auto_style=True by adding 
-       <html>, <head>, and <body> blocks. The original content of the component 
+    1. If the component (resp. static) is not a page (resp. static page),
+       turn it into a page (resp. static page) with auto_style=True by adding
+       <html>, <head>, and <body> blocks. The original content of the component
        should be introduced inside the <body> block.
     2. If the component is a page (resp. static page), do nothing.
     """

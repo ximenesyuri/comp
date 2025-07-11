@@ -5,7 +5,6 @@ from app.models import (
     InputEmail,
     InputTextArea,
     InputSearch,
-
 )
 
 @definer

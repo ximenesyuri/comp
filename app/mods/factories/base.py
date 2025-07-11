@@ -3,7 +3,8 @@ from typed import factory, Union, Str, Int, TYPE, Tuple
 
 @factory
 def Tag(tag_name: Str) -> TYPE:
-    from app.mods.helper import Jinja, _jinja_regex, _nill_jinja
+    from app.mods.types.base import Jinja
+    from app.mods.helper.helper import _jinja_regex, _nill_jinja
 
     tag_name = str(tag_name)
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
@@ -26,7 +27,7 @@ def Tag(tag_name: Str) -> TYPE:
 
 @factory
 def TagDefiner(tag_name: Str) -> TYPE:
-    from app.mods.helper import Definer
+    from app.mods.decorators.definer import Definer
     class _TagDefiner(type(Definer)):
         def __instancecheck__(cls, instance):
             if not isinstance(instance, Definer):
@@ -39,7 +40,7 @@ def TagDefiner(tag_name: Str) -> TYPE:
 def TAG(tag_name: Str) -> TYPE:
     tag_name = str(tag_name)
     TagStrTYPE = Tag(tag_name)
-    from app.mods.helper import COMPONENT
+    from app.mods.types.base import COMPONENT
 
     class _TAG(type(COMPONENT)):
         def __instancecheck__(cls, instance):
@@ -64,8 +65,8 @@ def Free(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
         processed_vars = frozenset(str(v) for v in args)
         type_name = f"Free({', '.join(processed_vars)})" if processed_vars else "Free()"
 
-    from app.mods.meta import _Free
-    from app.mods.types import Definer
+    from app.mods.types.meta import _Free
+    from app.mods.decorators.definer import Definer
 
     return _Free(type_name, (Definer,), {
         '_free_vars': processed_vars,

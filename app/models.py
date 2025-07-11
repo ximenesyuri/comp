@@ -17,6 +17,12 @@ from typed import (
     Single
 )
 from typed.models import model, Optional
+from app.mods.helper.models import (
+    _FormEnc,
+    _InputBase,
+    _InputBaseText,
+    _InputType
+)
 
 @model
 class Alpine:
@@ -34,7 +40,6 @@ class Alpine:
     x_bind:       Optional(Dict(Str, Str), {})
     x_on:         Optional(Dict(Str, Str), {})
     x_attrs:      Optional(Dict(Str, Json), {})
-
 
 @model
 class HTMX:
@@ -85,7 +90,6 @@ class Aria:
     aria_role:        Optional(Str, "")
     aria_attrs:       Optional(Dict(Str, Str), {})
 
-
 @model
 class Div:
     div_id:    Optional(Str, "div")
@@ -101,7 +105,6 @@ class Button:
     on_click:     Optional(Str, "")
     click_away:   Optional(Str, "")
 
-
 @model
 class Icon:
     icon_id:      Optional(Str, "icon")
@@ -111,99 +114,46 @@ class Icon:
     icon_viewbox: Optional(Str, "0 -960 960 960")
     icon_stroke:  Optional(Float, 0.5)
 
-InputType = Enum(
-    Str,
-    "text",
-    "number",
-    "email",
-    "password",
-    "checkbox",
-    "radio",
-    "file",
-    "date",
-    "month",
-    "week",
-    "time",
-    "tel",
-    "url",
-    "search",
-    "range",
-    "color",
-    "hidden",
-    "submit",
-    "reset",
-    "button",
-    "image"
-)
-
-@model
-class InputBase:
-    input_id:           Optional(Str, "input")
-    input_class:        Optional(Str, "")
-    input_placeholder:  Optional(Str, "")
-    input_name:         Optional(Str, "")
-    input_autocomplete: Optional(Bool, False)
-    input_required:     Optional(Bool, False)
-    input_disabled:     Optional(Bool, False)
-    input_readonly:     Optional(Bool, False)
-    input_autofocus:    Optional(Bool, False)
-    input_tabindex:     Optional(Int, 0)
-    input_form_id:      Optional(Str, "")
-
-@model(extends=InputBase)
-class InputBaseText:
-    input_minlength: Optional(Int, 0)
-    input_maxlength: Optional(Int, 524288)
-    input_pattern:   Optional(Pattern, r"")
-    input_size:      Optional(Int, 20)
-
-@model(extends=InputBaseText)
+@model(extends=_InputBaseText)
 class InputText:
     input_type: Optional(Str, "text")
 
-@model(extends=InputBaseText)
+@model(extends=_InputBaseText)
 class InputPassword:
     input_type: Optional(Str, "password")
 
-@model(extends=InputBaseText)
+@model(extends=_InputBaseText)
 class InputSearch:
     input_type: Optional(Str, "search")
 
-@model(extends=InputBaseText)
+@model(extends=_InputBaseText)
 class InputEmail:
     input_type:     Optional(InputType, "email")
     input_multiple: Optional(Bool, False)
 
-@model(extends=InputBase)
+@model(extends=_InputBase)
 class InputTextArea:
     input_rows: Optional(Int, 2)
     input_cols: Optional(Int, 20)
     input_wrap: Optional(Enum(Str, "soft", "hard"), "soft")
 
-@model(extends=InputBase)
+@model(extends=_InputBase)
 class InputNumber:
     input_min:  Optional(Int, 0)
     input_max:  Optional(Int, 0)
     input_step: Optional(Union(Single("any"), Num), "any")
 
 
-@model(extends=InputBase)
+@model(extends=_InputBase)
 class InputDate:
     input_min:  Optional(Str, "")
     input_max:  Optional(Str, "")
     input_step: Optional(Str, "")
 
-@model(extends=InputBase)
+@model(extends=_InputBase)
 class InputCheckbox:
     input_checked: Optional(Bool, False)
     input_value:   Optional(Str, "on")
-
-FormEnc = Enum(
-    Str,
-    "application/x-www-form-urlencoded",
-    "multipart/form-data",
-    "text/plain"
-)
 
 @model
 class Form:
@@ -213,7 +163,7 @@ class Form:
     form_name: Optional(Str, "")
     form_action: Optional(Str, "")
     form_method: Optional(Str, "get")
-    form_enc: Optional(FormEnc, "application/x-www-form-urlencoded")
+    form_enc: Optional(_FormEnc, "application/x-www-form-urlencoded")
     form_autocomplete: Optional(Bool, False)
     form_browser_validate: Optional(Bool, False)
     form_target: Optional(Str, "")
@@ -221,3 +171,9 @@ class Form:
     form_charset: Optional(Str, "UTF-8")
     form_rel: Optional(Str, "")
     form_inputs: Optional(List(InputType), [])
+
+@model
+class Image:
+    image_id: Optional(Str, "image")
+    image_class: Optional(Str, "")
+    image_hover: Optional(Str, "")

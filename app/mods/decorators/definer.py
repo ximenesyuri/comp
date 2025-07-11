@@ -3,7 +3,7 @@ from inspect import signature, getsource, Parameter
 from functools import wraps
 from typed import typed, List, TypedFuncType
 from jinja2 import Environment, meta
-from app.mods.meta import _Definer
+from app.mods.types.meta import _Definer
 
 _FREE_DEFINER_REGISTRY = {}
 

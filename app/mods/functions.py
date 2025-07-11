@@ -3,20 +3,19 @@ from typed import typed, Str, List, Tuple, Dict, Any
 from typed.models import MODEL
 from inspect import signature, Signature, Parameter, getmodule
 from jinja2 import meta, Environment, DictLoader, StrictUndefined
-from app.mods.helper import (
+from app.mods.helper.helper import (
     _jinja_regex,
     _get_variables_map,
     _find_jinja_vars,
     _make_placeholder_model,
     _get_annotation
 )
-from app.mods.definer import _definer
-from app.mods.factories import Free
-from app.mods.types import Definer, Jinja
+from app.mods.decorators.definer import _definer, Definer
+from app.mods.factories.base import Free
+from app.mods.types.base import Jinja
 
 @typed
 def concat(definer1: Free(1), definer2: Definer) -> Definer:
-    from typed.models import MODEL
     from inspect import Parameter, Signature
 
     outer_jinja = definer1.jinja
@@ -54,7 +53,6 @@ def concat(definer1: Free(1), definer2: Definer) -> Definer:
         if param.default != Parameter.empty:
             default_val = param.default
         elif isinstance(annotation, type) and issubclass(annotation, MODEL):
-            # This is your _make_placeholder_model
             default_val = _make_placeholder_model(n, annotation)
         else:
             default_val = ""
