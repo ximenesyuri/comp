@@ -1,7 +1,7 @@
 from typed import typed, Str, Json, Bool, Union, Extension, Path
 from typed.models import model, conditional, Optional
 from typed.more import Markdown
-from app.mods.decorators.definer import Definer
+from app.mods.decorators.definer import Definer, definer
 
 @model
 class _COMPONENT:

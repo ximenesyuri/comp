@@ -1,9 +1,8 @@
-from app.mods.helper import (
+from app.mods.helper.types import (
     _nill_jinja,
     _nill_comp,
     _nill_static,
     _nill_definer,
-    _get_variables_map
 )
 
 # ---------------------------

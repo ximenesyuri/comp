@@ -1,3 +1,6 @@
+from typed import Enum, Str, Bool, Int, Pattern
+from typed.models import model, Optional
+
 _InputType = Enum(
     Str,
     "text",

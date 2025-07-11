@@ -14,7 +14,6 @@ Body.__display__   = "Body"
 Header.__display__ = "Header"
 Footer.__display__ = "Header"
 Aside.__display__  = "Aside"
-Markdown.__display__  = "Markdown"
 
 # ---------------------------
 #       DEFINER TYPES

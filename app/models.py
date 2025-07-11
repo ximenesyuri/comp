@@ -1,5 +1,4 @@
 from typed import (
-    typed,
     Int,
     Str,
     Bool,
@@ -8,9 +7,7 @@ from typed import (
     Float,
     Maybe,
     Enum,
-    Pattern,
     Dict,
-    Any,
     HEX,
     Num,
     Union,
@@ -116,19 +113,19 @@ class Icon:
 
 @model(extends=_InputBaseText)
 class InputText:
-    input_type: Optional(Str, "text")
+    input_type: Optional(_InputType, "text")
 
 @model(extends=_InputBaseText)
 class InputPassword:
-    input_type: Optional(Str, "password")
+    input_type: Optional(_InputType, "password")
 
 @model(extends=_InputBaseText)
 class InputSearch:
-    input_type: Optional(Str, "search")
+    input_type: Optional(_InputType, "search")
 
 @model(extends=_InputBaseText)
 class InputEmail:
-    input_type:     Optional(InputType, "email")
+    input_type:     Optional(_InputType, "email")
     input_multiple: Optional(Bool, False)
 
 @model(extends=_InputBase)
@@ -170,7 +167,7 @@ class Form:
     form_autofocus: Optional(Bool, False)
     form_charset: Optional(Str, "UTF-8")
     form_rel: Optional(Str, "")
-    form_inputs: Optional(List(InputType), [])
+    form_inputs: Optional(List(Json), [])
 
 @model
 class Image:

@@ -73,7 +73,7 @@ class Definer(_Definer('Definer', (TypedFuncType,), {})):
             return NotImplemented # Or raise TypeError
         InstanceFree = _FREE_DEFINER_REGISTRY.get('__FreeInstance__')
         if InstanceFree is None:
-            from app.mods.factories import Free
+            from app.mods.factories.base import Free
             InstanceFree = Free(1)
             _FREE_DEFINER_REGISTRY['__FreeInstance__'] = InstanceFree
 
@@ -124,7 +124,7 @@ def _definer(arg):
         typed_arg = typed(arg)
         typed_arg.__class__ = Definer
         typed_arg._local_vars = local_var_names(arg)
-        from app.mods.types import Jinja
+        from app.mods.types.base import Jinja
         if not issubclass(typed_arg.codomain, Jinja):
             raise TypeError(
                 "A definer should create a Jinja string:\n"
@@ -164,6 +164,7 @@ class DefinerProxy:
                     f"(needed for '@definer.{free_name}')."
                 )
             result_definer = self._deco(inner_fn)
+            from app.mods.functions import concat
             return concat(free_definer, result_definer)
         return proxy
 
