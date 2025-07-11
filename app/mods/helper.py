@@ -17,7 +17,7 @@ from typed import (
     List,
     null,
 )
-from typed.models import Model, Optional, Instance, Conditional, MODEL
+from typed.models import model, conditional, Optional, Instance, MODEL
 from typed.more import Markdown
 from jinja2 import Environment, meta
 from utils import md, file, json, to
@@ -27,10 +27,10 @@ from app.mods.meta import _Jinja
 Jinja   = _Jinja('Jinja', (Str,), {})
 Content = Union(Markdown, Extension('md'))
 
-_COMPONENT = Model(
-    definer=Definer,
-    context=Json
-)
+@model
+class _COMPONENT:
+    definer: Definer
+    context: Json
 
 @typed
 def _check_context(component: _COMPONENT) -> Bool:
@@ -87,17 +87,15 @@ def _check_context(component: _COMPONENT) -> Bool:
     )
     raise ValueError(message)
 
-COMPONENT = Conditional(
-    __conditionals__=_check_context,
-    __extends__=_COMPONENT
-)
+@conditional(extends=_COMPONENT, conditions=[_check_context])
+class COMPONENT:
+    pass
 
-_STATIC = Model(
-    __extends__=COMPONENT,
-    marker=Optional(Str, "content"),
-    content=Content,
-    frontmatter=Optional(Json, {})
-)
+@model(extends=COMPONENT)
+class _STATIC:
+    marker: Optional(Str, "content")
+    content: Content
+    frontmatter: Optional(Json, {})
 
 @typed
 def _check_static_context(static: _STATIC) -> Bool:
@@ -118,10 +116,9 @@ def _check_static_context(static: _STATIC) -> Bool:
     found = re.search(pattern, jinja_str) is not None
     return found
 
-STATIC = Conditional(
-    __conditionals__=[_check_static_context],
-    __extends__=_STATIC
-)
+@conditional(extends=_STATIC, conditions=[_check_static_context])
+class STATIC:
+    pass
 
 def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
@@ -254,17 +251,15 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
             print(f"Warning: Dependency '{dep}' is not a valid Definer and cannot be inspected for variables.")
     return result
 
-_PAGE = Model(
-    __extends__=COMPONENT,
-    auto_style=Optional(Bool, False),
-    static_dir=Optional(Path, "")
-)
+@model(extends=COMPONENT)
+class _PAGE:
+    auto_style: Optional(Bool, False)
+    static_dir: Optional(Path, "")
 
-_STATIC_PAGE = Model(
-    __extends__=STATIC,
-    auto_style=Optional(Bool, False),
-    static_dir=Optional(Path, "")
-)
+@model(extends=STATIC)
+class _STATIC_PAGE:
+    auto_style: Optional(Bool, False)
+    static_dir: Optional(Path, "")
 
 @typed
 def _check_page_core(page: Union(_PAGE, _STATIC)) -> Bool:
@@ -334,15 +329,13 @@ def _check_page(page: _PAGE) -> Bool:
 def _check_static_page(page: _STATIC_PAGE) -> Bool:
     return _check_page_core(page) and 'content' in page
 
-PAGE = Conditional(
-    __conditionals__=[_check_page],
-    __extends__=_PAGE
-)
+@conditional(extends=_PAGE, conditions=[_check_page])
+class PAGE:
+    pass
 
-STATIC_PAGE = Conditional(
-    __conditionals__=[_check_static_page],
-    __extends__=_STATIC_PAGE
-)
+@conditional(extends=_STATIC_PAGE, conditions=[_check_static_page])
+class STATIC_PAGE:
+    pass
 
 def _make_placeholder_model(param_name, annotation):
     if isinstance(annotation, type) and issubclass(annotation, MODEL):
