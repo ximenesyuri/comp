@@ -5,7 +5,7 @@ from inspect import signature, Parameter
 from typed import typed, Union, Str, Nill
 from utils import md, file, cmd, path
 from jinja2 import Environment, DictLoader, StrictUndefined
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 from app.mods.helper.helper import _jinja_regex
 from app.mods.helper.types  import _PAGE, _STATIC_PAGE
 from app.mods.err import RenderErr, BuildErr, StyleErr, PreviewErr, MockErr

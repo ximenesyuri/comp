@@ -11,14 +11,19 @@ from typed import (
     HEX,
     Num,
     Union,
-    Single
+    Single,
+    Path,
+    HttpUrl
 )
 from typed.models import model, Optional
 from app.mods.helper.models import (
-    _FormEnc,
+    Div,
     _InputBase,
     _InputBaseText,
-    _InputType
+    _FormEnc,
+    _InputType,
+    _FlexSearchResults,
+    _FlexSearchIndex
 )
 
 @model
@@ -86,12 +91,6 @@ class Aria:
     aria_valuetext:   Optional(Str, "")
     aria_role:        Optional(Str, "")
     aria_attrs:       Optional(Dict(Str, Str), {})
-
-@model
-class Div:
-    div_id:    Optional(Str, "div")
-    div_class: Optional(Str, "")
-    div_hover: Optional(Str, "")
 
 @model
 class Button:
@@ -174,3 +173,14 @@ class Image:
     image_id: Optional(Str, "image")
     image_class: Optional(Str, "")
     image_hover: Optional(Str, "")
+
+@model
+class FlexSearch:
+    input_div: Optional(Div, Div(div_id="flesearch-input-div"))
+    input: Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
+    results_div: Optional(Div, Div(div_id="flexsearch-results-div"))
+    results: _FlexSearchResults
+    no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))
+    no_results: Optional(Str, "nenhum resultado encontrado...")
+    index: _FlexSearchIndex
+    script_url: Optional(Union(Path, HttpUrl), "https://unpkg.com/flexsearch@0.8.2/dist/module/index.js")    

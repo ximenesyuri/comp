@@ -1,4 +1,4 @@
-from typed import Enum, Str, Bool, Int, Pattern
+from typed import Enum, Str, Bool, Int, Pattern, List, Extension
 from typed.models import model, Optional
 
 _InputType = Enum(
@@ -53,3 +53,53 @@ _FormEnc = Enum(
     "multipart/form-data",
     "text/plain"
 )
+
+@model
+class Div:
+    div_id:    Optional(Str, "div")
+    div_class: Optional(Str, "")
+    div_hover: Optional(Str, "")
+
+@model
+class _FlexSearchTitle:
+    title_div:   Optional(Div, Div(div_id="flesearch-results-title-div"))
+    title_id:    Optional(Str, "flexsearch-results-title")
+    title_class: Optional(Str, "")
+    title_hover: Optional(Str, "")
+
+@model
+class _FlexSearchDesc:
+    desc_div:    Optional(Div, Div(div_id="flesearch-results-desc-div"))
+    desc_id:     Optional(Str, "flexsearch-results-desc")
+    desc_class:  Optional(Str, "")
+    desc_hover:  Optional(Str, "")
+    desc_lenght: Optional(Int, 181)
+    display:     Optional(Bool, False)
+
+@model
+class _FlexSearchCover:
+    cover_div:   Optional(Div, Div(div_id="flesearch-results-cover-div"))
+    cover_id:    Optional(Str, "flexsearch-results-cover")
+    cover_class: Optional(Str, "")
+    display:     Optional(Bool, False)
+
+@model
+class _FlexSearchKind:
+    kind_div:   Optional(Div, Div(div_id="flesearch-results-kind-div"))
+    kind_id:    Optional(Str, "flexsearch-results-kind")
+    kind_class: Optional(Str, "")
+    display:    Optional(Bool, False)
+
+@model
+class _FlexSearchResults:
+    desc:  _FlexSearchDesc
+    title: _FlexSearchTitle
+    kind:  _FlexSearchKind
+    cover: _FlexSearchCover
+    limit: Optional(Int, 10)
+
+@model
+class _FlexSearchIndex:
+    index_types:       Optional(List(Str), ["title", "content", "tags", "category", "kind"])
+    index_store_types: Optional(List(Str), ["id", "title", "content", "href", "tags", "category", "kind"])
+    index_json_file:   Optional(Extension('json'), "jsonindex.json")
