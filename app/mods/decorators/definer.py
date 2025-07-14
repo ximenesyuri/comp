@@ -1,91 +1,9 @@
-import re
-from inspect import signature, getsource, Parameter
+from inspect import signature, Parameter
 from functools import wraps
 from typed import typed, List, TypedFuncType
-from jinja2 import Environment, meta
 from app.mods.types.meta import _Definer
 
 _FREE_DEFINER_REGISTRY = {}
-
-class Definer(_Definer('Definer', (TypedFuncType,), {})):
-    @property
-    def jinja(self):
-        """
-        Returns the Jinja string of the definer.
-        For static definers, it parses the source.
-        For dynamic definers created by `join` or `concat`, it returns the pre-combined raw Jinja template.
-        """
-        if hasattr(self, '_is_dynamic_definer') and self._is_dynamic_definer:
-            if hasattr(self, '_raw_combined_jinja'):
-                return self._raw_combined_jinja
-            else:
-                print(f"Warning: Dynamic definer {self.__name__} is missing _raw_combined_jinja attribute.")
-                return ""
-        else:
-            code = getsource(self)
-            regex_str = re.compile(r"\"\"\"jinja([\s\S]*?)\"\"\"", re.DOTALL)
-            match = regex_str.search(code)
-            if match:
-                return match.group(1)
-            return ""
-
-    @property
-    def args(self):
-        return tuple(signature(self).parameters.keys())
-
-    @property
-    def jinja_vars(self):
-        """
-        Returns the tuple of all Jinja variables found in the definer's template.
-        Uses _find_jinja_vars.
-        """
-        env = Environment()
-        jinja_content = self.jinja
-        if not jinja_content:
-            return ()
-        ast = env.parse(jinja_content)
-        return tuple(sorted(meta.find_undeclared_variables(ast)))
-
-    @property
-    def jinja_free_vars(self):
-        """Returns the tuple of free Jinja variables (not corresponding to arguments)."""
-        all_vars = set(self.jinja_vars)
-        arg_vars = set(self.args)
-        arg_vars.discard("depends_on")
-        return tuple(sorted(list(all_vars - arg_vars)))
-
-    def __add__(self, other: 'Definer') -> 'Definer':
-        """
-        Implements definer_1 + definer_2 => join(definer_1, definer_2)
-        """
-        if not isinstance(other, Definer):
-            return NotImplemented
-        from app.mods.functions import join
-        return join(self, other)
-
-    def __mul__(self, other: 'Definer') -> 'Definer':
-        """
-        Implements definer_1 * definer_2 => concat(definer_1, definer_2)
-        Here, definer_1 is assumed to be the 'free_definer' with a single free variable slot,
-        and definer_2 is the content to fill that slot.
-        """
-        if not isinstance(other, Definer):
-            return NotImplemented # Or raise TypeError
-        InstanceFree = _FREE_DEFINER_REGISTRY.get('__FreeInstance__')
-        if InstanceFree is None:
-            from app.mods.factories.base import Free
-            InstanceFree = Free(1)
-            _FREE_DEFINER_REGISTRY['__FreeInstance__'] = InstanceFree
-
-        if not isinstance(self, InstanceFree):
-            raise TypeError(
-                f"The left operand of '*' (i.e., '{self.__name__}') must be a Definer with "
-                "exactly one free Jinja variable to be used with concat (Free(1)).\n"
-                f"Its free variables are: {self.jinja_free_vars}"
-            )
-
-        from app.mods.functions import concat
-        return concat(self, other)
 
 def _definer(arg):
     """base decorator to create a definer"""

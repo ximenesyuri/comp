@@ -35,7 +35,8 @@ from app.models import (
     Link,
     Figure,
     Script,
-    Asset
+    Asset,
+    ImageLink
 )
 
 @definer

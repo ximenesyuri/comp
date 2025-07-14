@@ -21,7 +21,8 @@ from typed.models import model, conditional, Optional, Instance, MODEL
 from typed.more import Markdown
 from jinja2 import Environment, meta
 from utils import md, file, json, to
-from app.mods.decorators.definer import Definer, definer
+from app.mods.decorators.definer import definer
+from app.mods.helper.types import DEFINER 
 
 def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
@@ -47,7 +48,7 @@ def _find_jinja_vars(source: Str) -> Set(Str):
     return meta.find_undeclared_variables(ast)
 
 @typed
-def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]) -> Json:
+def _get_variables_map(seen: Set(DEFINER), definer: DEFINER, path: List(Path)=[]) -> Json:
     if not path:
         path = [getattr(definer, "__name__", str(definer))]
 
@@ -117,7 +118,7 @@ def _get_variables_map(seen: Set(Definer), definer: Definer, path: List(Path)=[]
         result[v] = list(path)
 
     for dep in depends_on:
-        if isinstance(dep, Definer):
+        if isinstance(dep, DEFINER):
             dep_name = getattr(dep, "__name__", str(dep))
             result_dep = _get_variables_map(seen.copy(), dep, path + [dep_name])
             result.update(result_dep)

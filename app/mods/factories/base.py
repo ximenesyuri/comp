@@ -29,14 +29,14 @@ def Tag(*tag_names: Tuple(Str)) -> TYPE:
 
 @factory
 def TagDefiner(tag_name: Str) -> TYPE:
-    from app.mods.decorators.definer import Definer
-    class _TagDefiner(type(Definer)):
+    from app.mods.helper.types import DEFINER
+    class _TagDefiner(type(DEFINER)):
         def __instancecheck__(cls, instance):
-            if not isinstance(instance, Definer):
+            if not isinstance(instance, DEFINER):
                 return False
             return issubclass(instance.codomain, Tag(tag_name))
 
-    return _TagDefiner(f'TagDefiner({tag_name})', (Definer,), {'__display__': f'TagDefiner({tag_name})'})
+    return _TagDefiner(f'TagDefiner({tag_name})', (DEFINER,), {'__display__': f'TagDefiner({tag_name})'})
 
 @factory
 def TAG(tag_name: Str) -> TYPE:
@@ -52,25 +52,25 @@ def TAG(tag_name: Str) -> TYPE:
 
     return _TAG(f'TAG({tag_name})', (COMPONENT,), {'__display__': f'TAG({tag_name})'})
 
-
 @factory
-def Free(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
+def Definer(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
+    if len(args) == 0:
+        from app.mods.types.base import DEFINER
+        return DEFINER
     if len(args) == 1 and isinstance(args[0], int):
         num_vars = args[0]
         if num_vars >= 0:
             processed_vars = num_vars
-            type_name = f"Free({num_vars})"
+            type_name = f"Definer({num_vars})"
         else:
             processed_vars = None
-            type_name = f"Free(Any)"
+            type_name = f"Definer(Any)"
     else:
         processed_vars = frozenset(str(v) for v in args)
-        type_name = f"Free({', '.join(processed_vars)})" if processed_vars else "Free()"
-
-    from app.mods.types.meta import _Free
-    from app.mods.decorators.definer import Definer
-
-    return _Free(type_name, (Definer,), {
+        type_name = f"Definer({', '.join(processed_vars)})" if processed_vars else "Definer()"
+    from app.mods.types.meta import _Definer
+    from app.mods.types.base import DEFINER
+    return _Definer(type_name, (DEFINER,), {
         '_free_vars': processed_vars,
         '__display__': type_name
     })

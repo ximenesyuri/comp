@@ -1,8 +1,9 @@
+import re
 from typed import Str
 from typed.models import Model
-from app.mods.decorators.definer import Definer
 from app.mods.types.meta import _Jinja
 from app.mods.helper.types import (
+    DEFINER,
     COMPONENT,
     STATIC,
     PAGE,
@@ -10,10 +11,12 @@ from app.mods.helper.types import (
 )
 
 Jinja   = _Jinja('Jinja', (Str,), {})
+Inner = type('Inner', (str,), {})
 Context = Model()
 
 Jinja.__display__       = "Jinja"
-Definer.__display__     = "Definer"
+Inner.__display__       = "Inner"
+DEFINER.__display__     = "DEFINER"
 COMPONENT.__display__   = "COMPONENT"
 STATIC.__display__      = "STATIC"
 PAGE.__display__        = "PAGE"

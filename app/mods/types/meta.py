@@ -21,14 +21,14 @@ class _Jinja(type(Str)):
         except Exception as e:
             return False
 
-class _Definer(type(TypedFuncType)):
+class _DEFINER(type(TypedFuncType)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, TypedFuncType):
             return False
-        from app.mods.types import Jinja
+        Jinja = _Jinja('Jinja', (Str,), {})
         return issubclass(instance.codomain, Jinja)
 
-class _Free(_Definer):
+class _Definer(_DEFINER):
     def __instancecheck__(cls, instance):
         effective_free_vars_in_definer = instance.jinja_free_vars
         free_vars_spec = getattr(cls, '_free_vars', frozenset())

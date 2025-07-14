@@ -10,12 +10,12 @@ from app.mods.helper.helper import (
     _make_placeholder_model,
     _get_annotation
 )
-from app.mods.decorators.definer import _definer, Definer
-from app.mods.factories.base import Free
-from app.mods.types.base import Jinja
+from app.mods.decorators.definer import definer
+from app.mods.factories.base import Definer
+from app.mods.types.base import Jinja, DEFINER
 
 @typed
-def concat(definer1: Free(1), definer2: Definer) -> Definer:
+def concat(definer1: Definer(1), definer2: DEFINER) -> DEFINER:
     from inspect import Parameter, Signature
 
     outer_jinja = definer1.jinja
@@ -76,13 +76,13 @@ def concat(definer1: Free(1), definer2: Definer) -> Definer:
     dynamic_definer.__annotations__['return'] = Jinja
 
     dyn_typed = typed(dynamic_definer)
-    dyn_typed.__class__ = Definer
+    dyn_typed.__class__ = DEFINER
     dyn_typed._raw_combined_jinja = raw_jinja
     dyn_typed._is_dynamic_definer = True
     return dyn_typed
 
 @typed
-def join(*definers: Tuple(Definer)) -> Definer:
+def join(*definers: Tuple(DEFINER)) -> DEFINER:
     from typed.models import MODEL
     from inspect import Parameter, Signature
 
@@ -90,7 +90,7 @@ def join(*definers: Tuple(Definer)) -> Definer:
         @typed
         def empty_join() -> str:
             return "jinja\n"
-        empty_join.__class__ = Definer
+        empty_join.__class__ = DEFINER
         empty_join._is_dynamic_definer = True
         empty_join._raw_combined_jinja = ""
         return empty_join
@@ -146,7 +146,7 @@ def join(*definers: Tuple(Definer)) -> Definer:
     dynamic_joined_definer.__annotations__ = __annotations__
 
     dyn_typed = typed(dynamic_joined_definer)
-    dyn_typed.__class__ = Definer
+    dyn_typed.__class__ = DEFINER
     dyn_typed._is_dynamic_definer = True
     dyn_typed._raw_combined_jinja = accumulated_raw_jinja_content
     return dyn_typed

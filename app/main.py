@@ -1,5 +1,5 @@
 from typed import null
-from app.mods.decorators.definer import definer, Definer
+from app.mods.decorators.definer import definer
 from app.mods.types.base import *
 from app.mods.types.tag  import *
 from app.mods.factories.base import *
