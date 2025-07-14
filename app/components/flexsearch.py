@@ -6,13 +6,15 @@ from app.mods.helper.components import if_div, if_id, if_class
 
 @definer
 def flexsearch(
-        div: Div=null(Div),
-        button: Button=null(Button),
-        search: FlexSearch=null(FlexSearch),
+        search_div: Div=null(Div),
+        search:     FlexSearch=null(FlexSearch),
+        button_div: Div=null(Div),
+        button:     Button=null(Button),
         depends_on=[button_search, input_search]
     ) -> Jinja:
 
-    search_div          = if_div(div)
+    search_div_         = if_div(search_div)
+    button_div_         = if_div(button_div)
     input_div           = if_div(search.input_div)
     results_div         = if_div(search.results_div)
     results_cover_div   = if_div(search.results.cover.cover_div)
@@ -32,12 +34,14 @@ def flexsearch(
     results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
 
     return """jinja
-<div {{ search_div }}> 
+<div {{ search_div_ }}> 
     <div {{ input_div }} >
         {{ input_search(search.input) }}
     </div>
     {% if not button == null_button %}
-        {{ button_search(button) }}        
+    <div {{ button_div_ }}>
+        {{ button_search(button) }}
+    </div>
     {% endif %}
 </div>
 <div {{ results_div }} x-show="hasSearchResults" x-cloak

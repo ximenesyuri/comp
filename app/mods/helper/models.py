@@ -1,4 +1,4 @@
-from typed import Enum, Str, Bool, Int, Pattern, List, Extension
+from typed import Enum, Str, Bool, Int, Pattern, List, Extension, Char, Nat
 from typed.models import model, Optional
 
 _InputType = Enum(
@@ -25,6 +25,14 @@ _InputType = Enum(
     "button",
     "image"
 )
+
+@model
+class Globals:
+    anchor: Optional(Str, "")
+    accesskey: Optional(Char, " ")
+    title: Optional(Str, "")
+    tabindex: Optional(Nat, 0)
+    hidden: Optional(Bool, False)
 
 @model
 class _InputBase:
@@ -56,6 +64,7 @@ _FormEnc = Enum(
 
 @model
 class Div:
+    globals:   Optional(Globals, {})
     div_id:    Optional(Str, "div")
     div_class: Optional(Str, "")
     div_hover: Optional(Str, "")

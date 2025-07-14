@@ -1,19 +1,20 @@
 import re
-from typed import factory, Union, Str, Int, TYPE, Tuple
+from typed import factory, Union, Str, List, Int, TYPE, Tuple
 
 @factory
-def Tag(tag_name: Str) -> TYPE:
+def Tag(*tag_names: Tuple(Str)) -> TYPE:
     from app.mods.types.base    import Jinja
     from app.mods.helper.helper import _jinja_regex
     from app.mods.helper.types  import _nill_jinja
 
-    tag_name = str(tag_name)
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 
-    if tag_name in void_tags:
-        pattern_str = rf"^jinja\s*\n?\s*<({tag_name})\b[^>]*>(\s*)$"
+    tags_pattern = "|".join(tag_names)
+    if all(tag in void_tags for tag in tag_names):
+        pattern_str = rf"^jinja\s*\n?\s*<({tags_pattern})\b[^>]*>(\s*)$"
     else:
-        pattern_str = _jinja_regex(tag_name)
+        pattern_str = _jinja_regex(tags_pattern)
+
     tag_regex = re.compile(pattern_str, re.DOTALL)
 
     class _Tag(type(Jinja)):
@@ -24,7 +25,7 @@ def Tag(tag_name: Str) -> TYPE:
                 return True
             return bool(tag_regex.match(instance))
 
-    return _Tag(f'Tag({tag_name})', (Jinja,), {'__display__': f'Tag({tag_name})'})
+    return _Tag(f'Tag({tag_names})', (Jinja,), {'__display__': f'Tag({tag_names})'})
 
 @factory
 def TagDefiner(tag_name: Str) -> TYPE:

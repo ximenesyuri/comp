@@ -13,11 +13,14 @@ from typed import (
     Union,
     Single,
     Path,
-    HttpUrl
+    Url,
+    PathUrl,
+    null
 )
 from typed.models import model, Optional
 from app.mods.helper.models import (
     Div,
+    Globals,
     _InputBase,
     _InputBaseText,
     _FormEnc,
@@ -94,6 +97,7 @@ class Aria:
 
 @model
 class Button:
+    globals:      Optional(Globals, null(Globals))
     button_id:    Optional(Str, "button")
     button_class: Optional(Str, "")
     button_hover: Optional(Str, "")
@@ -109,6 +113,61 @@ class Icon:
     icon_fill:    Optional(HEX, "#000000")
     icon_viewbox: Optional(Str, "0 -960 960 960")
     icon_stroke:  Optional(Float, 0.5)
+
+@model
+class Image:
+    globals:     Optional(Globals, null(Globals))
+    image_id:    Optional(Str, "image")
+    image_class: Optional(Str, "")
+    image_hover: Optional(Str, "")
+    image_alt:   Optional(Str, "")
+    image_src:   Optional(PathUrl, "")
+    image_lazy:  Optional(Bool, True)
+
+@model
+class Text:
+    globals:    Optional(Globals, null(Globals))
+    text_id:    Optional(Str, "text")
+    text_class: Optional(Str, "")
+    text_hover: Optional(Str, "")
+
+@model
+class Title:
+    globals:     Optional(Globals, null(Globals))
+    title_id:    Optional(Str, "title")
+    title_class: Optional(Str, "")
+    title_hover: Optional(Str, "")
+    title_tag:   Optional(Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6"), "h1")
+
+@model
+class Link:
+    globals:       Optional(Globals, null(Globals))
+    link_id:       Optional(Str, "link")
+    link_class:    Optional(Str, "")
+    link_hover:    Optional(Str, "")
+    link_href:     Optional(Url("http", "https"), "https://")
+    link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top", ""), "")
+    link_rel:      Optional(Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', ""), "")
+    link_download: Optional(PathUrl, '')
+
+@model
+class Figure:
+    globals:        Optional(Globals, null(Globals))
+    figure_img:     Optional(Image, null(Image))
+    figure_caption: Optional(Str, "")
+
+@model
+class Script:
+    script_src:   Optional(PathUrl, "")
+    script_defer: Optional(Bool, False)
+    script_type:  Optional(Enum(Str, "module", "importmap", ""), "")
+    script_async: Optional(Bool, False)
+
+@model
+class Asset:
+    asset_href: Optional(PathUrl, "")
+    asset_mime: Optional(Str, "")
+    asset_rel:  Optional(Str, "stylesheet")
 
 @model(extends=_InputBaseText)
 class InputText:
@@ -153,34 +212,27 @@ class InputCheckbox:
 
 @model
 class Form:
-    form_id: Optional(Str, "form")
-    form_class: Optional(Str, "")
-    form_hover: Optional(Str, "")
-    form_name: Optional(Str, "")
-    form_action: Optional(Str, "")
-    form_method: Optional(Str, "get")
-    form_enc: Optional(_FormEnc, "application/x-www-form-urlencoded")
-    form_autocomplete: Optional(Bool, False)
+    form_id:               Optional(Str, "form")
+    form_class:            Optional(Str, "")
+    form_hover:            Optional(Str, "")
+    form_name:             Optional(Str, "")
+    form_action:           Optional(Str, "")
+    form_method:           Optional(Str, "get")
+    form_enc:              Optional(_FormEnc, "application/x-www-form-urlencoded")
+    form_autocomplete:     Optional(Bool, False)
     form_browser_validate: Optional(Bool, False)
-    form_target: Optional(Str, "")
-    form_autofocus: Optional(Bool, False)
-    form_charset: Optional(Str, "UTF-8")
-    form_rel: Optional(Str, "")
-    form_inputs: Optional(List(Json), [])
-
-@model
-class Image:
-    image_id: Optional(Str, "image")
-    image_class: Optional(Str, "")
-    image_hover: Optional(Str, "")
+    form_target:           Optional(Str, "")
+    form_autofocus:        Optional(Bool, False)
+    form_charset:          Optional(Str, "UTF-8")
+    form_rel:              Optional(Str, "")
 
 @model
 class FlexSearch:
-    input_div: Optional(Div, Div(div_id="flesearch-input-div"))
-    input: Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
-    results_div: Optional(Div, Div(div_id="flexsearch-results-div"))
-    results: _FlexSearchResults
-    no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))
-    no_results: Optional(Str, "nenhum resultado encontrado...")
-    index: _FlexSearchIndex
-    script_url: Optional(Union(Path, HttpUrl), "https://unpkg.com/flexsearch@0.8.2/dist/module/index.js")    
+    flex_input_div:      Optional(Div, Div(div_id="flesearch-input-div"))
+    flex_input:          Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
+    flex_results_div:    Optional(Div, Div(div_id="flexsearch-results-div"))
+    flex_results:        Optional(_FlexSearchResults, null(_FlexSearchResults))
+    flex_no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))
+    flex_no_results:     Optional(Str, "nenhum resultado encontrado...")
+    flex_index:          Optional(_FlexSearchIndex, null(_FlexSearchIndex))
+    flex_script_url:     Optional(PathUrl, "https://unpkg.com/flexsearch@0.8.2/dist/module/index.js")
