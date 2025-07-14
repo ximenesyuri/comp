@@ -1,17 +1,5 @@
 from typed import null
-from app import definer
-from app.mods.types.tag import (
-    DivTag,
-    TextTag,
-    TitleTag,
-    ImageTag,
-    ButtonTag,
-    LinkTag,
-    FigureTag,
-    ScriptTag,
-    AssetTag
-)
-
+from app.mods.decorators.definer import definer
 from app.mods.helper.components import (
     if_div,
     if_alpine,
@@ -35,59 +23,57 @@ from app.models import (
     Link,
     Figure,
     Script,
-    Asset,
-    ImageLink
+    Asset
 )
 
 @definer
-def div(div: Div=null(Div), alpine: Alpine=null(Alpine)) -> DivTag:
+def div(div: Div=null(Div), alpine: Alpine=null(Alpine), inner: Inner="") -> Tag('div'):
     div_data    = if_div(div)
     alpine_data = if_alpine(alpine)
     return """jinja
 <div{{ div_data }}{{ alpine_data }}>
-    {{ div_inner }}
+    {{ inner }}
 </div>
 """
 
 @definer
-def text(text: Text=null(Text)) -> TextTag:
+def text(text: Text=null(Text), inner: Inner="") -> Tag('p'):
     text_data = if_text(text)
     return """jinja
 <p{{ text_data }}>
-    {{ text_inner }}
+    {{ inner }}
 </p>
 """
 
 @definer
-def title(title: Title=null(Title)) -> TitleTag:
+def title(title: Title=null(Title), inner: Inner="") -> Tag('h1','h2','h3','h4','h5','h6'):
     title_data = if_title(title)
     return """jinja
 <{{ title.title_tag }}{{ title_data }}>
-    {{title_inner}}
+    {{ inner }}
 </{{ title.title_tag }}>
 """
 
 @definer
-def link(link: Link=null(Link)) -> LinkTag:
+def link(link: Link=null(Link), inner: Inner="") -> Tag('a'):
     link_data = if_link(link)
     return """jinja
 <p{{ link_data }}>
-    {{ link_inner }}
+    {{ inner }}
 </p>
 """
 
 @definer
-def image(image: Image=null(Image)) -> ImageTag:
+def image(image: Image=null(Image)) -> Tag('img'):
     image_data = if_link(image)
     return """jinja
 <img{{ image_data }}/>
 """
 
 @definer
-def figure(figure: Figure=null(Figure)) -> FigureTag:
+def figure(figure: Figure=null(Figure)) -> Tag('figure'):
     figure_data = if_figure(figure)
     image_data = if_image(figure.figure_img)
-
     return """jinja
 <figure{{ figure_data }}>
     <img{{ image_data }}>
@@ -96,26 +82,26 @@ def figure(figure: Figure=null(Figure)) -> FigureTag:
 """
 
 @definer
-def button(button: Button=null(Button)) -> ButtonTag:
+def button(button: Button=null(Button), inner: Inner="") -> Tag('button'):
     button_data = if_button(button)
     return """jinja
 <button{{ button_data }}>       
-    {{ button_inner }}
+    {{ inner }}
 </button>
 """
 
 @definer
-def asset(asset: Asset=null(Asset)) -> AssetTag:
+def asset(asset: Asset=null(Asset)) -> Tag('link'):
     asset_data = if_asset(asset)
     return """jinja
 <link{{ asset_data }}/>
 """
 
 @definer
-def script(script: Script=null(Script)) -> ScriptTag:
+def script(script: Script=null(Script), inner: Inner="") -> Tag('script'):
     script_data = if_script(script)
     return """jinja
 <script{{ script_data }}>
-    {{ script_inner }}
+    {{ inner }}
 </script>
 """

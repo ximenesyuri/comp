@@ -17,7 +17,8 @@ def _definer(arg):
 
         if "depends_on" in signature(arg).parameters:
             param = signature(arg).parameters["depends_on"]
-            expected_type_hint = List(Definer)
+            from app.mods.helper.types import DEFINER
+            expected_type_hint = List(DEFINER)
             if param.annotation is Parameter.empty:
                 if not is_dynamic_wrapper:
                     arg.__annotations__["depends_on"] = expected_type_hint
@@ -40,7 +41,8 @@ def _definer(arg):
                 if instr.opname == "STORE_FAST" and instr.argval not in param_names
             )
         typed_arg = typed(arg)
-        typed_arg.__class__ = Definer
+        from app.mods.helper.types import DEFINER
+        typed_arg.__class__ = DEFINER
         typed_arg._local_vars = local_var_names(arg)
         from app.mods.types.base import Jinja
         if not issubclass(typed_arg.codomain, Jinja):
