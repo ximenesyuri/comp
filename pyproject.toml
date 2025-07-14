@@ -6,8 +6,8 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "BSD"}
 dependencies = [
-    "typed @ git+https://github.com/pythonalta/typed",
-    "utils @ git+https://github.com/pythonalta/typed",
+    "typed @ git+https://github.com/ximenesyuri/typed",
+    "utils @ git+https://github.com/ximenesyuri/utils",
     "fastapi",
     "markdown",
     "pyyaml",
