@@ -31,7 +31,7 @@ from app.mods.helper.models import (
 
 @model
 class Alpine:
-    x_data:       Optional(Json, {})
+    x_data:       Optional(Str, "")
     x_init:       Optional(Str, "")
     x_show:       Optional(Str, "")
     x_if:         Optional(Str, "")

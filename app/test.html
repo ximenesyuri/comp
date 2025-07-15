@@ -1,7 +1,4 @@
-from typed import typed, Str, Any
-from app.models import Alpine
-
-_X_DATA_RESPONSIVE = """{
+<div x-data="{
     isPhoneQuery: window.matchMedia('(max-width: 639px)'),
     isTabletQuery: window.matchMedia('(min-width: 640px) and (max-width: 1023px)'),
     isDesktopQuery: window.matchMedia('(min-width: 1024px)'),
@@ -29,14 +26,8 @@ _X_DATA_RESPONSIVE = """{
         this.isDesktopQuery.addEventListener('change', updateScreenSizes);
         updateScreenSizes();
     }
-}"""
-
-_RESPONSIVE  = Alpine(x_data=_X_DATA_RESPONSIVE)
-_DESKTOP     = Alpine(x_if="isDesktop")
-_PHONE       = Alpine(x_if="isPhone")
-_TABLET      = Alpine(x_if="isTablet")
-_MOBILE      = Alpine(x_if="isMobile")
-_NOT_DESKTOP = Alpine(x_if="isNotDesktop")
-_NOT_PHONE   = Alpine(x_if="isNotPhone")
-_NOT_TABLET  = Alpine(x_if="isNotTablet")
-_NOT_MOBILE  = Alpine(x_if="isNotMobile")
+}">
+    <div id="div" x-if="isDesktop">
+        aaaa
+    </div>
+</div>
