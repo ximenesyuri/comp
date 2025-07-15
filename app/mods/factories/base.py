@@ -19,58 +19,48 @@ def Tag(*tag_names: Tuple(Str)) -> TYPE:
 
     class _Tag(type(Jinja)):
         def __instancecheck__(cls, instance):
-            if not isinstance(instance, Str):
+            if isinstance(instance, tuple) and len(instance) == 2 and isinstance(instance[0], str):
+                instance_str = instance[0]
+            else:
+                instance_str = instance
+            if not isinstance(instance_str, Str):
                 return False
-            if instance == _nill_jinja:
+            if instance_str == _nill_jinja:
                 return True
-            return bool(tag_regex.match(instance))
+            return bool(tag_regex.match(instance_str)) 
 
     return _Tag(f'Tag({tag_names})', (Jinja,), {'__display__': f'Tag({tag_names})'})
 
 @factory
-def TagDefiner(tag_name: Str) -> TYPE:
-    from app.mods.helper.types import DEFINER
-    class _TagDefiner(type(DEFINER)):
+def TAG(tag_name: Str) -> TYPE:
+    from app.mods.helper.types import COMPONENT
+    class _TAG(type(COMPONENT)):
         def __instancecheck__(cls, instance):
-            if not isinstance(instance, DEFINER):
+            if not isinstance(instance, COMPONENT):
                 return False
             return issubclass(instance.codomain, Tag(tag_name))
 
-    return _TagDefiner(f'TagDefiner({tag_name})', (DEFINER,), {'__display__': f'TagDefiner({tag_name})'})
+    return _TAG(f'TagComponent({tag_name})', (COMPONENT,), {'__display__': f'TagComponent({tag_name})'})
 
 @factory
-def TAG(tag_name: Str) -> TYPE:
-    tag_name = str(tag_name)
-    TagStrTYPE = Tag(tag_name)
-    from app.mods.types.base import COMPONENT
-
-    class _TAG(type(COMPONENT)):
-        def __instancecheck__(cls, instance):
-            if not isinstance(instance, Component):
-                return False
-            return isinstance(instance.get("definer"), TagDefiner(tag_name))
-
-    return _TAG(f'TAG({tag_name})', (COMPONENT,), {'__display__': f'TAG({tag_name})'})
-
-@factory
-def Definer(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
+def Component(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
     if len(args) == 0:
-        from app.mods.types.base import DEFINER
-        return DEFINER
+        from app.mods.types.base import COMPONENT
+        return COMPONENT
     if len(args) == 1 and isinstance(args[0], int):
         num_vars = args[0]
         if num_vars >= 0:
             processed_vars = num_vars
-            type_name = f"Definer({num_vars})"
+            type_name = f"Component({num_vars})"
         else:
             processed_vars = None
-            type_name = f"Definer(Any)"
+            type_name = f"Component(Any)"
     else:
         processed_vars = frozenset(str(v) for v in args)
-        type_name = f"Definer({', '.join(processed_vars)})" if processed_vars else "Definer()"
-    from app.mods.types.meta import _Definer
-    from app.mods.types.base import DEFINER
-    return _Definer(type_name, (DEFINER,), {
+        type_name = f"Component({', '.join(processed_vars)})" if processed_vars else "Component()"
+    from app.mods.types.meta import _Component
+    from app.mods.types.base import COMPONENT
+    return _Component(type_name, (COMPONENT,), {
         '_free_vars': processed_vars,
         '__display__': type_name
     })

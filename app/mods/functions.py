@@ -1,4 +1,5 @@
 import re
+from functools import wraps
 from typed import typed, Str, List, Tuple, Dict, Any
 from typed.models import MODEL
 from inspect import signature, Signature, Parameter, getmodule
@@ -10,28 +11,28 @@ from app.mods.helper.helper import (
     _make_placeholder_model,
     _get_annotation
 )
-from app.mods.decorators.definer import definer
-from app.mods.factories.base import Definer
-from app.mods.types.base import Jinja, DEFINER
+from app.mods.decorators.component import component
+from app.mods.factories.base import Component
+from app.mods.types.base import Jinja, COMPONENT
 
 @typed
-def concat(definer1: Definer(1), definer2: DEFINER) -> DEFINER:
+def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
     from inspect import Parameter, Signature
 
-    outer_jinja = definer1.jinja
-    inner_jinja = definer2.jinja
+    outer_jinja = component1.jinja
+    inner_jinja = component2.jinja
 
-    slot_vars = set(definer1.jinja_free_vars)
+    slot_vars = set(component1.jinja_free_vars)
     if len(slot_vars) != 1:
         raise ValueError(
-            f"Concat requires exactly one free variable as slot in the outer definer. Found: {slot_vars}"
+            f"Concat requires exactly one free variable as slot in the outer component. Found: {slot_vars}"
         )
     slot_var = list(slot_vars)[0]
 
     raw_jinja = outer_jinja.replace(f"{{{{{slot_var}}}}}", inner_jinja)
 
-    sig1 = signature(definer1)
-    sig2 = signature(definer2)
+    sig1 = signature(component1)
+    sig2 = signature(component2)
     params1 = {k: v for k, v in sig1.parameters.items() if k != slot_var and k != 'depends_on'}
     params2 = {k: v for k, v in sig2.parameters.items() if k != 'depends_on'}
     all_params = {**params2, **params1}
@@ -62,7 +63,7 @@ def concat(definer1: Definer(1), definer2: DEFINER) -> DEFINER:
 
     new_sig = Signature(new_parameters)
 
-    def dynamic_definer(**kwargs):
+    def dynamic_component(**kwargs):
         context = dict(kwargs)
         for param in new_parameters:
             if param.name not in context:
@@ -70,37 +71,37 @@ def concat(definer1: Definer(1), definer2: DEFINER) -> DEFINER:
                 context[param.name] = _make_placeholder_model(param.name, ann)
         return "jinja\n" + Environment(undefined=StrictUndefined).from_string(raw_jinja).render(**context)
 
-    dynamic_definer.__signature__ = new_sig
-    dynamic_definer.__annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
+    dynamic_component.__signature__ = new_sig
+    dynamic_component.__annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
     from app.mods.types import Jinja
-    dynamic_definer.__annotations__['return'] = Jinja
+    dynamic_component.__annotations__['return'] = Jinja
 
-    dyn_typed = typed(dynamic_definer)
-    dyn_typed.__class__ = DEFINER
+    dyn_typed = typed(dynamic_component)
+    dyn_typed.__class__ = COMPONENT
     dyn_typed._raw_combined_jinja = raw_jinja
-    dyn_typed._is_dynamic_definer = True
+    dyn_typed._is_dynamic_component = True
     return dyn_typed
 
 @typed
-def join(*definers: Tuple(DEFINER)) -> DEFINER:
+def join(*components: Tuple(COMPONENT)) -> COMPONENT:
     from typed.models import MODEL
     from inspect import Parameter, Signature
 
-    if not definers:
+    if not components:
         @typed
         def empty_join() -> str:
             return "jinja\n"
-        empty_join.__class__ = DEFINER
-        empty_join._is_dynamic_definer = True
+        empty_join.__class__ = COMPONENT
+        empty_join._is_dynamic_component = True
         empty_join._raw_combined_jinja = ""
         return empty_join
 
     accumulated_raw_jinja_content = ""
-    for d in definers:
+    for d in components:
         accumulated_raw_jinja_content += d.jinja
 
     all_params = {}
-    for d in definers:
+    for d in components:
         sig = signature(d)
         for n, p in sig.parameters.items():
             if n == "depends_on":
@@ -108,7 +109,6 @@ def join(*definers: Tuple(DEFINER)) -> DEFINER:
             if n not in all_params:
                 all_params[n] = p
 
-    from jinja2 import Environment, meta, StrictUndefined
     env = Environment()
     ast = env.parse(accumulated_raw_jinja_content)
     all_jinja_vars = set(meta.find_undeclared_variables(ast))
@@ -121,7 +121,7 @@ def join(*definers: Tuple(DEFINER)) -> DEFINER:
         annotation = _get_annotation(p)
         if p.default != Parameter.empty:
             default_val = p.default
-        elif isinstance(annotation, type) and issubclass(annotation, MODEL):
+        elif isinstance(annotation, type) and isinstance(annotation, MODEL):
             default_val = _make_placeholder_model(n, annotation)
         else:
             default_val = ""
@@ -134,7 +134,7 @@ def join(*definers: Tuple(DEFINER)) -> DEFINER:
     from app.mods.types import Jinja
     __annotations__['return'] = Jinja
 
-    def dynamic_joined_definer(**kwargs):
+    def dynamic_joined_component(**kwargs):
         context = dict(kwargs)
         for param in new_parameters:
             if param.name not in context:
@@ -142,11 +142,55 @@ def join(*definers: Tuple(DEFINER)) -> DEFINER:
                 context[param.name] = _make_placeholder_model(param.name, ann)
         return "jinja\n" + Environment(undefined=StrictUndefined).from_string(accumulated_raw_jinja_content).render(**context)
 
-    dynamic_joined_definer.__signature__ = new_sig
-    dynamic_joined_definer.__annotations__ = __annotations__
+    dynamic_joined_component.__signature__ = new_sig
+    dynamic_joined_component.__annotations__ = __annotations__
 
-    dyn_typed = typed(dynamic_joined_definer)
-    dyn_typed.__class__ = DEFINER
-    dyn_typed._is_dynamic_definer = True
+    dyn_typed = typed(dynamic_joined_component)
+    dyn_typed.__class__ = COMPONENT
+    dyn_typed._is_dynamic_component = True
     dyn_typed._raw_combined_jinja = accumulated_raw_jinja_content
     return dyn_typed
+
+@typed
+def eval(some_component: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
+    sig = signature(some_component)
+    old_params = list(sig.parameters.items())
+
+    missing = [k for k in fixed_kwargs if k not in sig.parameters]
+    if missing:
+        raise TypeError(
+            f"{some_component.__name__} has no argument(s): {', '.join(missing)}"
+        )
+
+    new_params = []
+    for name, param in old_params:
+        if name in fixed_kwargs:
+            new_param = Parameter(
+                name,
+                kind=param.kind,
+                default=fixed_kwargs[name],
+                annotation=param.annotation
+            )
+            new_params.append(new_param)
+        else:
+            new_params.append(param)
+
+    new_sig = Signature(new_params)
+
+    def wrapped(*args, **kwargs):
+        ba = new_sig.bind_partial(*args, **kwargs)
+        ba.apply_defaults()
+        result = some_component(**ba.arguments)
+        if isinstance(result, tuple) and len(result) == 2 and isinstance(result[0], str) and isinstance(result[1], dict):
+            return result[0]
+        return result
+
+    wrapped.__signature__ = new_sig
+    if hasattr(some_component, '__annotations__'):
+        wrapped.__annotations__ = dict(some_component.__annotations__)
+
+    wrapped_typed = typed(wrapped)
+    from app.mods.helper.types import COMPONENT
+    wrapped_typed.__class__ = COMPONENT
+    wrapped_typed.func = wrapped
+    return wrapped_typed

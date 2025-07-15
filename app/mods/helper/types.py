@@ -4,17 +4,13 @@ from jinja2 import Environment, meta
 from typed import typed, Str, Json, Bool, Union, Extension, Path, TypedFuncType
 from typed.models import model, conditional, Optional
 from typed.more import Markdown
-from app.mods.types.meta import _DEFINER
-from app.mods.decorators.definer import definer
+from app.mods.types.meta import _COMPONENT
+from app.mods.helper.helper import _get_variables_map
+from app.mods.decorators.component import component
 
-class DEFINER(_DEFINER('Definer', (TypedFuncType,), {})):
+class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
     @property
     def jinja(self):
-        """
-        Returns the Jinja string of the definer.
-        For static definers, it parses the source.
-        For dynamic definers created by `join` or `concat`, it returns the pre-combined raw Jinja template.
-        """
         if hasattr(self, '_is_dynamic_definer') and self._is_dynamic_definer:
             if hasattr(self, '_raw_combined_jinja'):
                 return self._raw_combined_jinja
@@ -55,28 +51,20 @@ class DEFINER(_DEFINER('Definer', (TypedFuncType,), {})):
         return tuple(sorted(list(all_vars - arg_vars)))
 
     def __add__(self, other):
-        """
-        Implements definer_1 + definer_2 => join(definer_1, definer_2)
-        """
-        if not isinstance(other, DEFINER):
+        if not isinstance(other, COMPONENT):
             return NotImplemented
         from app.mods.functions import join
         return join(self, other)
 
     def __mul__(self, other):
-        """
-        Implements definer_1 * definer_2 => concat(definer_1, definer_2)
-        Here, definer_1 is assumed to be the 'free_definer' with a single free variable slot,
-        and definer_2 is the content to fill that slot.
-        """
-        if not isinstance(other, DEFINER):
+        if not isinstance(other, COMPONENT):
             return NotImplemented
-        from app.mods.decorators.definer import _FREE_DEFINER_REGISTRY
-        InstanceFree = _FREE_DEFINER_REGISTRY.get('__FreeInstance__')
+        from app.mods.decorators.definer import _FREE_COMPONENT_REGISTRY
+        InstanceFree = _FREE_COMPONENT_REGISTRY.get('__FreeInstance__')
         if InstanceFree is None:
-            from app.mods.factories.base import Definer
-            InstanceFree = Definer(1)
-            _FREE_DEFINER_REGISTRY['__FreeInstance__'] = InstanceFree
+            from app.mods.factories.base import Component
+            InstanceFree = Component(1)
+            _FREE_COMPONENT_REGISTRY['__FreeInstance__'] = InstanceFree
 
         if not isinstance(self, InstanceFree):
             raise TypeError(
@@ -87,11 +75,6 @@ class DEFINER(_DEFINER('Definer', (TypedFuncType,), {})):
 
         from app.mods.functions import concat
         return concat(self, other)
-
-@model
-class _COMPONENT:
-    definer: DEFINER
-    context: Json
 
 @typed
 def _check_context(component: _COMPONENT) -> Bool:
@@ -148,20 +131,9 @@ def _check_context(component: _COMPONENT) -> Bool:
     )
     raise ValueError(message)
 
-@conditional(extends=_COMPONENT, conditions=[_check_context])
-class COMPONENT:
-    pass
-
 Content = Union(Markdown, Extension('md'))
 
-@model(extends=COMPONENT)
-class _STATIC:
-    marker: Optional(Str, "content")
-    content: Content
-    frontmatter: Optional(Json, {})
-
-@typed
-def _check_static_context(static: _STATIC) -> Bool:
+def _check_static_context(static):
     definer = static.get('definer', _nill_definer())
     marker = static.get('marker', 'content')
     context = static.get('context', {})
@@ -179,22 +151,15 @@ def _check_static_context(static: _STATIC) -> Bool:
     found = re.search(pattern, jinja_str) is not None
     return found
 
-@conditional(extends=_STATIC, conditions=[_check_static_context])
-class STATIC:
-    pass
-
-@model(extends=COMPONENT)
 class _PAGE:
     auto_style: Optional(Bool, False)
     static_dir: Optional(Path, "")
 
-@model(extends=STATIC)
 class _STATIC_PAGE:
     auto_style: Optional(Bool, False)
     static_dir: Optional(Path, "")
 
-@typed
-def _check_page_core(page: Union(_PAGE, _STATIC)) -> Bool:
+def _check_page_core(page):
     from app.service import render
     errors = []
     html = render(COMPONENT(page))
@@ -253,26 +218,10 @@ def _check_page_core(page: Union(_PAGE, _STATIC)) -> Bool:
         raise AssertionError(f"[check_page] HTML structure validation failed:\n{err_text}\nActual HTML:\n{html[:500]}...")
     return True
 
-@typed
-def _check_page(page: _PAGE) -> Bool:
-    return _check_page_core(page) and not 'content' in page
-
-@typed
-def _check_static_page(page: _STATIC_PAGE) -> Bool:
-    return _check_page_core(page) and 'content' in page
-
-@conditional(extends=_PAGE, conditions=[_check_page])
-class PAGE:
-    pass
-
-@conditional(extends=_STATIC_PAGE, conditions=[_check_static_page])
-class STATIC_PAGE:
-    pass
-
 _nill_jinja  = """jinja"""
 
 @typed
-def _nill_definer(tag_name: Str="") -> DEFINER:
+def _nill_definer(tag_name: Str="") -> COMPONENT:
     if tag_name:
         from app.mods.factories.base import Tag
         def wrapper() -> Tag(tag_name):
@@ -282,18 +231,3 @@ def _nill_definer(tag_name: Str="") -> DEFINER:
         def wrapper() -> Jinja:
             return _nill_jinja
     return definer(wrapper)
-
-@typed
-def _nill_comp(tag_name: Str="") -> _COMPONENT:
-    return {
-        "definer": _nill_definer(tag_name),
-        "context": {}
-    }
-
-@typed
-def _nill_static() -> _STATIC:
-    return {
-        "definer": _nill_definer(),
-        "context": {},
-        "content": ""
-    }

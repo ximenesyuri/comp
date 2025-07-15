@@ -21,8 +21,7 @@ from typed.models import model, conditional, Optional, Instance, MODEL
 from typed.more import Markdown
 from jinja2 import Environment, meta
 from utils import md, file, json, to
-from app.mods.decorators.definer import definer
-from app.mods.helper.types import DEFINER 
+from app.mods.decorators.component import component
 
 def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
@@ -47,16 +46,15 @@ def _find_jinja_vars(source: Str) -> Set(Str):
     ast = env.parse(jinja_src)
     return meta.find_undeclared_variables(ast)
 
-@typed
-def _get_variables_map(seen: Set(DEFINER), definer: DEFINER, path: List(Path)=[]) -> Json:
+def _get_variables_map(seen, component, path=[]):
     if not path:
-        path = [getattr(definer, "__name__", str(definer))]
+        path = [getattr(component, "__name__", str(component))]
 
-    if definer in seen:
+    if component in seen:
         return {}
-    seen.add(definer)
+    seen.add(component)
 
-    initial_target_obj = getattr(definer, "func", definer)
+    initial_target_obj = getattr(component, "func", component)
     if isinstance(initial_target_obj, tuple) and len(initial_target_obj) == 1:
         final_target_obj = initial_target_obj[0]
     else:
@@ -64,7 +62,7 @@ def _get_variables_map(seen: Set(DEFINER), definer: DEFINER, path: List(Path)=[]
 
     if not callable(final_target_obj):
         raise TypeError(
-            f"Expected a callable object for definer, but got {final_target_obj!r} "
+            f"Expected a callable object for component, but got {final_target_obj!r} "
             f"of type {type(final_target_obj)}"
         )
     sig = signature(final_target_obj)
@@ -83,14 +81,13 @@ def _get_variables_map(seen: Set(DEFINER), definer: DEFINER, path: List(Path)=[]
                 call_args[n] = p.default
     try:
         if 'depends_on' in sig.parameters:
-            jinja_src = definer(depends_on=depends_on, **call_args)
+            jinja_src = component(depends_on=depends_on, **call_args)
         else:
-            jinja_src = definer(**call_args)
+            jinja_src = component(**call_args)
     except Exception:
         jinja_vars = set()
-        if hasattr(definer, 'jinja'):
-            jinja_str = definer.jinja
-            from jinja2 import Environment, meta
+        if hasattr(component, 'jinja'):
+            jinja_str = component.jinja
             env = Environment()
             try:
                 ast = env.parse(jinja_str)
@@ -102,28 +99,29 @@ def _get_variables_map(seen: Set(DEFINER), definer: DEFINER, path: List(Path)=[]
     if jinja_src:
         vars_ = _find_jinja_vars(jinja_src)
     argnames = set(n for n in sig.parameters if n != "depends_on")
-    undeclared_in_definer_params = vars_ - argnames
+    undeclared_in_component_params = vars_ - argnames
 
-    if not jinja_src and hasattr(definer, 'jinja'):
-        jinja_str = definer.jinja
+    if not jinja_src and hasattr(component, 'jinja'):
+        jinja_str = component.jinja
         env = Environment()
         try:
             ast = env.parse(jinja_str)
             all_template_vars = meta.find_undeclared_variables(ast)
-            undeclared_in_definer_params = set(all_template_vars) - argnames
+            undeclared_in_component_params = set(all_template_vars) - argnames
         except Exception:
-            undeclared_in_definer_params = set()
+            undeclared_in_component_params = set()
     result = {}
-    for v in undeclared_in_definer_params:
+    for v in undeclared_in_component_params:
         result[v] = list(path)
 
     for dep in depends_on:
-        if isinstance(dep, DEFINER):
+        from app.mods.helper.types import COMPONENT
+        if isinstance(dep, COMPONENT):
             dep_name = getattr(dep, "__name__", str(dep))
             result_dep = _get_variables_map(seen.copy(), dep, path + [dep_name])
             result.update(result_dep)
         else:
-            print(f"Warning: Dependency '{dep}' is not a valid Definer and cannot be inspected for variables.")
+            print(f"Warning: Dependency '{dep}' is not a valid Component and cannot be inspected for variables.")
     return result
 
 def _make_placeholder_model(param_name, annotation):

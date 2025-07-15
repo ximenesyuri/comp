@@ -1,5 +1,7 @@
 from typed import null
-from app.mods.decorators.definer import definer
+from app.mods.types.base import Inner
+from app.mods.factories.base import Tag
+from app.mods.decorators.component import component
 from app.mods.helper.components import (
     if_div,
     if_alpine,
@@ -26,7 +28,7 @@ from app.models import (
     Asset
 )
 
-@definer
+@component
 def div(div: Div=null(Div), alpine: Alpine=null(Alpine), inner: Inner="") -> Tag('div'):
     div_data    = if_div(div)
     alpine_data = if_alpine(alpine)
@@ -36,7 +38,7 @@ def div(div: Div=null(Div), alpine: Alpine=null(Alpine), inner: Inner="") -> Tag
 </div>
 """
 
-@definer
+@component
 def text(text: Text=null(Text), inner: Inner="") -> Tag('p'):
     text_data = if_text(text)
     return """jinja
@@ -45,7 +47,7 @@ def text(text: Text=null(Text), inner: Inner="") -> Tag('p'):
 </p>
 """
 
-@definer
+@component
 def title(title: Title=null(Title), inner: Inner="") -> Tag('h1','h2','h3','h4','h5','h6'):
     title_data = if_title(title)
     return """jinja
@@ -54,23 +56,23 @@ def title(title: Title=null(Title), inner: Inner="") -> Tag('h1','h2','h3','h4',
 </{{ title.title_tag }}>
 """
 
-@definer
+@component
 def link(link: Link=null(Link), inner: Inner="") -> Tag('a'):
     link_data = if_link(link)
     return """jinja
-<p{{ link_data }}>
+<a{{ link_data }}>
     {{ inner }}
-</p>
+</a>
 """
 
-@definer
+@component
 def image(image: Image=null(Image)) -> Tag('img'):
     image_data = if_link(image)
     return """jinja
 <img{{ image_data }}/>
 """
 
-@definer
+@component
 def figure(figure: Figure=null(Figure)) -> Tag('figure'):
     figure_data = if_figure(figure)
     image_data = if_image(figure.figure_img)
@@ -81,7 +83,7 @@ def figure(figure: Figure=null(Figure)) -> Tag('figure'):
 </figure>
 """
 
-@definer
+@component
 def button(button: Button=null(Button), inner: Inner="") -> Tag('button'):
     button_data = if_button(button)
     return """jinja
@@ -90,14 +92,14 @@ def button(button: Button=null(Button), inner: Inner="") -> Tag('button'):
 </button>
 """
 
-@definer
+@component
 def asset(asset: Asset=null(Asset)) -> Tag('link'):
     asset_data = if_asset(asset)
     return """jinja
 <link{{ asset_data }}/>
 """
 
-@definer
+@component
 def script(script: Script=null(Script), inner: Inner="") -> Tag('script'):
     script_data = if_script(script)
     return """jinja
