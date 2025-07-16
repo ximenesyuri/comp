@@ -5,7 +5,6 @@ from typed import factory, Union, Str, List, Int, TYPE, Tuple
 def Tag(*tag_names: Tuple(Str)) -> TYPE:
     from app.mods.types.base    import Jinja
     from app.mods.helper.helper import _jinja_regex
-    from app.mods.helper.types  import _nill_jinja
 
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 
@@ -25,9 +24,9 @@ def Tag(*tag_names: Tuple(Str)) -> TYPE:
                 instance_str = instance
             if not isinstance(instance_str, Str):
                 return False
-            if instance_str == _nill_jinja:
+            if instance_str == """jinja """:
                 return True
-            return bool(tag_regex.match(instance_str)) 
+            return bool(tag_regex.match(instance_str))
 
     return _Tag(f'Tag({tag_names})', (Jinja,), {'__display__': f'Tag({tag_names})'})
 

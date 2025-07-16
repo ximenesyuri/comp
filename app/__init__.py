@@ -1,5 +1,4 @@
 from app.main import *
-from app.components import responsive, desktop
-from app.mods.service import render
+from app.components import link
 
-print(render(desktop, inner="aaaa"))
+print(isinstance(link, PAGE))

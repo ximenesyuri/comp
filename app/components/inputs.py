@@ -1,4 +1,5 @@
-from app import definer, Tag
+from app.mods.factories.base import Tag
+from app.mods.decorators.component import component
 from app.models import (
     InputText,
     InputPassword,
@@ -7,7 +8,7 @@ from app.models import (
     InputSearch,
 )
 
-@definer
+@component
 def input_text(input: InputText) -> Tag('input'):
     return """jinja
 <input
@@ -31,7 +32,7 @@ def input_text(input: InputText) -> Tag('input'):
 >
 """
 
-@definer
+@component
 def input_search(input: InputSearch) -> Tag('input'):
     return """jinja
 <input
@@ -54,7 +55,7 @@ def input_search(input: InputSearch) -> Tag('input'):
 >
 """
 
-@definer
+@component
 def input_password(input: InputPassword) -> Tag('input'):
     return """jinja
 <input
@@ -78,7 +79,7 @@ def input_password(input: InputPassword) -> Tag('input'):
 >
 """
 
-@definer
+@component
 def input_email(input: InputEmail) -> Tag('input'):
     return """jinja
 <input
@@ -103,7 +104,7 @@ def input_email(input: InputEmail) -> Tag('input'):
 >
 """
 
-@definer
+@component
 def input_textarea(input: InputTextArea) -> Tag('textarea'):
     return """jinja
 <textarea
@@ -123,6 +124,3 @@ def input_textarea(input: InputTextArea) -> Tag('textarea'):
     {% if input['input_wrap'] %}wrap="{{ input['input_wrap'] }}"{% endif %}
 >{{ input['input_value'] }}</textarea>
 """
-
-
-

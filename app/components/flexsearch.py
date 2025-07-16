@@ -1,15 +1,16 @@
-from app import definer, null, Jinja
+from app.mods.types.base import Jinja
+from app.mods.decorators.component import component
 from app.models import Div, Button, FlexSearch
 from app.components.inputs  import input_search
 from app.components.buttons import button_search
-from app.mods.helper.components import if_div, if_id, if_class
+from app.helper import if_div, if_class, if_id
 
-@definer
+@component
 def flexsearch(
-        search_div: Div=null(Div),
-        search:     FlexSearch=null(FlexSearch),
-        button_div: Div=null(Div),
-        button:     Button=null(Button),
+        search_div: Div=Div(),
+        search:     FlexSearch=FlexSearch(),
+        button_div: Div=Div(),
+        button:     Button=Button(),
         depends_on=[button_search, input_search]
     ) -> Jinja:
 
@@ -30,7 +31,7 @@ def flexsearch(
     results_desc_id     = if_id(search.results.desc.desc_id)
     results_desc_class  = if_class(search.results.desc.desc_class)
     no_results_div      = if_div(search.no_results_div)
-    null_button         = null(Button)
+    null_button         = Button()
     results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
 
     return """jinja

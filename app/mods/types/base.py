@@ -4,19 +4,17 @@ from typed.models import Model
 from app.mods.types.meta import _Jinja, _Inner
 from app.mods.helper.types import (
     COMPONENT,
+    _PAGE
    # STATIC,
     #PAGE,
     #STATIC_PAGE
 )
 
-Jinja   = _Jinja('Jinja', (Str,), {})
+Jinja = _Jinja('Jinja', (Str,), {})
 Inner = _Inner('Inner', (Str,), {})
-Context = Model()
+PAGE  = _PAGE('PAGE', (COMPONENT, ), {})
 
 class STATIC:
-    pass
-
-class PAGE:
     pass
 
 class STATIC_PAGE:
@@ -25,6 +23,4 @@ class STATIC_PAGE:
 Jinja.__display__       = "Jinja"
 Inner.__display__       = "Inner"
 COMPONENT.__display__   = "COMPONENT"
-#STATIC.__display__      = "STATIC"
-#PAGE.__display__        = "PAGE"
-#STATIC_PAGE.__display__ = "STATIC_PAGE"
+PAGE.__display__        = "PAGE"

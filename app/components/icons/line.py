@@ -1,8 +1,9 @@
 from typed import typed, Str, null
-from app import definer, Tag
+from app.mods.factories.base import Tag
+from app.mods.decorators.component import component
 from app.models import Icon
 
-@definer
+@component
 def icon_search(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
 <svg
@@ -17,7 +18,7 @@ def icon_search(icon: Icon=null(Icon)) -> Tag('svg'):
 </svg>
 """
 
-@definer
+@component
 def icon_menu(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
 <svg
@@ -32,7 +33,7 @@ def icon_menu(icon: Icon=null(Icon)) -> Tag('svg'):
 </svg>
 """
 
-@definer
+@component
 def icon_close(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
 <svg
@@ -47,7 +48,7 @@ def icon_close(icon: Icon=null(Icon)) -> Tag('svg'):
 </svg>
 """
 
-@definer
+@component
 def icon_home(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
 <svg
@@ -62,7 +63,7 @@ def icon_home(icon: Icon=null(Icon)) -> Tag('svg'):
 </svg>
 """
 
-@definer
+@component
 def icon_theme_switcher(icon: Icon=null(Icon)) -> Tag('svg'):
     return """jinja
 <svg
