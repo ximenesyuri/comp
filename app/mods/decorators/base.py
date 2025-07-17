@@ -2,7 +2,7 @@ import sys
 from inspect import signature, Parameter
 from functools import wraps
 from typed import typed, List, TypedFuncType
-from app.mods.types.meta import _Component
+from app.mods.types.base import STATIC
 
 _FREE_COMPONENT_REGISTRY = {}
 
@@ -115,3 +115,8 @@ class ComponentProxy:
         return proxy
 
 component = ComponentProxy(_component)
+
+def static(comp: STATIC) -> STATIC:
+    comp = component(comp)
+    if not isinstance(comp, STATIC):
+        raise TypeError("The @static decorator can be applied only to functions with at least one argument of type 'Content'.")

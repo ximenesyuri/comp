@@ -11,7 +11,7 @@ from app.mods.helper.helper import (
     _make_placeholder_model,
     _get_annotation
 )
-from app.mods.decorators.component import component
+from app.mods.decorators.base import component
 from app.mods.factories.base import Component
 from app.mods.types.base import Jinja, COMPONENT
 

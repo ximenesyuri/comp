@@ -1,6 +1,6 @@
 from typed import null, PathUrl
 from typed.models import model, Optional
-from app.mods.decorators.component import component
+from app.mods.decorators.base import component, static
 from app.mods.types.base import *
 from app.mods.types.tag  import *
 from app.mods.factories.base import *

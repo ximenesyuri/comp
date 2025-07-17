@@ -29,20 +29,6 @@ class _COMPONENT(type(TypedFuncType)):
             return False
         return issubclass(instance.codomain, _Jinja('Jinja', (Str,), {}))
 
-class _Component(_COMPONENT):
-    def __instancecheck__(cls, instance):
-        effective_free_vars_in_definer = instance.jinja_free_vars
-        free_vars_spec = getattr(cls, '_free_vars', frozenset())
-        if free_vars_spec is None:
-            return True
-        elif isinstance(free_vars_spec, int):
-            result = len(effective_free_vars_in_definer) == free_vars_spec
-            return result
-        elif isinstance(free_vars_spec, frozenset):
-            result = frozenset(effective_free_vars_in_definer) == free_vars_spec
-            return result
-        return False
-
 class _Inner(type(str)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, str):
@@ -52,7 +38,7 @@ class _Inner(type(str)):
 def _check_page(page):
     from app.service import render
     errors = []
-    html = render(COMPONENT(page))
+    html = render(page)
     html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
     head_match = re.search(r"<head[^>]*>(.*?)</head>", html, flags=re.IGNORECASE | re.DOTALL)
     body_match = re.search(r"<body[^>]*>(.*?)</body>", html, flags=re.IGNORECASE | re.DOTALL)
@@ -108,4 +94,31 @@ def _check_page(page):
         raise AssertionError(f"[check_page] HTML structure validation failed:\n{err_text}\nActual HTML:\n{html[:500]}...")
     return True
 
-
+class _STATIC(_COMPONENT):
+    def __instancecheck__(cls, instance):
+        from app.mods.helper.types import COMPONENT
+        from app.mods.types.base import Content
+        if not isinstance(instance, COMPONENT):
+            return False
+        try:
+            ann = getattr(instance, '__annotations__', {})
+            for t in ann.values():
+                try:
+                    if isinstance(t, type) and t is Content:
+                        return True
+                except Exception:
+                    pass
+            if hasattr(instance, '_local_vars'):
+                for v in instance._local_vars:
+                    val = getattr(instance, v, None)
+                    if isinstance(val, Content):
+                        return True
+            if hasattr(instance, 'depends_on'):
+                depends_on = getattr(instance, 'depends_on')
+                if isinstance(depends_on, (list, tuple)):
+                    for dep in depends_on:
+                        if isinstance(dep, COMPONENT):
+                            return True
+            return False
+        except Exception:
+            return False

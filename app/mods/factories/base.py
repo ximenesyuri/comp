@@ -42,24 +42,46 @@ def TAG(tag_name: Str) -> TYPE:
     return _TAG(f'TagComponent({tag_name})', (COMPONENT,), {'__display__': f'TagComponent({tag_name})'})
 
 @factory
-def Component(*args: Union(Tuple(Str), Tuple(Int))) -> TYPE:
-    if len(args) == 0:
-        from app.mods.types.base import COMPONENT
+def Component(n: int = -1) -> TYPE:
+    from app.mods.types.base import COMPONENT, Inner
+
+    if n < 0:
         return COMPONENT
-    if len(args) == 1 and isinstance(args[0], int):
-        num_vars = args[0]
-        if num_vars >= 0:
-            processed_vars = num_vars
-            type_name = f"Component({num_vars})"
-        else:
-            processed_vars = None
-            type_name = f"Component(Any)"
+
+    name = f"Component({n})"
+
+    class _Component(type(COMPONENT)):
+        def __instancecheck__(cls, instance):
+            if not isinstance(instance, COMPONENT):
+                return False
+            from app.mods.helper.types import _has_vars_of_given_type
+            return _has_vars_of_given_type(instance, COMPONENT, Inner, n)
+
+    return _Component(name, (COMPONENT,), {'_free_vars': n, '__display__': name})
+
+@factory
+def Static(*args: Tuple(Int)) -> TYPE:
+    from app.mods.types.base import STATIC
+
+    if len(args) == 1:
+        name = f'Static({args[0]})'
+        if args[0] < 0:
+            return STATIC
+    elif len(args) == 2:
+        name = f'Static({args[0]},{args[1]})'
+        if args[1] < 0 and args[0] < 0:
+            return STATIC
     else:
-        processed_vars = frozenset(str(v) for v in args)
-        type_name = f"Component({', '.join(processed_vars)})" if processed_vars else "Component()"
-    from app.mods.types.meta import _Component
-    from app.mods.types.base import COMPONENT
-    return _Component(type_name, (COMPONENT,), {
-        '_free_vars': processed_vars,
-        '__display__': type_name
-    })
+        raise ValueError(f"Expected '1' or '2' arguments. Received: '{len(args)} arguments.")
+
+    class _Static(type(STATIC)):
+        def __instancecheck__(cls, instance):
+            from app.mods.types.base import Inner, Content
+            from app.mods.helper.types import _has_vars_of_given_type
+            if not isinstance(instance, STATIC):
+                return False
+            if len(args) == 1:
+                return _has_vars_of_given_type(instance, STATIC, Content, args[0])
+            if len(args) == 2:
+                return  _has_vars_of_given_type(instance, STATIC, Inner, args[0]) and _has_vars_of_given_type(instance, STATIC, Content, args[1])
+    return _Static(name, (STATIC,), {'__display__': name})

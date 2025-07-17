@@ -6,7 +6,6 @@ from typed.models import model, conditional, Optional
 from typed.more import Markdown
 from app.mods.types.meta import _COMPONENT
 from app.mods.helper.helper import _get_variables_map
-from app.mods.decorators.component import component
 
 class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
     @property
@@ -128,3 +127,16 @@ class _PAGE(type(COMPONENT)):
 
 class _STATIC_PAGE:
     pass
+
+def _has_vars_of_given_type(instance, BASE, typ, n):
+    if n < 0:
+        return isinstance(instance, BASE)
+    count = 0
+    ann = getattr(instance, '__annotations__', {})
+    for t in ann.values():
+        try:
+            if isinstance(t, type) and t is typ:
+                count += 1
+        except Exception:
+            pass
+    return isinstance(instance, BASE) and count == n

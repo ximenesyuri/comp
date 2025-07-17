@@ -21,7 +21,6 @@ from typed.models import model, conditional, Optional, Instance, MODEL
 from typed.more import Markdown
 from jinja2 import Environment, meta
 from utils import md, file, json, to
-from app.mods.decorators.component import component
 
 def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
