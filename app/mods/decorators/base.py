@@ -1,8 +1,8 @@
 import sys
 from inspect import signature, Parameter
 from functools import wraps
-from typed import typed, List, TypedFuncType
-from app.mods.types.base import STATIC
+from typed import typed, List, TypedFuncType, Function
+from app.mods.types.base import STATIC, PAGE, STATIC_PAGE
 
 _FREE_COMPONENT_REGISTRY = {}
 
@@ -116,7 +116,23 @@ class ComponentProxy:
 
 component = ComponentProxy(_component)
 
-def static(comp: STATIC) -> STATIC:
+@typed
+def static(comp: Function) -> STATIC:
     comp = component(comp)
     if not isinstance(comp, STATIC):
         raise TypeError("The @static decorator can be applied only to functions with at least one argument of type 'Content'.")
+    return comp
+
+@typed
+def page(comp: Function) -> PAGE:
+    comp = component(comp)
+    if not isinstance(comp, PAGE):
+        raise TypeError("The @page decorator can be applied only to functions defining a page.")
+    return comp
+
+@typed
+def static_page(comp: Function) -> STATIC_PAGE:
+    comp = component(comp)
+    if not isinstance(comp, STATIC_PAGE):
+        raise TypeError("The @page decorator can be applied only to functions defining a page.")
+    return comp
