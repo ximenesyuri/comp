@@ -2,16 +2,19 @@ import re
 import functools
 import webbrowser
 from inspect import signature, Parameter
-from typed import typed, Union, Str, Nill, Dict, Any
-from utils import md, file, cmd, path
+from typed import typed, Union, List, Str, Nill, Dict, Any, Tuple
+from markdown import markdown
 from jinja2 import Environment, DictLoader, StrictUndefined, meta
 from bs4 import BeautifulSoup
+from app.mods.types.base import Content
 from app.mods.helper.helper import _jinja_regex
 from app.mods.helper.types  import _PAGE, _STATIC_PAGE
 from app.mods.err import RenderErr, BuildErr, StyleErr, PreviewErr, MockErr
 from app.mods.types.base import COMPONENT, Jinja, STATIC, PAGE, STATIC_PAGE, Inner
+from app.components import script as script_component, asset as asset_component
+from app.models import Script, Asset
 
-def render(component: COMPONENT, **vars) -> Str:
+def orig_render(component: COMPONENT, **vars) -> Str:
     """
     Renders the given component, passing keyword argument variables.
     Handles Inner defaults, model coercion, context construction,
@@ -123,54 +126,143 @@ def render(component: COMPONENT, **vars) -> Str:
         raise RenderErr(e)
 
 @typed
-def build(static: STATIC) -> COMPONENT:
-    try:
-        definer = static.get('definer')
-        marker = static.get('marker', 'content')
-        content = static.get('content', '')
-        html = md.to_html(content)
-        typed_func = getattr(definer, 'func', definer)
-        import inspect
-        sig = inspect.signature(typed_func)
-        call_args = {}
-        for param in sig.parameters.values():
-            if param.name == 'depends_on':
-                continue
-            if param.default is param.empty:
-                ctx = static.get('context', {})
-                call_args[param.name] = ctx.get(param.name, '')
-            else:
-                ctx = static.get('context', {})
-                if param.name in ctx:
-                    call_args[param.name] = ctx[param.name]
+def render(component: COMPONENT, __scripts__: List(Script)=[], __assets__: List(Asset)=[], **kwargs: Dict(Any)) -> Str:
+    """
+    Enhanced render: supports __scripts__, __assets__ and pre-processing Content parameters.
+    """
+    definer = getattr(component, "func", component)
+    sig = signature(definer)
+    valid_params = set(sig.parameters.keys())
+    special = {"__scripts__", "__assets__", "depends_on"}
+    valid_params = valid_params | special
 
-        template_block_string = definer(**call_args)
+    unknown_args = set(kwargs.keys()) - valid_params
+    if unknown_args:
+        raise TypeError(f"[render] Unexpected keyword argument(s) for '{getattr(definer, '__name__', definer)}': {', '.join(sorted(unknown_args))}\n"
+                        f"Allowed arguments: {', '.join(sorted(set(sig.parameters)))}")
 
-        regex_str = re.compile(_jinja_regex(), re.DOTALL)
-        match = regex_str.match(template_block_string)
-        if not match:
-            raise TypeError("Invalid Jinja block string format when building static.")
+    kwargs.pop("__scripts__", None)
+    kwargs.pop("__assets__", None)
 
-        jinja_content = match.group(1)
-        marker_regex = r"\{\{\s*"+re.escape(marker)+r"\s*\}\}"
+    definer = getattr(component, "func", component)
+    sig = signature(definer)
+    params = sig.parameters
+    from typed.models import MODEL
+    content_params = {name: param for name, param in params.items()
+                             if getattr(param, "annotation", None) is Content}
 
-        new_jinja_content = re.sub(marker_regex, str(html), jinja_content, count=1)
+    for cname, param in content_params.items():
+        if cname not in kwargs:
+            continue
+        value = kwargs[cname]
+        if isinstance(value, Str):
+            kwargs[cname] = markdown(value)
+        elif isinstance(value, str) and value.lower().endswith(".md") and os.path.isfile(value):
+            md_text = file.read(value)
+            kwargs[cname] = markdown(md_text)
+        else:
+            kwargs[cname] = markdown(value)
+    depends_on = []
+    if "depends_on" in sig.parameters:
+        depends_on_default = sig.parameters["depends_on"].default
+        depends_on = kwargs.pop("depends_on", depends_on_default) or []
+    if depends_on is None:
+        depends_on = []
+    call_args = {}
+    for param in params.values():
+        if param.name == "depends_on":
+            continue
+        if param.name in kwargs:
+            call_args[param.name] = kwargs[param.name]
+        elif param.default is not param.empty:
+            call_args[param.name] = param.default
+        else:
+            call_args[param.name] = ""
+    if "depends_on" in params:
+        result = definer(**call_args, depends_on=depends_on)
+    else:
+        result = definer(**call_args)
+    if isinstance(result, tuple) and len(result) == 2 and isinstance(result[0], str):
+        jinja_block_string, comp_locals = result
+    else:
+        jinja_block_string, comp_locals = result, {}
 
-        from app import definer
-        @definer
-        def new_definer() -> Jinja:
-            return f"jinja\n{new_jinja_content}"
+    script_insertions = []
+    for scr in __scripts__:
+        src = getattr(scr, "script_src", "")
+        if src and isinstance(src, str) and src.endswith(".js") and not src.startswith("http"):
+            try:
+                with open(Path(src), "r", encoding="utf-8") as f:
+                    code = f.read()
+                tag = f"<script>{code}</script>"
+            except Exception as e:
+                tag = f"<!-- [Could not read {src}: {e}] -->"
+            script_insertions.append(tag)
+        elif src and (src.startswith("http://") or src.startswith("https://")):
+            tag = orig_render(script_component, script=scr)
+            script_insertions.append(tag)
+        else:
+            tag = orig_render(script_component, script=scr)
+            script_insertions.append(tag)
 
-        context = static.get('context', {}).copy()
-        context.update({'frontmatter': static.get('frontmatter', {})})
+    asset_insertions = []
+    for ast in __assets__:
+        href = getattr(ast, "asset_href", "")
+        mime = getattr(ast, "asset_mime", "")
+        if href and isinstance(href, str) and href.endswith(".css") and not href.startswith("http"):
+            try:
+                with open(Path(href), "r", encoding="utf-8") as f:
+                    code = f.read()
+                tag = f"<style>{code}</style>"
+            except Exception as e:
+                tag = f"<!-- [Could not read {href}: {e}] -->"
+            asset_insertions.append(tag)
+        elif href and (href.startswith("http://") or href.startswith("https://")):
+            tag = orig_render(asset_component, asset=ast)
+            asset_insertions.append(tag)
+        else:
+            tag = orig_render(asset_component, asset=ast)
+            asset_insertions.append(tag)
 
-        component = {
-            'definer': new_definer,
-            'context': context
-        }
-        return component
-    except Exception as e:
-        raise BuildErr(e)
+    head_pat = re.compile(r'(<head\b[^>]*>)(.*?)(</head>)', re.IGNORECASE | re.DOTALL)
+    def insert_into_head(html, insert_html):
+        m = head_pat.search(html)
+        if m:
+            before = html[:m.end(1)]
+            head_content = html[m.end(1):m.start(3)]
+            after = html[m.start(3):]
+            return before + "".join(insert_html) + head_content + after
+        return None
+
+    if jinja_block_string.lstrip().startswith("jinja"):
+        jinja_html = re.sub(r'^\s*jinja\s*\n?', '', jinja_block_string, count=1)
+    else:
+        jinja_html = jinja_block_string
+    joined_inserts = asset_insertions + script_insertions
+    if "<head" in jinja_html.lower():
+        new_html = insert_into_head(jinja_html, joined_inserts)
+        if new_html is not None:
+            jinja_html = new_html
+        else:
+            jinja_html = "\n".join(joined_inserts) + "\n" + jinja_html
+    else:
+        jinja_html = "\n".join(joined_inserts) + "\n" + jinja_html
+
+    full_jinja_context = dict(comp_locals)
+    full_jinja_context.update(call_args)
+    full_jinja_context.update(kwargs)
+    for dep in depends_on:
+        dep_name = getattr(dep, "__name__", str(dep))
+        def make_rendered_dep_func(dep):
+            def _inner(*a, **kw):
+                return orig_render(dep, **full_jinja_context)
+            return _inner
+        full_jinja_context[dep_name] = make_rendered_dep_func(dep)
+    from jinja2 import Environment, DictLoader, StrictUndefined
+    template_name = getattr(definer, '__name__', 'template')
+    env = Environment(loader=DictLoader({template_name: jinja_html}), undefined=StrictUndefined)
+    template = env.get_template(template_name)
+    return template.render(**full_jinja_context)
 
 @typed
 def style(page: Union(PAGE, STATIC_PAGE)) -> Union(PAGE, STATIC_PAGE):

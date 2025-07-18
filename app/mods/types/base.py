@@ -12,7 +12,7 @@ Jinja   = _Jinja('Jinja', (Str,), {})
 Inner   = _Inner('Inner', (Str,), {})
 PAGE    = _PAGE('PAGE', (COMPONENT, ), {})
 STATIC  = _STATIC('STATIC', (COMPONENT, ), {})
-Content = Union(Markdown, Extension('md'))
+Content = Union(Str, Extension('md'))
 
 class STATIC_PAGE:
     pass

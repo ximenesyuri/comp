@@ -1,4 +1,4 @@
-from app.mods.decorators.component import component
+from app.mods.decorators.base import component
 from app.mods.types.base import Inner
 from app.mods.factories.base import Tag
 from app.mods.helper.components import (

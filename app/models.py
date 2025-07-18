@@ -17,7 +17,7 @@ from typed import (
     PathUrl,
     null
 )
-from typed.models import model, Optional
+from typed.models import model, exact, Optional
 from app.mods.helper.models import (
     Div,
     Globals,
@@ -156,14 +156,14 @@ class Figure:
     figure_img:     Optional(Image, null(Image))
     figure_caption: Optional(Str, "")
 
-@model
+@exact
 class Script:
     script_src:   Optional(PathUrl, "")
     script_defer: Optional(Bool, False)
     script_type:  Optional(Enum(Str, "module", "importmap", ""), "")
     script_async: Optional(Bool, False)
 
-@model
+@exact
 class Asset:
     asset_href: Optional(PathUrl, "")
     asset_mime: Optional(Str, "")

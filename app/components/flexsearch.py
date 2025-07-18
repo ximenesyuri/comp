@@ -1,5 +1,5 @@
 from app.mods.types.base import Jinja
-from app.mods.decorators.component import component
+from app.mods.decorators.base import component
 from app.models import Div, Button, FlexSearch
 from app.components.inputs  import input_search
 from app.components.buttons import button_search

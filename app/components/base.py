@@ -1,7 +1,7 @@
 from typed import null
-from app.mods.types.base import Inner
+from app.mods.types.base import Inner, Jinja
 from app.mods.factories.base import Tag
-from app.mods.decorators.component import component
+from app.mods.decorators.base import component
 from app.helper import (
     if_key,
     if_div,
@@ -30,40 +30,40 @@ from app.models import (
 )
 
 @component
-def div(div: Div=Div(), alpine: Alpine=Alpine(), inner: Inner="") -> Tag('div'):
+def div(div: Div=Div(), alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
     div_data    = if_div(div)
     alpine_data = if_alpine(alpine)
     return """jinja
-<div{{ div_data }}{{ alpine_data }}>
+<div{{ div_data }}{{ alpine_data }}>{% if inner is defined %}
     {{ inner }}
-</div>
+</div>{% else %}</div>{% endif %}
 """
 
 @component
-def text(text: Text=Text(), inner: Inner="") -> Tag('p'):
+def text(text: Text=Text(), inner: Inner="") -> Jinja:
     text_data = if_text(text)
     return """jinja
-<p{{ text_data }}>
+<p{{ text_data }}>{% if inner %}
     {{ inner }}
-</p>
+</p>{% else %}</p>{% endif %}
 """
 
 @component
-def title(title: Title=Title(), inner: Inner="") -> Tag('h2','h2','h3','h4','h5','h6'):
+def title(title: Title=Title(), inner: Inner="") -> Jinja:
     title_data = if_title(title)
     return """jinja
-<{{ title.title_tag }}{{ title_data }}>
+<{{ title.title_tag }}{{ title_data }}>{% if inner %}
     {{ inner }}
-</{{ title.title_tag }}>
+</{{ title.title_tag }}>{% else %}</{{ title.title_tag }}>{% endif %}
 """
 
 @component
-def link(link: Link=Link(), inner: Inner="") -> Tag('a'):
+def link(link: Link=Link(), inner: Inner="") -> Jinja:
     link_data = if_link(link)
     return """jinja
-<a{{ link_data }}>
+<a{{ link_data }}>{% if inner %}
     {{ inner }}
-</a>
+</a>{% else %}</a>{% endif %} 
 """
 
 @component
@@ -85,12 +85,12 @@ def figure(figure: Figure=Figure()) -> Tag('figure'):
 """
 
 @component
-def button(button: Button=Button(), inner: Inner="") -> Tag('button'):
+def button(button: Button=Button(), inner: Inner="") -> Jinja:
     button_data = if_button(button)
     return """jinja
-<button{{ button_data }}>       
+<button{{ button_data }}>{% if inner %}
     {{ inner }}
-</button>
+</button>{% else %}</button>{% endif %}
 """
 
 @component
@@ -101,10 +101,10 @@ def asset(asset: Asset=Asset()) -> Tag('link'):
 """
 
 @component
-def script(script: Script=Script(), inner: Inner="") -> Tag('script'):
+def script(script: Script=Script(), inner: Inner="") -> Jinja:
     script_data = if_script(script)
     return """jinja
-<script{{ script_data }}>
+<script{{ script_data }}>{% if inner %}
     {{ inner }}
-</script>
+</script>{% else %}</script>{% endif %}
 """
