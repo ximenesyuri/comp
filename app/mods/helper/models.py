@@ -1,5 +1,6 @@
 from typed import Enum, Str, Bool, Int, Pattern, List, Extension, Char, Nat
 from typed.models import model, Optional
+from app.mods.types.base import Inner
 
 _InputType = Enum(
     Str,
@@ -68,6 +69,7 @@ class Div:
     div_id:    Optional(Str, "div")
     div_class: Optional(Str, "")
     div_hover: Optional(Str, "")
+    inner:     Optional(Inner, "")
 
 @model
 class _FlexSearchTitle:

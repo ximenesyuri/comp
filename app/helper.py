@@ -10,7 +10,11 @@ from app.models import (
     Globals,
     Script,
     Figure,
-    Asset
+    Asset,
+    Item,
+    Unordered,
+    Ordered,
+    Nav
 )
 
 @typed
@@ -58,8 +62,8 @@ def if_class(entry: Any=None) -> Str:
     return if_key(entry, "class")
 
 @typed
-def if_hover(entry: Any=None) -> Str:
-    return if_key(entry, "hover")
+def if_style(entry: Any=None) -> Str:
+    return if_key(entry, "style")
 
 @typed
 def if_div(div: Div=None) -> Str:
@@ -68,7 +72,7 @@ def if_div(div: Div=None) -> Str:
     result = if_globals(getattr(div, 'globals', None))
     result += if_id(getattr(div, 'div_id', None))
     result += if_class(getattr(div, 'div_class', None))
-    result += if_hover(getattr(div, 'div_hover', None))
+    result += if_style(getattr(div, 'div_style', None))
     return result
 
 @typed
@@ -96,7 +100,7 @@ def if_text(text: Text=None) -> Str:
     result = if_globals(getattr(text, 'globals', None))
     result += if_id(getattr(text, 'text_id', None))
     result += if_class(getattr(text, 'text_class', None))
-    result += if_hover(getattr(text, 'text_hover', None))
+    result += if_style(getattr(text, 'text_style', None))
     return result
 
 @typed
@@ -106,7 +110,7 @@ def if_title(title: Title=None) -> Str:
     result = if_globals(getattr(title, 'globals', None))
     result += if_id(getattr(title, 'title_id', None))
     result += if_class(getattr(title, 'title_class', None))
-    result += if_hover(getattr(title, 'title_hover', None))
+    result += if_style(getattr(title, 'title_style', None))
     return result
 
 @typed
@@ -117,7 +121,7 @@ def if_link(link: Link=None) -> Str:
     result += if_globals(getattr(link, 'globals', None))
     result += if_id(getattr(link, 'link_id', None))
     result += if_class(getattr(link, 'link_class', None))
-    result += if_hover(getattr(link, 'link_hover', None))
+    result += if_style(getattr(link, 'link_style', None))
     if getattr(link, 'link_href', None):
         result += if_key(link.link_href, "href")
     if getattr(link, 'link_download', None):
@@ -135,7 +139,7 @@ def if_button(button: Button=None) -> Str:
     result = if_globals(getattr(button, 'globals', None))
     result += if_id(getattr(button, 'button_id', None))
     result += if_class(getattr(button, 'button_class', None))
-    result += if_hover(getattr(button, 'button_hover', None))
+    result += if_style(getattr(button, 'button_style', None))
     if getattr(button, 'on_click', None):
         result += if_key(button.on_click, "@on_click")
     if getattr(button, 'click_away', None):
@@ -149,7 +153,7 @@ def if_image(image: Image=None) -> Str:
     result = if_globals(getattr(image, 'globals', None))
     result += if_id(getattr(image, 'image_id', None))
     result += if_class(getattr(image, 'image_class', None))
-    result += if_hover(getattr(image, 'image_hover', None))
+    result += if_style(getattr(image, 'image_style', None))
     if getattr(image, 'image_lazy', None):
         result += if_key_value(image.image_lazy, "loading", "lazy")
     if getattr(image, 'image_alt', None):
@@ -190,4 +194,40 @@ def if_asset(asset: Asset=None) -> Str:
         result += if_key_value(asset.asset_mime, "type", asset.asset_mime)
     if getattr(asset, 'asset_rel', None):
         result += if_key(asset.asset_rel, "rel")
+    return result
+
+@typed
+def if_item(item: Item=None) -> str:
+    if not item:
+        return ""
+    result = if_id(getattr(item, 'item_id', None))
+    result += if_class(getattr(item, 'item_class', None))
+    result += if_style(getattr(item, 'item_style', None))
+    return result
+
+@typed
+def if_ul(ul: Unordered=None) -> str:
+    if not ul:
+        return ""
+    result = if_id(getattr(ul, 'ul_id', None))
+    result += if_class(getattr(ul, 'ul_class', None))
+    result += if_style(getattr(ul, 'ul_style', None))
+    return result
+
+@typed
+def if_ol(ol: Ordered=None) -> str:
+    if not ol:
+        return ""
+    result = if_id(getattr(ol, 'ol_id', None))
+    result += if_class(getattr(ol, 'ol_class', None))
+    result += if_style(getattr(ol, 'ol_style', None))
+    return result
+
+@typed
+def if_nav(nav: Nav=None) -> str:
+    if not nav:
+        return ""
+    result = if_id(getattr(nav, 'nav_id', None))
+    result += if_class(getattr(nav, 'nav_class', None))
+    result += if_style(getattr(nav, 'nav_style', None))
     return result

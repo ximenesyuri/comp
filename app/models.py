@@ -15,7 +15,8 @@ from typed import (
     Path,
     Url,
     PathUrl,
-    null
+    null,
+    Any
 )
 from typed.models import model, exact, Optional
 from app.mods.helper.models import (
@@ -28,6 +29,7 @@ from app.mods.helper.models import (
     _FlexSearchResults,
     _FlexSearchIndex
 )
+from app.mods.types.base import Inner
 
 @model
 class Alpine:
@@ -97,13 +99,14 @@ class Aria:
 
 @model
 class Button:
-    globals:      Optional(Globals, null(Globals))
+    globals:      Optional(Globals, Globals())
     button_id:    Optional(Str, "button")
     button_class: Optional(Str, "")
-    button_hover: Optional(Str, "")
+    button_style: Optional(Str, "")
     button_type:  Optional(Enum(Str, "button", "reset", "submmit"), "button")
     on_click:     Optional(Str, "")
     click_away:   Optional(Str, "")
+    inner:        Optional(Any, None)
 
 @model
 class Icon:
@@ -116,45 +119,89 @@ class Icon:
 
 @model
 class Image:
-    globals:     Optional(Globals, null(Globals))
+    globals:     Optional(Globals, Globals())
     image_id:    Optional(Str, "image")
     image_class: Optional(Str, "")
-    image_hover: Optional(Str, "")
+    image_style: Optional(Str, "")
     image_alt:   Optional(Str, "")
     image_src:   Optional(PathUrl, "")
     image_lazy:  Optional(Bool, True)
 
 @model
 class Text:
-    globals:    Optional(Globals, null(Globals))
+    globals:    Optional(Globals, Globals())
     text_id:    Optional(Str, "text")
     text_class: Optional(Str, "")
-    text_hover: Optional(Str, "")
+    text_style: Optional(Str, "")
+    inner:      Optional(Any, None)
 
 @model
 class Title:
-    globals:     Optional(Globals, null(Globals))
+    globals:     Optional(Globals, Globals())
     title_id:    Optional(Str, "title")
     title_class: Optional(Str, "")
-    title_hover: Optional(Str, "")
+    title_style: Optional(Str, "")
     title_tag:   Optional(Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6"), "h1")
+    inner:       Optional(Any, None)
 
 @model
 class Link:
-    globals:       Optional(Globals, null(Globals))
+    globals:       Optional(Globals, Globals())
     link_id:       Optional(Str, "link")
     link_class:    Optional(Str, "")
-    link_hover:    Optional(Str, "")
-    link_href:     Optional(Url("http", "https"), "https://")
-    link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top", ""), "")
+    link_style:    Optional(Str, "")
+    link_href:     Optional(PathUrl, "https://")
+    link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top"), "_self")
     link_rel:      Optional(Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', ""), "")
     link_download: Optional(PathUrl, '')
+    inner:         Optional(Any, None)
 
 @model
 class Figure:
-    globals:        Optional(Globals, null(Globals))
-    figure_img:     Optional(Image, null(Image))
+    globals:        Optional(Globals, Globals())
+    figure_img:     Optional(Image, Image())
     figure_caption: Optional(Str, "")
+
+@model
+class Logo:
+    logo_img:  Optional(Image, Image())
+    logo_link: Optional(Link, Link(link_href="/"))
+
+@model
+class Item:
+    item_id:    Optional(Str, "item")
+    item_class: Optional(Str, "")
+    item_style: Optional(Str, "")
+    inner:      Optional(Any, None)
+
+@model
+class Unordered:
+    ul_id:    Optional(Str, "ul")
+    ul_class: Optional(Str, "")
+    ul_style: Optional(Str, "")
+    ul_items: Optional(List(Item), [])
+
+@model
+class Ordered:
+    ol_id:    Optional(Str, "ol")
+    ol_class: Optional(Str, "")
+    ol_style: Optional(Str, "")
+    ol_items: Optional(List(Item), [])
+
+@model(extends=Item)
+class NavItem:
+    item_link: Optional(Any, "")
+
+
+@model
+class Nav:
+    nav_id:        Optional(Str, "nav")
+    nav_class:     Optional(Str, "")
+    nav_direction: Optional(Enum(Str, "vertical", "horizontal"), "horizontal")
+    nav_items:     Optional(List(NavItem), [])
+    ul_id:         Optional(Str, "")
+    ul_class:      Optional(Str, "")
+    ul_style:      Optional(Str, "")
 
 @exact
 class Script:
@@ -162,6 +209,7 @@ class Script:
     script_defer: Optional(Bool, False)
     script_type:  Optional(Enum(Str, "module", "importmap", ""), "")
     script_async: Optional(Bool, False)
+    inner:        Optional(Any, None)
 
 @exact
 class Asset:
@@ -214,7 +262,7 @@ class InputCheckbox:
 class Form:
     form_id:               Optional(Str, "form")
     form_class:            Optional(Str, "")
-    form_hover:            Optional(Str, "")
+    form_style:            Optional(Str, "")
     form_name:             Optional(Str, "")
     form_action:           Optional(Str, "")
     form_method:           Optional(Str, "get")
