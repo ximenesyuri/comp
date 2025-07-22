@@ -192,7 +192,6 @@ class Ordered:
 class NavItem:
     item_link: Optional(Any, "")
 
-
 @model
 class Nav:
     nav_id:        Optional(Str, "nav")
@@ -201,7 +200,7 @@ class Nav:
     nav_items:     Optional(List(NavItem), [])
     ul_id:         Optional(Str, "")
     ul_class:      Optional(Str, "")
-    ul_style:      Optional(Str, "")
+    ul_style:      Optional(Str, "list-style: none;")
 
 @exact
 class Script:

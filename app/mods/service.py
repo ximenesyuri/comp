@@ -14,100 +14,6 @@ from app.components import script as script_component, asset as asset_component
 from app.models import Script, Asset
 
 
-from typed.models import MODEL
-from collections.abc import Mapping
-from types import SimpleNamespace
-
-def _is_render_tuple(val):
-    """
-    Returns True if input looks like a (component, ...) tuple for special rendering.
-    """
-    if isinstance(val, tuple) and len(val) >= 1 and callable(val[0]):
-        return True
-    return False
-
-def _asdict(obj):
-    """
-    For MODEL instances: shallow dict of fields. For dicts: identity.
-    """
-    if hasattr(obj, '__fields__'):
-        return {k: getattr(obj, k) for k in obj.__fields__}
-    elif hasattr(obj, '__dict__'):
-        return dict(obj.__dict__)
-    elif isinstance(obj, Mapping):
-        return dict(obj)
-    else:
-        # fallback: use dir() for public attributes
-        return {k: getattr(obj, k) for k in dir(obj) if not k.startswith("_") and hasattr(obj, k)}
-
-def _expand_inner(obj):
-    """
-    Recursively process any objects that have .inner (or dict key 'inner') fields,
-    and whenever .inner is a special tuple, replace with render(component, ...)
-    """
-    from app.mods.service import render  # local import to avoid circular import
-    # De-model if needed
-    if isinstance(obj, MODEL):
-        data = _asdict(obj)
-        changed = False
-        new_data = {}
-        for k, v in data.items():
-            if k == "inner":
-                # Handle the inner field
-                new_val = _expand_inner_inner(v)
-                if new_val is not v:
-                    changed = True
-                new_data[k] = new_val
-            elif (isinstance(v, MODEL) or (isinstance(v, Mapping) and not isinstance(v,str))):
-                # Recursively process nested MODELs and dicts
-                val2 = _expand_inner(v)
-                if val2 is not v:
-                    changed = True
-                new_data[k] = val2
-            elif isinstance(v, list):
-                l2 = []
-                for item in v:
-                    l2.append(_expand_inner(item))
-                if l2 != v:
-                    changed = True
-                new_data[k] = l2
-            else:
-                new_data[k] = v
-        if changed:
-            # Re-create MODEL instance with updated fields
-            return type(obj)(**new_data)
-        else:
-            return obj
-    elif isinstance(obj, Mapping) and not isinstance(obj, str):
-        d2 = {}
-        changed = False
-        for k, v in obj.items():
-            if k == "inner":
-                nv = _expand_inner_inner(v)
-                if nv is not v: changed = True
-                d2[k] = nv
-            elif isinstance(v, MODEL) or (isinstance(v, Mapping) and not isinstance(v,str)):
-                v2 = _expand_inner(v)
-                if v2 is not v: changed = True
-                d2[k] = v2
-            elif isinstance(v, list):
-                l2 = []
-                for item in v: l2.append(_expand_inner(item))
-                if l2 != v: changed = True
-                d2[k] = l2
-            else:
-                d2[k] = v
-        if changed:
-            return d2
-        else:
-            return obj
-    elif isinstance(obj, list):
-        return [_expand_inner(e) for e in obj]
-    else:
-        return obj
-
-
-
 @typed
 def render(
         component: COMPONENT,
@@ -119,26 +25,22 @@ def render(
     ) -> Str:
 
     try:
-        # >>>> THE ONLY PATCH: expand all possible "tuple" inners <<<<
-        expanded_kwargs = {k: _expand_inner(v) for k, v in kwargs.items()}
-        # -----------------------------------------------------------
-
         definer = getattr(component, "func", component)
         sig = signature(definer)
         valid_params = set(sig.parameters.keys())
         special = {"__scripts__", "__assets__", "depends_on", "__styled__"}
         valid_params = valid_params | special
 
-        unknown_args = set(expanded_kwargs) - valid_params
+        unknown_args = set(kwargs) - valid_params
         if unknown_args:
             raise TypeError(
                 f"[render] Unexpected keyword argument(s) for '{getattr(definer, '__name__', definer)}': {', '.join(sorted(unknown_args))}\n"
                 f"Allowed arguments: {', '.join(sorted(set(sig.parameters)))}"
             )
 
-        expanded_kwargs.pop("__scripts__", None)
-        expanded_kwargs.pop("__assets__", None)
-        expanded_kwargs.pop("__styled__", None)
+        kwargs.pop("__scripts__", None)
+        kwargs.pop("__assets__", None)
+        kwargs.pop("__styled__", None)
 
         content_params = {
             name: param
@@ -146,19 +48,19 @@ def render(
             if getattr(param, "annotation", None) is Content
         }
         for cname, param in content_params.items():
-            if cname in expanded_kwargs:
-                value = expanded_kwargs[cname]
+            if cname in kwargs:
+                value = kwargs[cname]
                 if isinstance(value, Str):
-                    expanded_kwargs[cname] = md.to_html(value)
+                    kwargs[cname] = md.to_html(value)
                 elif isinstance(value, str) and value.lower().endswith(".md") and os.path.isfile(value):
                     md_text = file.read(value)
-                    expanded_kwargs[cname] = markdown(md_text)
+                    kwargs[cname] = markdown(md_text)
                 else:
-                    expanded_kwargs[cname] = markdown(value)
+                    kwargs[cname] = markdown(value) 
         depends_on = []
         if "depends_on" in sig.parameters:
             depends_on_default = sig.parameters["depends_on"].default
-            depends_on = expanded_kwargs.pop("depends_on", depends_on_default) or []
+            depends_on = kwargs.pop("depends_on", depends_on_default) or []
         if depends_on is None:
             depends_on = []
         all_depends_on = _resolve_deps(depends_on)
@@ -166,8 +68,8 @@ def render(
         for param in sig.parameters.values():
             if param.name == "depends_on":
                 continue
-            if param.name in expanded_kwargs:
-                call_args[param.name] = expanded_kwargs[param.name]
+            if param.name in kwargs:
+                call_args[param.name] = kwargs[param.name]
             elif param.default is not param.empty:
                 call_args[param.name] = param.default
             else:
@@ -243,7 +145,7 @@ def render(
 
         full_jinja_context = dict(comp_locals)
         full_jinja_context.update(call_args)
-        full_jinja_context.update(expanded_kwargs)
+        full_jinja_context.update(kwargs)
         for dep in all_depends_on:
             dep_name = getattr(dep, "__name__", str(dep))
             def make_rendered_dep_func(dep):
@@ -301,12 +203,11 @@ def mock(component: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
 def preview(component: COMPONENT, **kwargs: Dict(Any)) -> Nill:
     try:
         html = render(component, **kwargs)
-        temp_file = cmd.mktemp.file(extension="html")
+        temp_file = "/tmp/app_preview_component.html"
         file.write(
             filepath=temp_file,
             content=html
         )
         webbrowser.open_new_tab(f'file://{path.abs(temp_file)}')
-        cmd.rm(temp_file)
     except Exception as e:
         raise PreviewErr(e)

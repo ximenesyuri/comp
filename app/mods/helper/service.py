@@ -34,52 +34,69 @@ def _style(rendered_component: Str) -> Str:
         soup = BeautifulSoup(rendered_component, 'html.parser')
 
         def escape_class_selector(cls):
-            return cls.replace(':', '\\:').replace('#', '\\#').replace('[', '\\[').replace(']', '\\]').replace('.', '\\.')
+            return (cls.replace(':', '\\:')
+                        .replace('#', '\\#')
+                        .replace('[', '\\[')
+                        .replace(']', '\\]')
+                        .replace('.', '\\.')
+                    )
 
-        PREFIXES_MAP = {
-            "phone":   "(min-width: 0px) and (max-width: 767px)",
-            "tablet":  "(min-width: 768px) and (max-width: 1024px)",
-            "mobile":  "(min-width: 0px) and (max-width: 1024px)",
-            "desktop": "(min-width: 1025px) and (max-width: 10000px)"
+        # Definitions
+        MEDIA_PREFIXES = {
+            "phone": "(min-width: 0px) and (max-width: 767px)",
+            "tablet": "(min-width: 768px) and (max-width: 1024px)",
+            "mobile": "(min-width: 0px) and (max-width: 1024px)",
+            "desktop": "(min-width: 1025px) and (max-width: 10000px)",
         }
-        ALIAS_MAP = {
-            "p": "phone",
-            "t": "tablet",
-            "m": "mobile",
-            "d": "desktop",
-            "n": "not"
+        MEDIA_ALIASES = {
+            "p": "phone", "ph": "phone",
+            "t": "tablet", "tab": "tablet",
+            "m": "mobile", "mob": "mobile",
+            "d": "desktop", "desk": "desktop", "dsk": "desktop",
         }
-        VALID_MEDIA_PREFIXES_AND_ALIASES = set(PREFIXES_MAP.keys()).union(ALIAS_MAP.keys())
-        IMPORTANT_FLAG = "!"
-        NOT_FLAG = "not"
-        NOT_ALIASES = ["n"]
 
-        found_styles = {}
+        PSEUDO_PREFIXES = {
+            "hover": "hover",
+            "h": "hover",
+            "active": "active",
+            "a": "active",
+            "focus": "focus",
+            "f": "focus",
+        }
+        PSEUDO_ORDER = ["hover", "active", "focus"]
+
+        IMPORTANT_PREFIXES = {"!", "i", "important", "imp"}
+        NOT_PREFIXES = {"not", "n"}
+
+        MEDIA_ALL = set(MEDIA_PREFIXES.keys()) | set(MEDIA_ALIASES.keys())
+        PSEUDO_ALL = set(PSEUDO_PREFIXES.keys())
+        IMP_ALL = IMPORTANT_PREFIXES
+        NOT_ALL = NOT_PREFIXES
 
         patterns = {
             'margin_padding': re.compile(r'(m[tblr]|p[tblr])-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)'),
             'border': re.compile(r'b(t|b|r|l)-(\d+(?:\.\d+)?)(px|em|rem|%)?-(\w+)'),
-            'font_size': re.compile(r'fz-(\d+(?:\.\d+)?)(px|em|rem|%)'),
+            'font_size': re.compile(r'f[sz]-(\d+(?:\.\d+)?)(px|em|rem|%)'),
             'font_weight': re.compile(r'fw-(extra-light|el|light|l|normal|n|bold|b|extra-bold|eb|black|B|\d{3})'),
             'font_family': re.compile(r'ff-\[(.+?)\]'),
             'font_style': re.compile(r'fs-(italic|it|normal|oblique)'),
             'text_decoration': re.compile(r'td-(underline|u|overline|o|line-through|lt|none)'),
             'letter_spacing': re.compile(r'ls-(\d+(?:\.\d+)?)(em|px|rem|%)'),
-            'color_hex_rgb': re.compile(r'fc-(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\d{1,3},\d{1,3})\))'),
+            'color_hex_rgb': re.compile(r'fc-(#([0-9a-fA-F]{3}){1,2}|rgb\((?:\d{1,3},\d{1,3},\d{1,3})\))'),
             'color_var': re.compile(r'fc-([a-zA-Z][a-zA-Z0-9_\-]+)'),
-            'fill_hex_rgb': re.compile(r'fill-(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\d{1,3},\d{1,3})\))'),
+            'fill_hex_rgb': re.compile(r'fill-(#([0-9a-fA-F]{3}){1,2}|rgb\((?:\d{1,3},\d{1,3},\d{1,3})\))'),
             'fill_var': re.compile(r'fill-([a-zA-Z][a-zA-Z0-9_\-]+)'),
             'text_transform': re.compile(r'tt-(cap|up|upper|lw|low|lower)'),
-            'width': re.compile(r'w-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'), # width
-            'height': re.compile(r'h-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'), # height
-            'min_width': re.compile(r'mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # min-width
-            'max_width': re.compile(r'Mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # max-width
-            'min_height': re.compile(r'mh-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # min-height
-            'max_height': re.compile(r'Mh-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # max-height
-            'gap': re.compile(r'gap-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'), # gap
-            'border_radius': re.compile(r'(radius|bR)-(\d+(?:\.\d+)?)(px|%|em|rem)'), # border-radius
-            'z_index': re.compile(r'z-(full|none|\d+)'), # z-index
-            'background_color_hex_rgb': re.compile(r'bg-(#([0-9a-fA-F]{3}){1,2}|rgb\((\d{1,3},\s*\d{1,3},\s*\d{1,3})\))'),
+            'width': re.compile(r'w-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'),
+            'height': re.compile(r'h-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'),
+            'min_width': re.compile(r'mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
+            'max_width': re.compile(r'Mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
+            'min_height': re.compile(r'mh-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
+            'max_height': re.compile(r'Mh-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
+            'gap': re.compile(r'gap-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
+            'border_radius': re.compile(r'(radius|bR)-(\d+(?:\.\d+)?)(px|%|em|rem)'),
+            'z_index': re.compile(r'z-(full|none|\d+)'),
+            'background_color_hex_rgb': re.compile(r'bg-(#([0-9a-fA-F]{3}){1,2}|rgb\((?:\d{1,3},\s*\d{1,3},\s*\d{1,3})\))'),
             'background_size': re.compile(r'bg-sz-(\d+(?:\.\d+)?)(px|%|em|rem)'),
             'background_blur': re.compile(r'(?:bg-blur|blur)-(\d+(?:\.\d+)?)(px|em|rem|%)'),
             'display': re.compile(r'^(?:flex|fl|inline|inl|block|blk|table|tab|inline-block|inl-blk|inline-flex|inl-fl)$'),
@@ -90,9 +107,13 @@ def _style(rendered_component: Str) -> Str:
             'scroll_x': re.compile(r'(?:scroll|scl)-x'),
             'scroll_y': re.compile(r'(?:scroll|scl)-y'),
             'scroll_all': re.compile(r'(?:scroll|scl)$'),
+            'padding_margin': re.compile(r'(p|m)-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)'),
+            'margin_padding': re.compile(r'(m[tblr]|p[tblr])-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)')
         }
 
         style_property_map = {
+            'p': 'padding',
+            'm': 'margin',
             'mt': 'margin-top', 'mb': 'margin-bottom', 'ml': 'margin-left', 'mr': 'margin-right',
             'pt': 'padding-top', 'pb': 'padding-bottom', 'pl': 'padding-left', 'pr': 'padding-right',
             'bt': 'border-top', 'bb': 'border-bottom', 'br': 'border-right', 'bl': 'border-left',
@@ -135,26 +156,22 @@ def _style(rendered_component: Str) -> Str:
             'extra-bold': 800, 'eb': 800,
             'black': 900, 'B': 900,
         }
-
         font_style_map = {
             'italic': 'italic', 'it': 'italic',
             'normal': 'normal',
             'oblique': 'oblique',
         }
-
         text_decoration_map = {
             'underline': 'underline', 'u': 'underline',
             'overline': 'overline', 'o': 'overline',
             'line-through': 'line-through', 'lt': 'line-through',
             'none': 'none',
         }
-
         text_transform_map = {
             'cap': 'capitalize',
             'up': 'uppercase', 'upper': 'uppercase',
             'lw': 'lowercase', 'low': 'lowercase', 'lower': 'lowercase',
         }
-
         display_map = {
             'flex': 'flex', 'fl': 'flex',
             'inline': 'inline', 'inl': 'inline',
@@ -163,14 +180,12 @@ def _style(rendered_component: Str) -> Str:
             'inline-block': 'inline-block', 'inl-blk': 'inline-block',
             'inline-flex': 'inline-flex', 'inl-fl': 'inline-flex',
         }
-
         position_map = {
             'fix': 'fixed',
             'abs': 'absolute',
             'rel': 'relative',
             'stk': 'sticky',
         }
-
         text_justify_map = {
             'start': 'start', 'st': 'start',
             'end': 'end', 'ed': 'end',
@@ -179,9 +194,13 @@ def _style(rendered_component: Str) -> Str:
             'center': 'center', 'cnt': 'center',
         }
 
-
         def style_for_base_class(class_name):
             css_rule = None
+            match = patterns['padding_margin'].match(class_name)
+            if match:
+                prefix, value, unit = match.groups()
+                prop = style_property_map[prefix]
+                css_rule = f"{prop}: {value}{unit};"
             match = patterns['margin_padding'].match(class_name)
             if match:
                 prefix, value, unit = match.groups()
@@ -192,65 +211,57 @@ def _style(rendered_component: Str) -> Str:
                 if match:
                     border_type, value, unit, color_or_style = match.groups()
                     prop = style_property_map['b' + border_type]
-                    unit = unit if unit else 'px'  # Default unit for border width
+                    unit = unit if unit else 'px'
                     css_rule = f"{prop}: {value}{unit} {color_or_style};"
             if not css_rule:
                 match = patterns['font_size'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['fz']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"font-size: {value}{unit};"
             if not css_rule:
                 match = patterns['font_weight'].match(class_name)
                 if match:
                     weight_key = match.group(1)
-                    prop = style_property_map['fw']
                     weight_val = font_weight_map.get(weight_key)
                     if weight_val is None:
                         try:
                             weight_val = int(weight_key)
                         except ValueError:
                             weight_val = weight_key
-                    css_rule = f"{prop}: {weight_val};"
+                    css_rule = f"font-weight: {weight_val};"
             if not css_rule:
                 match = patterns['font_family'].match(class_name)
                 if match:
                     font_families_encoded = match.group(1)
                     font_families_decoded = font_families_encoded.replace('_', ' ')
-                    prop = style_property_map['ff']
-                    css_rule = f"{prop}: {font_families_decoded};"
+                    css_rule = f"font-family: {font_families_decoded};"
             if not css_rule:
                 match = patterns['font_style'].match(class_name)
                 if match:
                     style_key = match.group(1)
-                    prop = style_property_map['fs']
                     style_val = font_style_map.get(style_key, style_key)
-                    css_rule = f"{prop}: {style_val};"
+                    css_rule = f"font-style: {style_val};"
             if not css_rule:
                 match = patterns['text_decoration'].match(class_name)
                 if match:
                     decoration_key = match.group(1)
-                    prop = style_property_map['td']
                     decoration_val = text_decoration_map.get(decoration_key, decoration_key)
-                    css_rule = f"{prop}: {decoration_val};"
+                    css_rule = f"text-decoration: {decoration_val};"
             if not css_rule:
                 match = patterns['letter_spacing'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['ls']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"letter-spacing: {value}{unit};"
             if not css_rule:
                 match = patterns['color_hex_rgb'].match(class_name)
                 if match:
                     color_val = match.group(1)
-                    prop = style_property_map['fc']
-                    css_rule = f"{prop}: {color_val};"
+                    css_rule = f"color: {color_val};"
             if not css_rule:
                 match = patterns['color_var'].match(class_name)
                 if match:
                     var_name = match.group(1).replace('-', '_')
-                    prop = style_property_map['fc']
-                    css_rule = f"{prop}: var(--{var_name});"
+                    css_rule = f"color: var(--{var_name});"
             if not css_rule:
                 match = patterns['fill_hex_rgb'].match(class_name)
                 if match:
@@ -260,15 +271,13 @@ def _style(rendered_component: Str) -> Str:
                 match = patterns['fill_var'].match(class_name)
                 if match:
                     var_name = match.group(1).replace('-', '_')
-                    prop = style_property_map['fill']
                     css_rule = f"fill: var(--{var_name});"
             if not css_rule:
                 match = patterns['text_transform'].match(class_name)
                 if match:
                     transform_key = match.group(1)
-                    prop = style_property_map['tt']
                     transform_val = text_transform_map.get(transform_key)
-                    css_rule = f"{prop}: {transform_val};"
+                    css_rule = f"text-transform: {transform_val};"
             if not css_rule:
                 match = patterns['width'].match(class_name)
                 if match:
@@ -281,8 +290,7 @@ def _style(rendered_component: Str) -> Str:
                         css_val = 'none'
                     else:
                         css_val = value_str
-                    prop = style_property_map['w']
-                    css_rule = f"{prop}: {css_val};"
+                    css_rule = f"width: {css_val};"
             if not css_rule:
                 match = patterns['height'].match(class_name)
                 if match:
@@ -295,44 +303,37 @@ def _style(rendered_component: Str) -> Str:
                         css_val = 'none'
                     else:
                         css_val = value_str
-                    prop = style_property_map['h']
-                    css_rule = f"{prop}: {css_val};"
+                    css_rule = f"height: {css_val};"
             if not css_rule:
                 match = patterns['min_width'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['mw']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"min-width: {value}{unit};"
             if not css_rule:
                 match = patterns['max_width'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['Mw']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"max-width: {value}{unit};"
             if not css_rule:
                 match = patterns['min_height'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['mh']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"min-height: {value}{unit};"
             if not css_rule:
                 match = patterns['max_height'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['Mh']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"max-height: {value}{unit};"
             if not css_rule:
                 match = patterns['gap'].match(class_name)
                 if match:
                     value, unit = match.groups()
-                    prop = style_property_map['gap']
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"gap: {value}{unit};"
             if not css_rule:
                 match = patterns['border_radius'].match(class_name)
                 if match:
                     prefix, value, unit = match.groups()
-                    prop = style_property_map[prefix]
-                    css_rule = f"{prop}: {value}{unit};"
+                    css_rule = f"border-radius: {value}{unit};"
             if not css_rule:
                 match = patterns['z_index'].match(class_name)
                 if match:
@@ -343,8 +344,7 @@ def _style(rendered_component: Str) -> Str:
                         css_val = '0'
                     else:
                         css_val = value_str
-                    prop = style_property_map['z']
-                    css_rule = f"{prop}: {css_val};"
+                    css_rule = f"z-index: {css_val};"
             if not css_rule:
                 match = patterns['background_color_hex_rgb'].match(class_name)
                 if match:
@@ -405,35 +405,74 @@ def _style(rendered_component: Str) -> Str:
                     css_rule = "position: fixed; overflow-x: auto; overflow-y: auto; max-height: 100vh;"
             return css_rule
 
-        for tag in soup.find_all(True):
-            if tag.has_attr('class'):
-                for class_name in tag['class']:
-                    media_pref = None
-                    is_important = False
-                    is_not_prefixed = False
-                    parts = class_name.split(':')
-                    current_parts_idx = 0
+        def parse_prefixed_class(class_name: str):
+            """Parse aliases and collect flags. Return error if any illegal usage."""
+            parts = class_name.split(':')
+            original = class_name
+            error = None
+            found_media = None
+            found_pseudos = []
+            found_important = False
+            found_not = False
+            i = 0
+            while i < len(parts):
+                part = parts[i]
+                lpart = part.lower()
+                if lpart in NOT_ALL:
+                    if i != 0:
+                        error = f"ERROR({original})"
+                        return {'error': error}
+                    if i+1 >= len(parts):
+                        error = f"ERROR({original})"
+                        return {'error': error}
+                    if parts[i+1].lower() not in MEDIA_ALL:
+                        error = f"ERROR({original})"
+                        return {'error': error}
+                    found_not = True
+                    i += 1
+                elif lpart in IMP_ALL:
+                    found_important = True
+                    i += 1
+                elif lpart in MEDIA_ALL:
+                    if found_media is not None:
+                        error = f"ERROR({original})"
+                        return {'error': error}
+                    media = MEDIA_ALIASES.get(lpart, lpart)
+                    found_media = media
+                    i += 1
+                elif lpart in PSEUDO_ALL:
+                    pseudo = PSEUDO_PREFIXES[lpart]
+                    if pseudo in found_pseudos:
+                        # duplicate pseudo
+                        error = f"ERROR({original})"
+                        return {'error': error}
+                    found_pseudos.append(pseudo)
+                    i += 1
+                else:
+                    break
+            base = ":".join(parts[i:])
+            if found_not:
+                if not found_media or found_pseudos:
+                    error = f"ERROR({original})"
+                    return {'error': error}
 
-                    if parts[current_parts_idx] == IMPORTANT_FLAG:
-                        is_important = True
-                        current_parts_idx += 1
-
-                    if current_parts_idx < len(parts) and (parts[current_parts_idx] == NOT_FLAG or parts[current_parts_idx] in NOT_ALIASES):
-                        is_not_prefixed = True
-                        current_parts_idx += 1
-
-                    if current_parts_idx < len(parts):
-                        potential_media_prefix = parts[current_parts_idx]
-                        if potential_media_prefix in VALID_MEDIA_PREFIXES_AND_ALIASES:
-                            media_pref = ALIAS_MAP.get(potential_media_prefix, potential_media_prefix)
-                            current_parts_idx += 1
-                    base_class_name = ":".join(parts[current_parts_idx:])
-
-                    css_rule = style_for_base_class(base_class_name)
-                    if css_rule:
-                        if is_important:
-                            css_rule = css_rule.replace(';', ' !important;')
-                        found_styles[(media_pref, is_important, is_not_prefixed, class_name)] = css_rule
+            for j, part in enumerate(parts):
+                if part.lower() in NOT_ALL and j != 0:
+                    error = f"ERROR({original})"
+                    return {'error': error}
+            if not base:
+                error = f"ERROR({original})"
+                return {'error': error}
+            pseudos_sorted = sorted(found_pseudos, key=lambda p: PSEUDO_ORDER.index(p)) if found_pseudos else []
+            return {
+                'error': None,
+                'important': found_important,
+                'media': found_media,
+                'pseudos': pseudos_sorted,
+                'not': found_not,
+                'base': base,
+                'original': class_name
+            }
 
         CANONICAL_MEDIA_NAMES = ["phone", "tablet", "mobile", "desktop"]
         css_buckets = {
@@ -447,54 +486,73 @@ def _style(rendered_component: Str) -> Str:
             True: {False: [], True: []}
         }
 
-        for (pref, is_important, is_not_prefixed, original_class_name), css_rule in found_styles.items():
-            canonical_pref_for_bucket = pref 
-            selector = '.' + escape_class_selector(original_class_name)
-            rule_str = f"{selector} {{\n    {css_rule}\n}}"
-            if canonical_pref_for_bucket in css_buckets and \
-               is_important in css_buckets[canonical_pref_for_bucket] and \
-               is_not_prefixed in css_buckets[canonical_pref_for_bucket][is_important]:
-                css_buckets[canonical_pref_for_bucket][is_important][is_not_prefixed].append(rule_str)
-            else:
-                print(f"Warning: Rule for '{original_class_name}' with (pref={pref}, imp={is_important}, not={is_not_prefixed}) could not be placed in bucket. Defaulting to global non-important non-not.")
-                css_buckets[None][False][False].append(rule_str)
+        bucket_not_media = {
+            "phone": "(min-width: 768px)",
+            "tablet": "(max-width: 767px), (min-width: 1025px)",
+            "mobile": "(min-width: 1025px)",
+            "desktop": "(max-width: 1024px)",
+        }
+
+        css_rules_errors = []
+
+        for tag in soup.find_all(True):
+            if tag.has_attr('class'):
+                for class_name in tag['class']:
+                    pref = parse_prefixed_class(class_name)
+                    if pref['error']:
+                        css_rules_errors.append(f".{escape_class_selector(class_name)} {{ color: red; font-weight: bold; content: '{pref['error']}'; }}")
+                        continue
+
+                    base_rule = style_for_base_class(pref['base'])
+                    if not base_rule:
+                        continue
+                    selector = '.' + escape_class_selector(pref['original'])
+                    for pseudo in pref['pseudos']:
+                        selector += f":{pseudo}"
+
+                    rule_content = base_rule.strip()
+                    if pref['important']:
+                        rule_content = re.sub(r'(?<!important)\s*;', ' !important;', rule_content)
+
+                    rule_str = f"{selector} {{\n    {rule_content}\n}}"
+
+                    if pref['not']:
+                        canonical_media = pref['media'] if pref['media'] in CANONICAL_MEDIA_NAMES else None
+                        css_buckets[canonical_media][pref['important']][True].append(rule_str)
+                    elif pref['media']:
+                        canonical_media = pref['media'] if pref['media'] in CANONICAL_MEDIA_NAMES else pref['media']
+                        if canonical_media not in css_buckets:
+                            css_buckets[None][pref['important']][False].append(rule_str)
+                        else:
+                            css_buckets[canonical_media][pref['important']][False].append(rule_str)
+                    else:
+                        css_buckets[None][pref['important']][False].append(rule_str)
+
         new_css_rules_list = []
+
         new_css_rules_list.extend(css_buckets[None][False][False])
         new_css_rules_list.extend(css_buckets[None][True][False])
         for canonical_media_name in CANONICAL_MEDIA_NAMES:
-            mq_expression = PREFIXES_MAP[canonical_media_name]
-
+            mq_expression = MEDIA_PREFIXES[canonical_media_name]
             rules_for_this_mq = []
             rules_for_this_mq.extend(css_buckets[canonical_media_name][False][False])
             rules_for_this_mq.extend(css_buckets[canonical_media_name][True][False])
-
             if rules_for_this_mq:
-                new_css_rules_list.append(f"@media {mq_expression} {{\n" + "\n".join(rules_for_this_mq) + "\n}\n")
+                new_css_rules_list.append(f"@media {mq_expression} {{\n{chr(10).join(rules_for_this_mq)}\n}}\n")
             not_rules_for_this_mq = []
             not_rules_for_this_mq.extend(css_buckets[canonical_media_name][False][True])
             not_rules_for_this_mq.extend(css_buckets[canonical_media_name][True][True])
-
             if not_rules_for_this_mq:
-                not_mq_expression = ""
-                if canonical_media_name == "phone":
-                    not_mq_expression = "(min-width: 768px)"
-                elif canonical_media_name == "tablet":
-                    not_mq_expression = "(max-width: 767px), (min-width: 1025px)"
-                elif canonical_media_name == "mobile":
-                    not_mq_expression = "(min-width: 1025px)"
-                elif canonical_media_name == "desktop":
-                    not_mq_expression = "(max-width: 1024px)"
+                not_mq_expression = bucket_not_media[canonical_media_name]
+                new_css_rules_list.append(f"@media {not_mq_expression} {{\n{chr(10).join(not_rules_for_this_mq)}\n}}\n")
 
-                if not_mq_expression:
-                    new_css_rules_list.append(f"@media {not_mq_expression} {{\n" + "\n".join(not_rules_for_this_mq) + "\n}\n")
-                else:
-                    print(f"Warning: Could not create 'not' media query for '{canonical_media_name}' for classes: {not_rules_for_this_mq}")
+        if css_rules_errors:
+            new_css_rules_list.append('\n'.join(css_rules_errors))
 
         new_css_rules = "\n".join(new_css_rules_list)
         if new_css_rules:
             head_tag = soup.find('head')
-
-            if soup.head:
+            if head_tag:
                 style_tag = soup.head.find('style')
                 if style_tag:
                     if style_tag.string:
