@@ -1,5 +1,13 @@
 import re
-from inspect import signature, Parameter
+import threading
+import webbrowser
+import time
+import os
+import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse
+from socketserver import ThreadingMixIn
+from inspect import signature, Parameter, getsourcefile
 from jinja2 import Environment, DictLoader, StrictUndefined, meta
 from typed import typed, Dict, Any, Str
 from app.mods.helper.types import COMPONENT
@@ -641,3 +649,289 @@ def _minify(html: str) -> str:
     html = re.sub(r'\s+<', '<', html)
     html = html.strip()
     return html
+
+class _Preview:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(_Preview, cls).__new__(cls)
+            cls._instance._init_singleton()
+        return cls._instance
+
+    def _init_singleton(self):
+        self.stack = []
+        self.server_thread = None
+        self.has_started = False
+        self.port = 4955
+        self.file_dependents = {}
+        self.source_cache = {}
+        self.reload_ts = str(time.time())
+        self.single_preview = None
+        self.lock = threading.Lock()
+        self._reloader_thread = None
+        self._browser_opened = False
+
+    def add(self, comp, **kwargs):
+        """
+        Adds a component to the preview stack.
+        Can optionally accept a __name__ for the component instance.
+        """
+        with self.lock:
+            instance_name = kwargs.pop("__name__", None)
+            self.stack.append((comp, kwargs, instance_name))
+            self.update_file_watch(comp)
+            self.touch_reload()
+
+    def rm(self, identifier):
+        """
+        Removes components from the preview stack.
+        If `identifier` is a component function, removes all instances of that component.
+        If `identifier` is a string, removes the instance with the matching __name__.
+        """
+        with self.lock:
+            if isinstance(identifier, str):
+                new_stack = []
+                removed = False
+                for item_comp, item_kwargs, item_name in self.stack:
+                    if item_name == identifier:
+                        removed = True
+                        if item_comp in self.file_dependents:
+                            other_instances = [x for x in new_stack if x[0] is item_comp]
+                            if not other_instances:
+                                del self.file_dependents[item_comp]
+                    else:
+                        new_stack.append((item_comp, item_kwargs, item_name))
+                if removed:
+                    self.stack = new_stack
+                    self.touch_reload()
+            else:
+                new_stack = [item for item in self.stack if item[0] is not identifier]
+                if len(new_stack) < len(self.stack): # If anything was removed
+                    self.stack = new_stack
+                    if identifier in self.file_dependents:
+                        del self.file_dependents[identifier]
+                    self.touch_reload()
+
+    def clean(self):
+        """Removes all components from the preview stack."""
+        with self.lock:
+            self.stack.clear()
+            self.file_dependents = {}
+            self.touch_reload()
+
+    def __call__(self, comp=None, **kwargs):
+        if comp:
+            with self.lock:
+                self.clean()
+                self.add(comp, **kwargs)
+            self.run()
+        else:
+            self.run()
+
+    def run(self, autoload=True):
+        if os.environ.get("APP_PREVIEW_BROWSER_OPENED") == '1':
+            self._browser_opened = True
+        if autoload and os.environ.get("APP_PREVIEW_CHILD") != "1":
+            if 'APP_PREVIEW_BROWSER_OPENED' in os.environ:
+                del os.environ['APP_PREVIEW_BROWSER_OPENED']
+            import subprocess
+            args = [sys.executable] + sys.argv
+            env = dict(os.environ)
+            env["APP_PREVIEW_CHILD"] = "1"
+            print("[app-preview] Autoreloading enabled (CTRL+C to stop)")
+            p = subprocess.Popen(args, env=env)
+            try:
+                p.wait()
+            except KeyboardInterrupt:
+                print("Preview stopped by user.")
+                p.terminate()
+                p.wait()
+            sys.exit(0)
+
+        self.has_started = True
+        self._reloader_thread = threading.Thread(target=self._watchdog_restart, daemon=True)
+        try:
+            main_script_path = os.path.abspath(sys.argv[0])
+            self.update_file_watch(main_script_path)
+
+            for comp, _, _ in self.stack:
+                self.update_file_watch(comp)
+
+        except Exception as e:
+            print(f"DEBUG: Initial script/component watch failed: {e}")
+        self._reloader_thread.start()
+        self._serve_forever()
+
+
+    def _serve_forever(self):
+        Handler = self.make_handler()
+        class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+            daemon_threads = True
+        httpd = ThreadedHTTPServer(('', self.port), Handler)
+        print(f"Preview server running at http://127.0.0.1:{self.port}/ (CTRL+C to stop)")
+        if not self._browser_opened:
+            try:
+                webbrowser.open(f"http://127.0.0.1:{self.port}/")
+                self._browser_opened = True
+            except Exception:
+                pass
+        else:
+            print("[app-preview] Reloading in existing browser tab (if open)...")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("Exiting preview server")
+            sys.exit(0)
+
+    def make_handler(self):
+        preview_mgr = self
+        class PreviewHandler(BaseHTTPRequestHandler):
+            def _send(self, data, code=200):
+                self.send_response(code)
+                self.send_header("Content-type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(data.encode("utf-8"))
+
+            def do_GET(self):
+                if self.path.startswith("/__reload_check"):
+                    self._send(preview_mgr.reload_ts)
+                elif self.path == "/" or self.path.startswith("/?"):
+                    html = preview_mgr.render_page()
+                    self._send(html)
+                else:
+                    self._send("<h1>Not Found</h1>", 404)
+
+            def log_message(self, fmt, *args):
+                pass
+        return PreviewHandler
+
+    def render_components(self):
+        from app.mods.service import render
+        html_parts = []
+        for idx, (comp, kwargs, _) in enumerate(self.stack):
+            rendered = render(comp, **kwargs)
+            html_parts.append(f'<div>{rendered}</div>')
+            if idx < len(self.stack) - 1:
+                html_parts.append("""
+<div style="width:100%;margin:20px 0 20px 0;text-align:center;">
+    <hr style="margin-top:10px;margin-bottom:10px;width:100%;border:3px solid #000000;"/>
+</div>
+""")
+        return "\n".join(html_parts)
+
+    def _page_html(self, content):
+        js = f"""
+<script>
+(function(){{
+    let last="{self.reload_ts}";
+    setInterval(function(){{
+        fetch("/__reload_check").then(r=>r.text()).then(txt=>{{if(txt!==last)location.reload();}});
+    }}, 999);
+}})();
+</script>
+"""
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Component Preview</title>
+    <meta charset="utf-8">
+    <style>
+     body {{ background: #f7f7fa; font-family: system-ui,Arial,sans-serif; color: #222; margin:0; padding:0; }}
+    </style>
+    {js}
+</head>
+<body>
+{content}
+</body>
+</html>
+"""
+
+    def render_page(self):
+        html = self.render_components()
+        return self._page_html(html)
+
+    def update_file_watch(self, obj):
+        src = None
+        try:
+            if callable(obj):
+                actual_obj_for_source = getattr(obj, "func", obj)
+                src = sys.modules[actual_obj_for_source.__module__].__file__
+                if not src:
+                    src = getattr(actual_obj_for_source, '__file__', None)
+                if not src:
+                    try:
+                        src = inspect.getsourcefile(actual_obj_for_source)
+                    except TypeError:
+                        pass
+            elif isinstance(obj, str) and os.path.isfile(obj):
+                src = obj
+            else:
+                return
+        except Exception as e:
+            pass
+        if src:
+            src = os.path.abspath(src)
+            key = obj if not isinstance(obj, str) else src
+            if key not in self.file_dependents:
+                self.file_dependents[key] = set()
+            self.file_dependents[key].add(src)
+            try:
+                self.source_cache[src] = os.path.getmtime(src)
+            except FileNotFoundError:
+                pass
+        else:
+            pass
+
+    def touch_reload(self):
+        self.reload_ts = str(time.time())
+
+    def _watchdog_restart(self):
+        """Restart process if dependencies have changed."""
+        time.sleep(0.5)
+        while True:
+            changed = False
+            watched_files = set()
+            with self.lock:
+                for srcs_set in self.file_dependents.values():
+                    watched_files.update(srcs_set)
+
+            if not watched_files:
+                pass
+
+            for f in watched_files:
+                try:
+                    current_mtime = os.path.getmtime(f)
+                    cached_mtime = self.source_cache.get(f)
+                    if cached_mtime is not None and current_mtime != cached_mtime:
+                        print(f"[app-preview] Detected change in {f}, restarting...")
+                        self.source_cache[f] = current_mtime
+                        changed = True
+                        break
+                except FileNotFoundError:
+                    print(f"[app-preview] Detected missing file {f}, restarting...")
+                    changed = True
+                    break
+                except Exception as e:
+                    print(f"[app-preview] Error watching file {f}: {e}")
+                    pass
+
+            if changed:
+                os.environ['APP_PREVIEW_BROWSER_OPENED'] = '1'
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+            time.sleep(1.0)
+
+_preview = _Preview()
+
+class _PublicPreview:
+    def add(self, comp, __name__=None, **kwargs):
+        _preview.add(comp, __name__=__name__, **kwargs)
+
+    def rm(self, identifier):
+        _preview.rm(identifier)
+
+    def clean(self):
+        _preview.clean()
+
+    def run(self, autoload=True):
+        _preview.run(autoload)

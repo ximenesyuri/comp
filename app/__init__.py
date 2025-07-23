@@ -22,5 +22,14 @@ nav_ = Nav(
         ]
     )
 
-print(render(nav, nav=nav_, __minified__=True))
-preview(nav, nav=nav_)
+link_ = Link(
+    link_class="fc-#1562fa fz-20px td-none ml-10px hover:fc-#000000",
+    link_href="https://google.com",
+    inner="test"
+)
+
+preview.add(nav, nav=nav_)
+preview.add(link, link=link_)
+preview.rm(link)
+
+preview.run()

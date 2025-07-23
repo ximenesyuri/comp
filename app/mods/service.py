@@ -7,7 +7,7 @@ from markdown import markdown
 from jinja2 import Environment, DictLoader, StrictUndefined, meta
 from bs4 import BeautifulSoup
 from app.mods.types.base import Content
-from app.mods.helper.service import _style, _minify, _resolve_deps
+from app.mods.helper.service import _style, _minify, _resolve_deps, _PublicPreview
 from app.mods.err import RenderErr, StyleErr, PreviewErr, MockErr
 from app.mods.types.base import COMPONENT, Jinja, PAGE
 from app.components import script as script_component, asset as asset_component
@@ -56,7 +56,7 @@ def render(
                     md_text = file.read(value)
                     kwargs[cname] = markdown(md_text)
                 else:
-                    kwargs[cname] = markdown(value) 
+                    kwargs[cname] = markdown(value)
         depends_on = []
         if "depends_on" in sig.parameters:
             depends_on_default = sig.parameters["depends_on"].default
@@ -199,15 +199,4 @@ def mock(component: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
     except Exception as e:
         raise MockErr(e)
 
-@typed
-def preview(component: COMPONENT, **kwargs: Dict(Any)) -> Nill:
-    try:
-        html = render(component, **kwargs)
-        temp_file = "/tmp/app_preview_component.html"
-        file.write(
-            filepath=temp_file,
-            content=html
-        )
-        webbrowser.open_new_tab(f'file://{path.abs(temp_file)}')
-    except Exception as e:
-        raise PreviewErr(e)
+preview = _PublicPreview()
