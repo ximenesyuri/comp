@@ -16,24 +16,23 @@
 # Overview
 
 The lib consists of two parts:
-1. a `component system`, which allows to define components and operate between them following a functional approach, being compatible with [jinja2](https://jinja.palletsprojects.com/en/stable/), [alpine.js]() and [htmx.js]();                     
+1. a `component system`, which allows to define components and operate between them following a functional approach, being compatible with [jinja2](https://jinja.palletsprojects.com/en/stable/), [alpine.js](), [htmx.js](), [flexsearch](), and much more;                     
 2. an `app system`, which is an extension of [fastapi](https://github.com/fastapi/fastapi) to include, for example, the construction of static applications, all of that provided in a highly intuitive interface.
 
- Both parts are constructed focused in providing type safety, which is ensured using [pythonaltal/typed](https://github.com/pythonalta/typed) and [pythonalta/utils](https://github.com/pythonalta/utils).
+ Both parts are constructed focused in providing type safety, which is ensured through an extensive use of [ximenesyuri/typed](https://github.com/ximenesyuri/typed) and [ximenesyuri/utils](https://github.com/ximenesyuri/utils).
 
 # Install
 
 With `pip`:
 ```bash
-pip install git+https://github.com/pythonalta/app  
+pip install git+https://github.com/ximenesyuri/app  
 ```
 
 With [py](https://github.com/ximenesyuri/py):
 ```bash
-py i pythonalta/app  
+py i ximenesyuri/app  
 ```
 
 # Documentation
 
-- [component system](./docs/component.md)
-- [app system](./docs/app.md)
+See [ximenesyuri/libs/app](https://ximenesyuri/libs/app).

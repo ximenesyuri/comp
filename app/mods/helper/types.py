@@ -75,6 +75,12 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
         from app.mods.functions import concat
         return concat(self, other)
 
+    def __truediv__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+        from app.mods.functions import eval as eval_func
+        return eval_func(self, **other)
+
 Content = Union(Markdown, Extension('md'))
 
 @typed
