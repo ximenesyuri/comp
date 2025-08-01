@@ -2,7 +2,7 @@ import re
 from inspect import signature, getsource
 from jinja2 import Environment, meta
 from typed import typed, Str, Json, Bool, Union, Extension, Path, TypedFuncType
-from typed.models import model, conditional, Optional
+from typed.models import model, Optional
 from typed.more import Markdown
 from app.mods.types.meta import _COMPONENT
 from app.mods.helper.helper import _get_variables_map
