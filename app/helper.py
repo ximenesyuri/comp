@@ -14,7 +14,10 @@ from app.models import (
     Item,
     Unordered,
     Ordered,
-    Nav
+    Nav,
+    Header,
+    Aside,
+    Sidebar
 )
 
 @typed
@@ -91,6 +94,36 @@ def if_alpine(alpine: Alpine=None) -> Str:
     if getattr(alpine, 'x_cloak', None):
         if alpine.x_cloak:
             result += if_attr(alpine.x_cloak, "x-cloak")
+    return result
+
+@typed
+def if_header(header: Header=None) -> Str:
+    if not header:
+        return ""
+    result = if_globals(getattr(header, 'globals', None))
+    result += if_id(getattr(header, 'header_id', None))
+    result += if_class(getattr(header, 'header_class', None))
+    result += if_style(getattr(header, 'header_style', None))
+    return result
+
+@typed
+def if_aside(aside: Header=None) -> Str:
+    if not aside:
+        return ""
+    result = if_globals(getattr(aside, 'globals', None))
+    result += if_id(getattr(aside, 'aside_id', None))
+    result += if_class(getattr(aside, 'aside_class', None))
+    result += if_style(getattr(aside, 'aside_style', None))
+    return result
+
+@typed
+def if_sidebar(sidebar: Header=None) -> Str:
+    if not sidebar:
+        return ""
+    result = if_globals(getattr(sidebar, 'globals', None))
+    result += if_id(getattr(sidebar, 'sidebar_id', None))
+    result += if_class(getattr(sidebar, 'sidebar_class', None))
+    result += if_style(getattr(sidebar, 'sidebar_style', None))
     return result
 
 @typed

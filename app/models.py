@@ -98,8 +98,29 @@ class Aria:
     aria_attrs:       Optional(Dict(Str, Str), {})
 
 @model
+class Header:
+    globals:      Optional(Globals)
+    header_id:    Optional(Str, "header")
+    header_class: Optional(Str)
+    header_style: Optional(Str)
+
+@model
+class Aside:
+    globals:     Optional(Globals)
+    aside_id:    Optional(Str, "aside")
+    aside_class: Optional(Str)
+    aside_style: Optional(Str)
+
+@model
+class Sidebar:
+    globals:       Optional(Globals)
+    sidebar_id:    Optional(Str, "sidebar")
+    sidebar_class: Optional(Str)
+    sidebar_style: Optional(Str)
+
+@model
 class Button:
-    globals:      Optional(Globals, Globals())
+    globals:      Optional(Globals)
     button_id:    Optional(Str, "button")
     button_class: Optional(Str, "")
     button_style: Optional(Str, "")

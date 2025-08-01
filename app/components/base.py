@@ -6,6 +6,9 @@ from app.helper import (
     if_key,
     if_id,
     if_class,
+    if_header,
+    if_aside,
+    if_sidebar,
     if_div,
     if_style,
     if_alpine,
@@ -24,6 +27,9 @@ from app.helper import (
     if_nav
 )
 from app.models import (
+    Header,
+    Aside,
+    Sidebar,
     Div,
     Alpine,
     Button,
@@ -40,6 +46,40 @@ from app.models import (
     Nav
 )
 
+
+@component
+def header(header: Header=Header(), inner: Inner="") -> Jinja:
+    header_data = if_header(header)
+    return """jinja
+<div{{ header_data }}>{% if header.inner %}
+    {{ header.inner }}
+</div>{% elif inner %}
+    {{ inner }}
+</div>{% else %}</div>{% endif %}
+"""
+
+@component
+def aside(aside: Aside=Aside(), inner: Inner="") -> Jinja:
+    aside_data = if_aside(aside)
+    return """jinja
+<div{{ aside_data }}>{% if aside.inner %}
+    {{ aside.inner }}
+</div>{% elif inner %}
+    {{ inner }}
+</div>{% else %}</div>{% endif %}
+"""
+
+@component
+def sidebar(sidebar: Sidebar=Sidebar(), inner: Inner="") -> Jinja:
+    sidebar_data = if_sidebar(sidebar)
+    return """jinja
+<div{{ sidebar_data }}>{% if sidebar.inner %}
+    {{ sidebar.inner }}
+</div>{% elif inner %}
+    {{ inner }}
+</div>{% else %}</div>{% endif %}
+"""
+
 @component
 def div(div: Div=Div(), alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
     div_data    = if_div(div)
@@ -48,6 +88,15 @@ def div(div: Div=Div(), alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
 <div{{ div_data }}{{ alpine_data }}>{% if div.inner %}
     {{ div.inner }}
 </div>{% elif inner %}
+    {{ inner }}
+</div>{% else %}</div>{% endif %}
+"""
+
+@component
+def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
+    alpine_data = if_alpine(alpine)
+    return """jinja
+<div{{ alpine_data }}>{% if inner %}
     {{ inner }}
 </div>{% else %}</div>{% endif %}
 """
