@@ -1,4 +1,4 @@
-from typed import typed, Str, Any
+from typed import typed, Str, Any, Maybe
 from app.models import (
     Div,
     Alpine,
