@@ -2,14 +2,14 @@ from app.mods.factories.base import Tag
 from app.mods.decorators.base import component
 from app.models import (
     InputText,
-    InputPassword,
+    InputPass,
     InputEmail,
     InputTextArea,
     InputSearch,
 )
 
 @component
-def input_text(input: InputText) -> Tag('input'):
+def input_text(input: InputText=InputText()) -> Tag('input'):
     return """jinja
 <input
     type="{{ input['input_type'] }}"
@@ -33,7 +33,7 @@ def input_text(input: InputText) -> Tag('input'):
 """
 
 @component
-def input_search(input: InputSearch) -> Tag('input'):
+def input_search(input: InputSearch=InputSearch()) -> Tag('input'):
     return """jinja
 <input
     type="{{ input['input_type'] }}"
@@ -56,7 +56,7 @@ def input_search(input: InputSearch) -> Tag('input'):
 """
 
 @component
-def input_password(input: InputPassword) -> Tag('input'):
+def input_pass(input: InputPass=InputPass()) -> Tag('input'):
     return """jinja
 <input
     type="{{ input['input_type'] }}"
@@ -80,7 +80,7 @@ def input_password(input: InputPassword) -> Tag('input'):
 """
 
 @component
-def input_email(input: InputEmail) -> Tag('input'):
+def input_email(input: InputEmail=InputEmail()) -> Tag('input'):
     return """jinja
 <input
     type="{{ input['input_type'] }}"
@@ -105,7 +105,7 @@ def input_email(input: InputEmail) -> Tag('input'):
 """
 
 @component
-def input_textarea(input: InputTextArea) -> Tag('textarea'):
+def input_textarea(input: InputTextArea=InputTextArea()) -> Tag('textarea'):
     return """jinja
 <textarea
     {% if input['input_id'] %}id="{{ input['input_id'] }}"{% endif %}

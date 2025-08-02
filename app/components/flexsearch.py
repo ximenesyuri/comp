@@ -6,42 +6,35 @@ from app.components.buttons import button_search
 from app.helper import if_div, if_class, if_id
 
 @component
-def flexsearch(
-        search_div: Div=Div(),
-        search:     FlexSearch=FlexSearch(),
-        button_div: Div=Div(),
-        button:     Button=Button(),
-        depends_on=[button_search, input_search]
-    ) -> Jinja:
-
-    search_div_         = if_div(search_div)
-    button_div_         = if_div(button_div)
-    input_div           = if_div(search.input_div)
-    results_div         = if_div(search.results_div)
-    results_cover_div   = if_div(search.results.cover.cover_div)
-    results_cover_id    = if_id(search.results.cover.cover_id)
-    results_cover_class = if_class(search.results.cover.cover_class)
-    results_title_div   = if_div(search.results.title.title_div)
-    results_title_id    = if_id(search.results.title.title_id)
-    results_title_class = if_class(search.results.title.title_class)
-    results_kind_div    = if_div(search.results.kind.kind_div)
-    results_kind_id     = if_id(search.results.kind.kind_id)
-    results_kind_class  = if_class(search.results.kind.kind_class)
-    results_desc_div    = if_div(search.results.desc.desc_div)
-    results_desc_id     = if_id(search.results.desc.desc_id)
-    results_desc_class  = if_class(search.results.desc.desc_class)
-    no_results_div      = if_div(search.no_results_div)
+def flexsearch(flexsearch: FlexSearch=FlexSearch(), depends_on=[button_search, input_search]) -> Jinja:
+    search_div          = if_div(flexsearch.div)
+    button_div          = if_div(flexsearch.button_div)
+    input_div           = if_div(flexsearch.input_div)
+    results_div         = if_div(flexsearch.results_div)
+    results_cover_div   = if_div(flexsearch.results.cover.cover_div)
+    results_cover_id    = if_id(flexsearch.results.cover.cover_id)
+    results_cover_class = if_class(flexsearch.results.cover.cover_class)
+    results_title_div   = if_div(flexsearch.results.title.title_div)
+    results_title_id    = if_id(flexsearch.results.title.title_id)
+    results_title_class = if_class(flexsearch.results.title.title_class)
+    results_kind_div    = if_div(flexsearch.results.kind.kind_div)
+    results_kind_id     = if_id(flexsearch.results.kind.kind_id)
+    results_kind_class  = if_class(flexsearch.results.kind.kind_class)
+    results_desc_div    = if_div(flexsearch.results.desc.desc_div)
+    results_desc_id     = if_id(flexsearch.results.desc.desc_id)
+    results_desc_class  = if_class(flexsearch.results.desc.desc_class)
+    no_results_div      = if_div(flexsearch.no_results_div)
     null_button         = Button()
     results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
 
     return """jinja
-<div {{ search_div_ }}> 
+<div {{ search_div }}> 
     <div {{ input_div }} >
-        {{ input_search(search.input) }}
+        {{ input_search(flexsearch.input) }}
     </div>
-    {% if not button == null_button %}
-    <div {{ button_div_ }}>
-        {{ button_search(button) }}
+    {% if not flexsearch.button == null_button %}
+    <div {{ button_div }}>
+        {{ button_search(flexsearch.button) }}
     </div>
     {% endif %}
 </div>
@@ -49,23 +42,23 @@ def flexsearch(
     style="{{ results_div_style }}"
 >
 </div>
-<script src="{{ search.script_url }}"></script>
+<script src="{{ flexsearch.script_url }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let index = new FlexSearch.Document({
         tokenize: "forward",
         document: {
             id: "id",
-            index: {{ search.index.index_types | tojson }},
-            store: {{ search.index.index_store_types | tojson }}
+            index: {{ flexsearch.index.index_types | tojson }},
+            store: {{ flexsearch.index.index_store_types | tojson }}
         }
     });
-    const searchInput = document.getElementById('{{ search.input.input_id }}');
-    const searchResultsDiv = document.getElementById('{{ search.results_div.div_id }}');
+    const searchInput = document.getElementById('{{ flexsearch.input.input_id }}');
+    const searchResultsDiv = document.getElementById('{{ flexsearch.results_div.div_id }}');
     function getAlpineScope() {
         return document.body.__x && document.body.__x.$data ? document.body.__x.$data : null;
     } 
-    fetch("{{ search.index.index_json_file }}")
+    fetch("{{ flexsearch.index.index_json_file }}")
         .then(response => {
             if (!response.ok) throw new Error("Missing searchindex.json");
             return response.json();
@@ -86,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                     return;
                 }
-                let results = index.search(query, {limit: {{ search.results.limit }}, enrich: true});
+                let results = index.search(query, {limit: {{ flexsearch.results.limit }}, enrich: true});
                 let docs = [];
                 results.forEach(result => docs.push(...result.result));
                 const uniqueDocsById = {};
@@ -105,16 +98,16 @@ document.addEventListener("DOMContentLoaded", function() {
                         return `
                             <div {{ results_div }}>
                                 <div style="display: flex; width: 101%;">
-                                    {% if search.results.cover.display %}
+                                    {% if flexsearch.results.cover.display %}
                                         <div {{ results_cover_div }}>
                                             <img src="${d.cover ?? "#"}" {{ results_cover_id }} {{ results_cover_class }}>
                                         </div>
-                                        {% if search.results.kind.display %}
+                                        {% if flexsearch.results.kind.display %}
                                         <div style="display: flex;">
                                             <div {{ results_kind_div }}>
                                                 <span {{ results_kind_id }} {{ results_kind_class }} >${ results_kind_content[d.kind] ?? d.kind }</span>
                                             </div>
-                                            {% if search.results.title.display %}
+                                            {% if flexsearch.results.title.display %}
                                             <div {{ results_title_div }}>
                                                 <a href="${d.href ?? "#"}" {{ results_title_id }} {{ results_title_class }}>${prettyTitle(d.title)}</a>
                                             </div>
@@ -126,12 +119,12 @@ document.addEventListener("DOMContentLoaded", function() {
                                         </div> 
                                         {% endif %}
                                     {% else %}
-                                        {% if search.results.kind.display %}
+                                        {% if flexsearch.results.kind.display %}
                                         <div style="display: flex;">
                                             <div {{ results_kind_div }}>
                                                 <span {{ results_kind_id }} {{ results_kind_class }} >${ results_kind_content[d.kind] ?? d.kind }</span>
                                             </div>
-                                            {% if search.results.title.display %}
+                                            {% if flexsearch.results.title.display %}
                                             <div {{ results_title_div }}>
                                                 <a href="${d.href ?? "#"}" {{ results_title_id }} {{ results_title_class }}>${prettyTitle(d.title)}</a>
                                             </div>
@@ -144,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                         {% endif %}
                                     {% endif %}
                                 </div>
-                                {% if search.results.desc.display %}
+                                {% if flexsearch.results.desc.display %}
                                 <div {{ results_desc_div }}>
                                     <span {{ results_desc_id }} {{ results_desc_class }}>${d.content ? d.content.substring(1,{{search.results.desc.desc_lenght}}) : ""}</span>
                                 </div>
@@ -158,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function() {
                        searchResultsDiv.style.display = '';
                     }
                 } else {
-                    searchResultsDiv.innerHTML = `<div {{ no_results_div }}>{{ search.no_results }}</div>`;
+                    searchResultsDiv.innerHTML = `<div {{ no_results_div }}>{{ flexsearch.no_results }}</div>`;
                     if (alpineScope) {
                         alpineScope.hasSearchResults = true;
                     } else {
@@ -185,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(err => {   
             const alpineScope = getAlpineScope();
-            searchResultsDiv.innerHTML = `<div {{ no_results_div }}>{{ search.no_results }}</div>`;
+            searchResultsDiv.innerHTML = `<div {{ no_results_div }}>{{ flexsearch.no_results }}</div>`;
             console.error("Search index loading failed:", err);
             if (alpineScope) {
                 alpineScope.hasSearchResults = true;

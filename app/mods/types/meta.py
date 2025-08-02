@@ -21,6 +21,7 @@ class _Jinja(type(Str)):
             Environment().parse(jinja_content)
             return True
         except Exception as e:
+            print(f"{e}")
             return False
 
 class _COMPONENT(type(TypedFuncType)):

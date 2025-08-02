@@ -243,7 +243,7 @@ class InputText:
     input_type: Optional(_InputType, "text")
 
 @model(extends=_InputBaseText)
-class InputPassword:
+class InputPass:
     input_type: Optional(_InputType, "password")
 
 @model(extends=_InputBaseText)
@@ -297,11 +297,14 @@ class Form:
 
 @model
 class FlexSearch:
-    flex_input_div:      Optional(Div, Div(div_id="flesearch-input-div"))
-    flex_input:          Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
-    flex_results_div:    Optional(Div, Div(div_id="flexsearch-results-div"))
-    flex_results:        Optional(_FlexSearchResults, null(_FlexSearchResults))
-    flex_no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))
-    flex_no_results:     Optional(Str, "nenhum resultado encontrado...")
-    flex_index:          Optional(_FlexSearchIndex, null(_FlexSearchIndex))
-    flex_script_url:     Optional(PathUrl, "https://unpkg.com/flexsearch@0.8.2/dist/module/index.js")
+    div:            Optional(Div, Div(div_id="flexsearch-div"))
+    input_div:      Optional(Div, Div(div_id="flesearch-input-div"))
+    input:          Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
+    button_div:     Optional(Div, Div(div_id="flexsearch-button-div"))
+    button:         Optional(Button, Button())
+    results_div:    Optional(Div, Div(div_id="flexsearch-results-div"))
+    results:        Optional(_FlexSearchResults)
+    no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))
+    no_results:     Optional(Str, "nenhum resultado encontrado...")
+    index:          Optional(_FlexSearchIndex)
+    script_url:     Optional(PathUrl, "https://unpkg.com/flexsearch@0.8.2/dist/module/index.js")
