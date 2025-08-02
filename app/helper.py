@@ -39,7 +39,7 @@ def if_attr(attr: Str="") -> Str:
     return ""
 
 @typed
-def if_globals(globals: Globals=None) -> Str:
+def if_globals(globals: Maybe(Globals)=None) -> Str:
     if not globals:
         return ""
     result = ""
@@ -107,7 +107,7 @@ def if_header(header: Header=None) -> Str:
     return result
 
 @typed
-def if_aside(aside: Header=None) -> Str:
+def if_aside(aside: Aside=None) -> Str:
     if not aside:
         return ""
     result = if_globals(getattr(aside, 'globals', None))
@@ -117,7 +117,7 @@ def if_aside(aside: Header=None) -> Str:
     return result
 
 @typed
-def if_sidebar(sidebar: Header=None) -> Str:
+def if_sidebar(sidebar: Sidebar=None) -> Str:
     if not sidebar:
         return ""
     result = if_globals(getattr(sidebar, 'globals', None))
