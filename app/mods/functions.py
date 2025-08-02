@@ -73,7 +73,6 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
 
     dynamic_component.__signature__ = new_sig
     dynamic_component.__annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
-    from app.mods.types import Jinja
     dynamic_component.__annotations__['return'] = Jinja
 
     dyn_typed = typed(dynamic_component)
@@ -131,7 +130,6 @@ def join(*components: Tuple(COMPONENT)) -> COMPONENT:
 
     new_sig = Signature(new_parameters)
     __annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
-    from app.mods.types import Jinja
     __annotations__['return'] = Jinja
 
     def dynamic_joined_component(**kwargs):
