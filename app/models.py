@@ -33,69 +33,69 @@ from app.mods.types.base import Inner
 
 @model
 class Alpine:
-    x_data:       Optional(Str, "")
-    x_init:       Optional(Str, "")
-    x_show:       Optional(Str, "")
-    x_if:         Optional(Str, "")
-    x_effect:     Optional(Str, "")
-    x_model:      Optional(Str, "")
-    x_for:        Optional(Str, "")
-    x_transition: Optional(Str, "")
-    x_id:         Optional(Str, "")
-    x_ref:        Optional(Str, "")
-    x_cloak:      Optional(Bool, False)
-    x_bind:       Optional(Dict(Str, Str), {})
-    x_on:         Optional(Dict(Str, Str), {})
-    x_attrs:      Optional(Dict(Str, Json), {})
+    x_data:       Optional(Str)
+    x_init:       Optional(Str)
+    x_show:       Optional(Str)
+    x_if:         Optional(Str)
+    x_effect:     Optional(Str)
+    x_model:      Optional(Str)
+    x_for:        Optional(Str)
+    x_transition: Optional(Str)
+    x_id:         Optional(Str)
+    x_ref:        Optional(Str)
+    x_cloak:      Optional(Bool)
+    x_bind:       Optional(Dict(Str, Str))
+    x_on:         Optional(Dict(Str, Str))
+    x_attrs:      Optional(Dict(Str, Json))
 
 @model
 class HTMX:
-    hx_get:         Optional(Str, "")
-    hx_post:        Optional(Str, "")
-    hx_put:         Optional(Str, "")
-    hx_delete:      Optional(Str, "")
-    hx_patch:       Optional(Str, "")
-    hx_target:      Optional(Str, "")
-    hx_swap:        Optional(Str, "")
-    hx_trigger:     Optional(Str, "")
-    hx_confirm:     Optional(Str, "")
-    hx_include:     Optional(Str, "")
-    hx_indicator:   Optional(Str, "")
-    hx_select:      Optional(Str, "")
-    hx_select_oob:  Optional(Str, "")
-    hx_ext:         Optional(Str, "")
-    hx_params:      Optional(Str, "")
-    hx_vals:        Optional(Str, "")
-    hx_push_url:    Optional(Str, "")
-    hx_replace_url: Optional(Str, "")
-    hx_headers:     Optional(Json, {})
-    hx_preserve:    Optional(Bool, False)
-    hx_disable:     Optional(Bool, False)
-    hx_attrs:       Optional(Dict(Str, Json), {})
+    hx_get:         Optional(Str)
+    hx_post:        Optional(Str)
+    hx_put:         Optional(Str)
+    hx_delete:      Optional(Str)
+    hx_patch:       Optional(Str)
+    hx_target:      Optional(Str)
+    hx_swap:        Optional(Str)
+    hx_trigger:     Optional(Str)
+    hx_confirm:     Optional(Str)
+    hx_include:     Optional(Str)
+    hx_indicator:   Optional(Str)
+    hx_select:      Optional(Str)
+    hx_select_oob:  Optional(Str)
+    hx_ext:         Optional(Str)
+    hx_params:      Optional(Str)
+    hx_vals:        Optional(Str)
+    hx_push_url:    Optional(Str)
+    hx_replace_url: Optional(Str)
+    hx_headers:     Optional(Json)
+    hx_preserve:    Optional(Bool)
+    hx_disable:     Optional(Bool)
+    hx_attrs:       Optional(Dict(Str, Json))
 
 @model
 class Aria:
-    aria_label:       Optional(Str, "")
-    aria_labelledby:  Optional(Str, "")
-    aria_describedby: Optional(Str, "")
-    aria_controls:    Optional(Str, "")
-    aria_current:     Optional(Str, "")
-    aria_details:     Optional(Str, "")
-    aria_disabled:    Optional(Bool, False)
-    aria_expanded:    Optional(Bool, False)
-    aria_hidden:      Optional(Bool, False)
-    aria_live:        Optional(Str, "")
-    aria_pressed:     Optional(Str, "")
-    aria_readonly:    Optional(Bool, False)
-    aria_selected:    Optional(Bool, False)
-    aria_checked:     Optional(Str, "")
-    aria_required:    Optional(Bool, False)
-    aria_valuemax:    Optional(Str, "")
-    aria_valuemin:    Optional(Str, "")
-    aria_valuenow:    Optional(Str, "")
-    aria_valuetext:   Optional(Str, "")
-    aria_role:        Optional(Str, "")
-    aria_attrs:       Optional(Dict(Str, Str), {})
+    aria_label:       Optional(Str)
+    aria_labelledby:  Optional(Str)
+    aria_describedby: Optional(Str)
+    aria_controls:    Optional(Str)
+    aria_current:     Optional(Str)
+    aria_details:     Optional(Str)
+    aria_disabled:    Optional(Bool)
+    aria_expanded:    Optional(Bool)
+    aria_hidden:      Optional(Bool)
+    aria_live:        Optional(Str)
+    aria_pressed:     Optional(Str)
+    aria_readonly:    Optional(Bool)
+    aria_selected:    Optional(Bool)
+    aria_checked:     Optional(Str)
+    aria_required:    Optional(Bool)
+    aria_valuemax:    Optional(Str)
+    aria_valuemin:    Optional(Str)
+    aria_valuenow:    Optional(Str)
+    aria_valuetext:   Optional(Str)
+    aria_role:        Optional(Str)
+    aria_attrs:       Optional(Dict(Str, Str))
 
 @model
 class Header:
@@ -122,17 +122,17 @@ class Sidebar:
 class Button:
     globals:      Optional(Globals)
     button_id:    Optional(Str, "button")
-    button_class: Optional(Str, "")
-    button_style: Optional(Str, "")
+    button_class: Optional(Str)
+    button_style: Optional(Str)
     button_type:  Optional(Enum(Str, "button", "reset", "submmit"), "button")
-    on_click:     Optional(Str, "")
-    click_away:   Optional(Str, "")
-    inner:        Optional(Any, None)
+    on_click:     Optional(Str)
+    click_away:   Optional(Str)
+    inner:        Optional(Any)
 
 @model
 class Icon:
     icon_id:      Optional(Str, "icon")
-    icon_class:   Optional(Str, "")
+    icon_class:   Optional(Str)
     icon_size:    Optional(Str, "24px")
     icon_fill:    Optional(HEX, "#000000")
     icon_viewbox: Optional(Str, "0 -960 960 960")
@@ -140,37 +140,38 @@ class Icon:
 
 @model
 class Image:
-    globals:     Optional(Globals, Globals())
-    image_id:    Optional(Str, "image")
-    image_class: Optional(Str, "")
-    image_style: Optional(Str, "")
-    image_alt:   Optional(Str, "")
-    image_src:   Optional(PathUrl, "")
-    image_lazy:  Optional(Bool, True)
+    globals:   Optional(Globals)
+    img_id:    Optional(Str, "img")
+    img_class: Optional(Str)
+    img_style: Optional(Str)
+    img_alt:   Optional(Str)
+    img_src:   Optional(PathUrl, "")
+    img_lazy:  Optional(Bool, True)
+Img = Image
 
 @model
 class Text:
-    globals:    Optional(Globals, Globals())
+    globals:    Optional(Globals)
     text_id:    Optional(Str, "text")
-    text_class: Optional(Str, "")
-    text_style: Optional(Str, "")
-    inner:      Optional(Any, None)
+    text_class: Optional(Str)
+    text_style: Optional(Str)
+    inner:      Optional(Any)
 
 @model
 class Title:
-    globals:     Optional(Globals, Globals())
+    globals:     Optional(Globals)
     title_id:    Optional(Str, "title")
-    title_class: Optional(Str, "")
-    title_style: Optional(Str, "")
+    title_class: Optional(Str)
+    title_style: Optional(Str)
     title_tag:   Optional(Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6"), "h1")
-    inner:       Optional(Any, None)
+    inner:       Optional(Any)
 
 @model
 class Link:
-    globals:       Optional(Globals, Globals())
+    globals:       Optional(Globals)
     link_id:       Optional(Str, "link")
-    link_class:    Optional(Str, "")
-    link_style:    Optional(Str, "")
+    link_class:    Optional(Str)
+    link_style:    Optional(Str)
     link_href:     Optional(PathUrl, "https://")
     link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top"), "_self")
     link_rel:      Optional(Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', ""), "")
@@ -179,21 +180,21 @@ class Link:
 
 @model
 class Figure:
-    globals:        Optional(Globals, Globals())
-    figure_img:     Optional(Image, Image())
-    figure_caption: Optional(Str, "")
+    globals:        Optional(Globals)
+    figure_img:     Optional(Image)
+    figure_caption: Optional(Str)
 
 @model
 class Logo:
-    logo_img:  Optional(Image, Image())
+    logo_img:  Optional(Image)
     logo_link: Optional(Link, Link(link_href="/"))
 
 @model
 class Item:
     item_id:    Optional(Str, "item")
-    item_class: Optional(Str, "")
-    item_style: Optional(Str, "")
-    inner:      Optional(Any, None)
+    item_class: Optional(Str)
+    item_style: Optional(Str)
+    inner:      Optional(Any)
 
 @model
 class Unordered:
@@ -216,25 +217,25 @@ class NavItem:
 @model
 class Nav:
     nav_id:        Optional(Str, "nav")
-    nav_class:     Optional(Str, "")
+    nav_class:     Optional(Str)
     nav_direction: Optional(Enum(Str, "vertical", "horizontal"), "horizontal")
     nav_items:     Optional(List(NavItem), [])
-    ul_id:         Optional(Str, "")
-    ul_class:      Optional(Str, "")
+    ul_id:         Optional(Str, "nav-ul")
+    ul_class:      Optional(Str)
     ul_style:      Optional(Str, "list-style: none;")
 
 @exact
 class Script:
     script_src:   Optional(PathUrl, "")
-    script_defer: Optional(Bool, False)
+    script_defer: Optional(Bool)
     script_type:  Optional(Enum(Str, "module", "importmap", ""), "")
-    script_async: Optional(Bool, False)
-    inner:        Optional(Any, None)
+    script_async: Optional(Bool)
+    inner:        Optional(Any)
 
 @exact
 class Asset:
     asset_href: Optional(PathUrl, "")
-    asset_mime: Optional(Str, "")
+    asset_mime: Optional(Str)
     asset_rel:  Optional(Str, "stylesheet")
 
 @model(extends=_InputBaseText)
@@ -262,37 +263,37 @@ class InputTextArea:
 
 @model(extends=_InputBase)
 class InputNumber:
-    input_min:  Optional(Int, 0)
-    input_max:  Optional(Int, 0)
+    input_min:  Optional(Int)
+    input_max:  Optional(Int)
     input_step: Optional(Union(Single("any"), Num), "any")
 
 
 @model(extends=_InputBase)
 class InputDate:
-    input_min:  Optional(Str, "")
-    input_max:  Optional(Str, "")
-    input_step: Optional(Str, "")
+    input_min:  Optional(Str)
+    input_max:  Optional(Str)
+    input_step: Optional(Str)
 
 @model(extends=_InputBase)
 class InputCheckbox:
-    input_checked: Optional(Bool, False)
+    input_checked: Optional(Bool)
     input_value:   Optional(Str, "on")
 
 @model
 class Form:
     form_id:               Optional(Str, "form")
-    form_class:            Optional(Str, "")
-    form_style:            Optional(Str, "")
-    form_name:             Optional(Str, "")
-    form_action:           Optional(Str, "")
+    form_class:            Optional(Str)
+    form_style:            Optional(Str)
+    form_name:             Optional(Str)
+    form_action:           Optional(Str)
     form_method:           Optional(Str, "get")
     form_enc:              Optional(_FormEnc, "application/x-www-form-urlencoded")
     form_autocomplete:     Optional(Bool, False)
     form_browser_validate: Optional(Bool, False)
-    form_target:           Optional(Str, "")
+    form_target:           Optional(Str)
     form_autofocus:        Optional(Bool, False)
     form_charset:          Optional(Str, "UTF-8")
-    form_rel:              Optional(Str, "")
+    form_rel:              Optional(Str)
 
 @model
 class FlexSearch:

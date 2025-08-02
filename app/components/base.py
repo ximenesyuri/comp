@@ -17,7 +17,7 @@ from app.helper import (
     if_button,
     if_link,
     if_text,
-    if_image,
+    if_img,
     if_figure,
     if_script,
     if_asset,
@@ -43,7 +43,8 @@ from app.models import (
     Item,
     Ordered,
     Unordered,
-    Nav
+    Nav,
+    Logo
 )
 
 
@@ -135,19 +136,19 @@ def link(link: Link=Link(), inner: Inner="") -> Jinja:
 """
 
 @component
-def image(image: Image=Image()) -> Tag('img'):
-    image_data = if_link(image)
+def img(img: Image=Image()) -> Tag('img'):
+    img_data = if_img(i)
     return """jinja
-<img{{ image_data }}/>
+<img{{ img_data }}/>
 """
 
 @component
 def figure(figure: Figure=Figure()) -> Tag('figure'):
     figure_data = if_figure(figure)
-    image_data = if_image(figure.figure_img)
+    img_data = if_img(figure.figure_img)
     return """jinja
 <figure{{ figure_data }}>
-    <img{{ image_data }}>
+    <img{{ img_data }}>
     {% if figure.figure_caption %}<figcaption>{{ figure_caption }}</figcaption>{% endif %}
 </figure>
 """
@@ -227,7 +228,11 @@ def nav(nav: Nav=Nav(), depends_on=[item, link]) -> Jinja:
     return """jinja
 <nav{{nav_data}}>{% if nav.nav_items %}
     <ul{{ ul_id }}{{ ul_class }}{{ ul_style }}>{% for it in nav.nav_items %}
-        {{ item(item=it, inner=link(link=it.item_link)) }}</li>{% endfor %}
+        {{ item(item=it, inner=link(link=it.item_link)) }}{% endfor %}
     </ul>
 </nav>{% else %}</nav>{% endif %}
 """
+
+@component
+def logo(logo: Logo) -> Jinja:
+    return (link * img)(link=logo.logo_link, img=logo.logo_img)

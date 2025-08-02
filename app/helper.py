@@ -180,19 +180,19 @@ def if_button(button: Button=None) -> Str:
     return result
 
 @typed
-def if_image(image: Image=None) -> Str:
-    if not image:
+def if_img(img: Image=None) -> Str:
+    if not img:
         return ""
-    result = if_globals(getattr(image, 'globals', None))
-    result += if_id(getattr(image, 'image_id', None))
-    result += if_class(getattr(image, 'image_class', None))
-    result += if_style(getattr(image, 'image_style', None))
-    if getattr(image, 'image_lazy', None):
-        result += if_key_value(image.image_lazy, "loading", "lazy")
-    if getattr(image, 'image_alt', None):
-        result += if_key(image.image_alt, "alt")
-    if getattr(image, 'image_src', None):
-        result += if_key(image.image_src, "src")
+    result = if_globals(getattr(img, 'globals', None))
+    result += if_id(getattr(img, 'img_id', None))
+    result += if_class(getattr(img, 'img_class', None))
+    result += if_style(getattr(img, 'img_style', None))
+    if getattr(img, 'img_lazy', None):
+        result += if_key_value(img.img_lazy, "loading", "lazy")
+    if getattr(img, 'img_alt', None):
+        result += if_key(img.img_alt, "alt")
+    if getattr(img, 'img_src', None):
+        result += if_key(img.img_src, "src")
     return result
 
 @typed
