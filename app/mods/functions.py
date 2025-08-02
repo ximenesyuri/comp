@@ -17,21 +17,24 @@ from app.mods.types.base import Jinja, COMPONENT
 
 @typed
 def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
-    from inspect import Parameter, Signature
+    from inspect import signature, Parameter
+    from app.mods.types.base import Inner
+
+    sig1 = signature(component1)
+    slot_args = [
+        name for name, param in sig1.parameters.items()
+        if getattr(param, "annotation", None) == Inner
+    ]
+    if len(slot_args) != 1:
+        raise ValueError(
+            f"Multiples 'Inner' arguments in '{component1.__name__}'."
+        )
+    slot_var = slot_args[0]
 
     outer_jinja = component1.jinja
     inner_jinja = component2.jinja
+    raw_jinja = outer_jinja.replace(f"{{{{ {slot_var} }}}}", inner_jinja).replace(f"{{{{{slot_var}}}}}", inner_jinja)
 
-    slot_vars = set(component1.jinja_free_vars)
-    if len(slot_vars) != 1:
-        raise ValueError(
-            f"Concat requires exactly one free variable as slot in the outer component. Found: {slot_vars}"
-        )
-    slot_var = list(slot_vars)[0]
-
-    raw_jinja = outer_jinja.replace(f"{{{{{slot_var}}}}}", inner_jinja)
-
-    sig1 = signature(component1)
     sig2 = signature(component2)
     params1 = {k: v for k, v in sig1.parameters.items() if k != slot_var and k != 'depends_on'}
     params2 = {k: v for k, v in sig2.parameters.items() if k != 'depends_on'}
@@ -44,23 +47,25 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
     jinja_vars.discard(slot_var)
     jinja_vars.discard('depends_on')
 
-    all_names = set(all_params)
-    missing_vars = jinja_vars - all_names
-
+    from app.mods.helper.helper import _make_placeholder_model, _get_annotation
     new_parameters = []
     for n in all_params:
         param = all_params[n]
         annotation = _get_annotation(param)
         if param.default != Parameter.empty:
             default_val = param.default
-        elif isinstance(annotation, type) and issubclass(annotation, MODEL):
+        elif isinstance(annotation, type) and hasattr(annotation, '__fields__'):
             default_val = _make_placeholder_model(n, annotation)
         else:
             default_val = ""
         new_parameters.append(Parameter(n, Parameter.KEYWORD_ONLY, default=default_val, annotation=annotation))
-    for name in sorted(missing_vars):
+    for name in sorted(jinja_vars - set(all_params)):
         new_parameters.append(Parameter(name, Parameter.KEYWORD_ONLY, default="", annotation=str))
 
+    from app.mods.types.base import Jinja
+    from typed import typed
+    from app.mods.helper.types import COMPONENT
+    from inspect import Signature
     new_sig = Signature(new_parameters)
 
     def dynamic_component(**kwargs):
@@ -74,7 +79,6 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
     dynamic_component.__signature__ = new_sig
     dynamic_component.__annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
     dynamic_component.__annotations__['return'] = Jinja
-
     dyn_typed = typed(dynamic_component)
     dyn_typed.__class__ = COMPONENT
     dyn_typed._raw_combined_jinja = raw_jinja
