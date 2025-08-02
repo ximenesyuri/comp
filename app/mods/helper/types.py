@@ -58,7 +58,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
     def __mul__(self, other):
         if not isinstance(other, COMPONENT):
             return NotImplemented
-        from app.mods.decorators.component import _FREE_COMPONENT_REGISTRY
+        from app.mods.decorators.base import _FREE_COMPONENT_REGISTRY
         InstanceFree = _FREE_COMPONENT_REGISTRY.get('__FreeInstance__')
         if InstanceFree is None:
             from app.mods.factories.base import Component
