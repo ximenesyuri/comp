@@ -65,7 +65,7 @@ _FormEnc = Enum(
 
 @model
 class Div:
-    globals:   Optional(Globals, {})
+    globals:   Optional(Globals)
     div_id:    Optional(Str, "div")
     div_class: Optional(Str, "")
     div_hover: Optional(Str, "")
