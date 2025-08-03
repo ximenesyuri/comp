@@ -76,7 +76,7 @@ def _set_jinja_delim(**kwargs):
 def _jinja_env(undefined=StrictUndefined, **kwargs):
     params = {
         "undefined": undefined,
-        **_jinja_delimiters,
+        **_jinja_delim,
         **kwargs
     }
     return Environment(**params)
