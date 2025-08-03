@@ -29,7 +29,7 @@ def responsive(div: Div=Div(), alpine: Alpine=_RESPONSIVE, inner: Inner="") -> T
     return f"""jinja
 <div {div_data }{ alpine_data }>[% if inner %]
     { inner }
-</div>[% else %]</div>
+</div>[% else %]</div>[% endif %]
 """
 
 @component
@@ -40,7 +40,7 @@ def desktop(div: Div=Div(), alpine: Alpine=_DESKTOP, inner: Inner="") -> Tag('di
     return f"""jinja
 <div {div_data }{ alpine_data }>[% if inner %]
     { inner }
-</div>[% else %]</div>
+</div>[% else %]</div>[% endif %]
 """
 
 @component
@@ -52,7 +52,7 @@ def tablet(div: Div=Div(), alpine: Alpine=_TABLET, inner: Inner="") -> Tag('div'
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
 
@@ -65,7 +65,7 @@ def phone(div: Div=Div(), alpine: Alpine=_PHONE, inner: Inner="") -> Tag('div'):
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
 
@@ -78,7 +78,7 @@ def mobile(div: Div=Div(), alpine: Alpine=_MOBILE, inner: Inner="") -> Tag('div'
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
 
@@ -91,7 +91,7 @@ def not_desktop(div: Div=Div(), alpine: Alpine=_NOT_DESKTOP, inner: Inner="") ->
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
 
@@ -104,7 +104,7 @@ def not_tablet(div: Div=Div(), alpine: Alpine=_NOT_TABLET, inner: Inner="") -> T
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
 
@@ -117,7 +117,7 @@ def not_phone(div: Div=Div(), alpine: Alpine=_NOT_PHONE, inner: Inner="") -> Tag
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
 
@@ -130,6 +130,6 @@ def not_mobile(div: Div=Div(), alpine: Alpine=_NOT_MOBILE, inner: Inner="") -> T
 <div x-data="{ responsive_data }">
     <div{ div_data }{ alpine_data }>[% if inner %]
         { inner }
-    </div>[% else %]</div>
+    </div>[% else %]</div>[% endif %]
 </div>
 """
