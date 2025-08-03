@@ -172,7 +172,7 @@ def item(item: Item=Item(), inner: Inner="") -> Jinja:
     item_data = if_item(item)
     return f"""jinja
 <li{ item_data }>[% if item.inner %]
-    { item.inner }
+    { item.item_inner }
 </li>[% elif inner %]
     { inner }
 </li>[% else %]</li>[% endif %]
