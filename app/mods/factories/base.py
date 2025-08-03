@@ -8,7 +8,10 @@ def Tag(*tag_names: Tuple(Str)) -> TYPE:
 
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 
-    tags_pattern = "|".join(tag_names)
+    if len(tag_names) > 1:
+        tags_pattern = "|".join(tuple(tag_names))
+    else:
+        tags_pattern = tag_names
     if all(tag in void_tags for tag in tag_names):
         pattern_str = rf"^jinja\s*\n?\s*<({tags_pattern})\b[^>]*>(\s*)$"
     else:
