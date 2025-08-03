@@ -27,7 +27,9 @@ def responsive(div: Div=Div(), alpine: Alpine=_RESPONSIVE, inner: Inner="") -> T
     div_data    = if_div(div)
     alpine_data = if_alpine(alpine)
     return f"""jinja
-<div {div_data }{ alpine_data }>[% if inner %]
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
     { inner }
 </div>[% else %]</div>[% endif %]
 """
@@ -38,9 +40,13 @@ def desktop(div: Div=Div(), alpine: Alpine=_DESKTOP, inner: Inner="") -> Tag('di
     alpine_data     = if_alpine(alpine)
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div {div_data }{ alpine_data }>[% if inner %]
-    { inner }
-</div>[% else %]</div>[% endif %]
+<div x-data="{ responsive_data }">
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
+        { inner }
+    </div>[% else %]</div>[% endif %]
+</div>
 """
 
 @component
@@ -50,9 +56,11 @@ def tablet(div: Div=Div(), alpine: Alpine=_TABLET, inner: Inner="") -> Tag('div'
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
-    </div>[% else %]</div>[% endif %]
+    </div>[% else %]</div>[% endif %] 
 </div>
 """
 
@@ -63,7 +71,9 @@ def phone(div: Div=Div(), alpine: Alpine=_PHONE, inner: Inner="") -> Tag('div'):
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
     </div>[% else %]</div>[% endif %]
 </div>
@@ -76,7 +86,9 @@ def mobile(div: Div=Div(), alpine: Alpine=_MOBILE, inner: Inner="") -> Tag('div'
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
     </div>[% else %]</div>[% endif %]
 </div>
@@ -89,9 +101,11 @@ def not_desktop(div: Div=Div(), alpine: Alpine=_NOT_DESKTOP, inner: Inner="") ->
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
-    </div>[% else %]</div>[% endif %]
+    </div>[% else %]</div>[% endif %] 
 </div>
 """
 
@@ -102,9 +116,11 @@ def not_tablet(div: Div=Div(), alpine: Alpine=_NOT_TABLET, inner: Inner="") -> T
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
-    </div>[% else %]</div>[% endif %]
+    </div>[% else %]</div>[% endif %] 
 </div>
 """
 
@@ -115,9 +131,11 @@ def not_phone(div: Div=Div(), alpine: Alpine=_NOT_PHONE, inner: Inner="") -> Tag
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
-    </div>[% else %]</div>[% endif %]
+    </div>[% else %]</div>[% endif %] 
 </div>
 """
 
@@ -128,8 +146,10 @@ def not_mobile(div: Div=Div(), alpine: Alpine=_NOT_MOBILE, inner: Inner="") -> T
     responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
 <div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if inner %]
+    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
+        { div.div_inner }
+    </div>[% elif inner is defined %]
         { inner }
-    </div>[% else %]</div>[% endif %]
+    </div>[% else %]</div>[% endif %] 
 </div>
 """
