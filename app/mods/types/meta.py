@@ -5,20 +5,19 @@ from jinja2 import Environment
 
 class _Jinja(type(Str)):
     def __instancecheck__(cls, instance):
-        if not isinstance(instance, Union(Str, Prod(Str, Dict(Any)))):
+        if not isinstance(instance, Str):
             return False
 
         from app.mods.helper.helper import _jinja_regex
         regex_str = re.compile(_jinja_regex(), re.DOTALL)
         if isinstance(instance, Str):
             match = regex_str.match(instance)
-        else:
-            match = regex_str.match(instance[0])
         if not match:
             return False
         jinja_content = match.group(1)
         try:
-            Environment().parse(jinja_content)
+            from app.mods.helper.helper import _jinja_env
+            _jinja_env().parse(jinja_content)
             return True
         except Exception as e:
             print(f"{e}")

@@ -103,6 +103,7 @@ class Header:
     header_id:    Optional(Str, "header")
     header_class: Optional(Str)
     header_style: Optional(Str)
+    header_inner: Optional(Any)
 
 @model
 class Aside:
@@ -110,6 +111,7 @@ class Aside:
     aside_id:    Optional(Str, "aside")
     aside_class: Optional(Str)
     aside_style: Optional(Str)
+    aside_inner: Optional(Any)
 
 @model
 class Sidebar:
@@ -117,6 +119,7 @@ class Sidebar:
     sidebar_id:    Optional(Str, "sidebar")
     sidebar_class: Optional(Str)
     sidebar_style: Optional(Str)
+    sidebar_inner: Optional(Any)
 
 @model
 class Button:
@@ -127,7 +130,7 @@ class Button:
     button_type:  Optional(Enum(Str, "button", "reset", "submmit"), "button")
     on_click:     Optional(Str)
     click_away:   Optional(Str)
-    inner:        Optional(Any)
+    button_inner: Optional(Any)
 
 @model
 class Icon:
@@ -155,7 +158,7 @@ class Text:
     text_id:    Optional(Str, "text")
     text_class: Optional(Str)
     text_style: Optional(Str)
-    inner:      Optional(Any)
+    text_inner: Optional(Any)
 
 @model
 class Title:
@@ -164,7 +167,7 @@ class Title:
     title_class: Optional(Str)
     title_style: Optional(Str)
     title_tag:   Optional(Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6"), "h1")
-    inner:       Optional(Any)
+    title_inner: Optional(Any)
 
 @model
 class Link:
@@ -176,7 +179,7 @@ class Link:
     link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top"), "_self")
     link_rel:      Optional(Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', ""), "")
     link_download: Optional(PathUrl, '')
-    inner:         Optional(Any, None)
+    link_inner:    Optional(Any, None)
 
 @model
 class Figure:
@@ -194,7 +197,7 @@ class Item:
     item_id:    Optional(Str, "item")
     item_class: Optional(Str)
     item_style: Optional(Str)
-    inner:      Optional(Any)
+    item_inner: Optional(Any)
 
 @model
 class Unordered:
@@ -230,7 +233,7 @@ class Script:
     script_defer: Optional(Bool)
     script_type:  Optional(Enum(Str, "module", "importmap", ""), "")
     script_async: Optional(Bool)
-    inner:        Optional(Any)
+    script_inner: Optional(Any)
 
 @exact
 class Asset:

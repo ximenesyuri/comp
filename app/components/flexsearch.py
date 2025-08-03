@@ -27,166 +27,167 @@ def flexsearch(flexsearch: FlexSearch=FlexSearch(), depends_on=[button_search, i
     null_button         = Button()
     results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
 
-    return """jinja
-<div {{ search_div }}> 
-    <div {{ input_div }} >
-        {{ input_search(flexsearch.input) }}
+    return f"""jinja
+<div { search_div }>
+    <div { input_div } >
+        { input_search(flexsearch.input) }
     </div>
-    {% if not flexsearch.button == null_button %}
-    <div {{ button_div }}>
-        {{ button_search(flexsearch.button) }}
+    [% if not flexsearch.button == null_button %]
+    <div { button_div }>
+        { button_search(flexsearch.button) }
     </div>
-    {% endif %}
+    [% endif %]
 </div>
-<div {{ results_div }} x-show="hasSearchResults" x-cloak
-    style="{{ results_div_style }}"
+<div { results_div } x-show="hasSearchResults" x-cloak
+    style="{ results_div_style }"
 >
 </div>
-<script src="{{ flexsearch.script_url }}"></script>
+<script src="{ flexsearch.script_url }"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    let index = new FlexSearch.Document({
+document.addEventListener("DOMContentLoaded", function() {{
+    let index = new FlexSearch.Document({{
         tokenize: "forward",
-        document: {
+        document: {{
             id: "id",
-            index: {{ flexsearch.index.index_types | tojson }},
-            store: {{ flexsearch.index.index_store_types | tojson }}
-        }
-    });
-    const searchInput = document.getElementById('{{ flexsearch.input.input_id }}');
-    const searchResultsDiv = document.getElementById('{{ flexsearch.results_div.div_id }}');
-    function getAlpineScope() {
+            index: [[ flexsearch.index.index_types | tojson ]],
+            store: [[ flexsearch.index.index_store_types | tojson ]]
+        }}
+    }});
+    const searchInput = document.getElementById('{ flexsearch.input.input_id }');
+    const searchResultsDiv = document.getElementById('{ flexsearch.results_div.div_id }');
+    function getAlpineScope() {{
         return document.body.__x && document.body.__x.$data ? document.body.__x.$data : null;
-    } 
-    fetch("{{ flexsearch.index.index_json_file }}")
-        .then(response => {
+    }}
+    fetch("[[ flexsearch.index.index_json_file ]]")
+        .then(response => {{
             if (!response.ok) throw new Error("Missing searchindex.json");
             return response.json();
-        })
-        .then(data => {
-            data.docs.forEach(doc => {
+        }})
+        .then(data => {{
+            data.docs.forEach(doc => {{
                 index.add(doc);
-            });
-            searchInput.addEventListener('input', function(e) {
+            }});
+            searchInput.addEventListener('input', function(e) {{
                 const alpineScope = getAlpineScope();
                 let query = e.target.value;
-                if (!query || !query.trim()) {
+                if (!query || !query.trim()) {{
                     searchResultsDiv.innerHTML = "";
-                    if (alpineScope) {
+                    if (alpineScope) {{
                        alpineScope.hasSearchResults = false;
-                    } else {
+                    }} else {{
                        searchResultsDiv.style.display = 'none';
-                    }
+                    }}
                     return;
-                }
-                let results = index.search(query, {limit: {{ flexsearch.results.limit }}, enrich: true});
+                }}
+                let results = index.search(query, {{limit: { flexsearch.results.limit }, enrich: true}});
                 let docs = [];
                 results.forEach(result => docs.push(...result.result));
-                const uniqueDocsById = {};
-                docs.forEach(d => {
+                const uniqueDocsById = {{}};
+                docs.forEach(d => {{
                     const id = d.doc.id;
-                    if (!uniqueDocsById[id]) {
+                    if (!uniqueDocsById[id]) {{
                         uniqueDocsById[id] = d.doc;
-                    }
-                });
+                    }}
+                }});
                 const uniqueDocs = Object.values(uniqueDocsById);
-                if (uniqueDocs.length > 1) {
-                    searchResultsDiv.innerHTML = uniqueDocs.map(d => {
+                if (uniqueDocs.length > 1) {{
+                    searchResultsDiv.innerHTML = uniqueDocs.map(d => {{
                         const prettyTitle = t =>
                             typeof t === "string" ? t :
-                            (t && typeof t === "object" && t.name ? t.name : "");  
+                            (t && typeof t === "object" && t.name ? t.name : "");
                         return `
-                            <div {{ results_div }}>
+                            <div {results_div}>
                                 <div style="display: flex; width: 101%;">
-                                    {% if flexsearch.results.cover.display %}
-                                        <div {{ results_cover_div }}>
-                                            <img src="${d.cover ?? "#"}" {{ results_cover_id }} {{ results_cover_class }}>
+                                    [% if flexsearch.results.cover.display %]
+                                        <div {results_cover_div}>
+                                            <img src="${{d.cover ?? "#"}}"{results_cover_id}{results_cover_class}>
                                         </div>
-                                        {% if flexsearch.results.kind.display %}
+                                        [% if flexsearch.results.kind.display %]
                                         <div style="display: flex;">
-                                            <div {{ results_kind_div }}>
-                                                <span {{ results_kind_id }} {{ results_kind_class }} >${ results_kind_content[d.kind] ?? d.kind }</span>
+                                            <div {results_kind_div}>
+                                                <span {results_kind_id}{results_kind_class}>${{ results_kind_content[d.kind] ?? d.kind }}</span>
                                             </div>
-                                            {% if flexsearch.results.title.display %}
-                                            <div {{ results_title_div }}>
-                                                <a href="${d.href ?? "#"}" {{ results_title_id }} {{ results_title_class }}>${prettyTitle(d.title)}</a>
+                                            [% if flexsearch.results.title.display %]
+                                            <div {results_title_div}>
+                                                <a href="${{d.href ?? "#"}}"{results_title_id}{results_title_class}>${{prettyTitle(d.title)}}</a>
                                             </div>
-                                            {% endif %}
+                                            [% endif %]
                                         </div>
-                                        {% else %}    
-                                        <div {{ results_title_div }}>
-                                            <a href="${d.href ?? "#"}" id="{{ results_title_id }}" class="{{ results_title_class }}">${prettyTitle(d.title)}</a>
-                                        </div> 
-                                        {% endif %}
-                                    {% else %}
-                                        {% if flexsearch.results.kind.display %}
+                                        [% else %]
+                                        <div {results_title_div}>
+                                            <a href="${{d.href ?? "#"}}" id="{results_title_id}" class="{results_title_class}">${{prettyTitle(d.title)}}</a>
+                                        </div>
+                                        [% endif %]
+                                    [% else %]
+                                        [% if flexsearch.results.kind.display %]
                                         <div style="display: flex;">
-                                            <div {{ results_kind_div }}>
-                                                <span {{ results_kind_id }} {{ results_kind_class }} >${ results_kind_content[d.kind] ?? d.kind }</span>
+                                            <div {results_kind_div}>
+                                                <span {results_kind_id}{results_kind_class}>${{ results_kind_content[d.kind] ?? d.kind }}</span>
                                             </div>
-                                            {% if flexsearch.results.title.display %}
-                                            <div {{ results_title_div }}>
-                                                <a href="${d.href ?? "#"}" {{ results_title_id }} {{ results_title_class }}>${prettyTitle(d.title)}</a>
+                                            [% if flexsearch.results.title.display %]
+                                            <div {results_title_div}>
+                                                <a href="${{d.href ?? "#"}}"{results_title_id}{results_title_class}>${{prettyTitle(d.title)}}</a>
                                             </div>
-                                            {% endif %}
+                                            [% endif %]
                                         </div>
-                                        {% else %}    
-                                        <div {{ results_title_div }}>
-                                            <a href="${d.href ?? "#"}" id="{{ results_title_id }}" class="{{ results_title_class }}">${prettyTitle(d.title)}</a>
-                                        </div> 
-                                        {% endif %}
-                                    {% endif %}
+                                        [% else %]
+                                        <div {results_title_div}>
+                                            <a href="${{d.href ?? "#"}}" id="{results_title_id}" class="{results_title_class}">${{prettyTitle(d.title)}}</a>
+                                        </div>
+                                        [% endif %]
+                                    [% endif %]
                                 </div>
-                                {% if flexsearch.results.desc.display %}
-                                <div {{ results_desc_div }}>
-                                    <span {{ results_desc_id }} {{ results_desc_class }}>${d.content ? d.content.substring(1,{{search.results.desc.desc_lenght}}) : ""}</span>
+                                [% if flexsearch.results.desc.display %]
+                                <div {results_desc_div}>
+                                    <span {results_desc_id}{results_desc_class}>${{d.content ? d.content.substring(1,{ flexsearch.results.desc.desc_length }) : ""}}</span>
                                 </div>
-                                {% endif %}
+                                [% endif %]
                             </div>
-                        `; 
-                    }).join('');
-                    if (alpineScope) {
+                        `;
+                    }}).join('');
+                    if (alpineScope) {{
                        alpineScope.hasSearchResults = true;
-                    } else {
+                    }} else {{
                        searchResultsDiv.style.display = '';
-                    }
-                } else {
-                    searchResultsDiv.innerHTML = `<div {{ no_results_div }}>{{ flexsearch.no_results }}</div>`;
-                    if (alpineScope) {
+                    }}
+                }} else {{
+                    searchResultsDiv.innerHTML = `<div {no_results_div}>{ flexsearch.no_results }</div>`;
+                    if (alpineScope) {{
                         alpineScope.hasSearchResults = true;
-                    } else {
+                    }} else {{
                        searchResultsDiv.style.display = '';
-                    }
-                }
-            });
-            searchInput.addEventListener('blur', function() {
+                    }}
+                }}
+            }});
+            searchInput.addEventListener('blur', function() {{
                 const alpineScope = getAlpineScope();
-                setTimeout(() => {
-                    if (!searchResultsDiv.contains(document.activeElement)) {
-                        if (alpineScope) {
+                setTimeout(() => {{
+                    if (!searchResultsDiv.contains(document.activeElement)) {{
+                        if (alpineScope) {{
                             alpineScope.hasSearchResults = false;
-                        } else {
+                        }} else {{
                             searchResultsDiv.style.display = 'none';
-                        }
+                        }}
                         searchResultsDiv.innerHTML = "";
-                    }
-                }, 101);
-            });
-            searchResultsDiv.addEventListener('mousedown', function(e) {
+                    }}
+                }}, 101);
+            }});
+            searchResultsDiv.addEventListener('mousedown', function(e) {{
                 e.preventDefault();
-            });
-        })
-        .catch(err => {   
+            }});
+        }})
+        .catch(err => {{
             const alpineScope = getAlpineScope();
-            searchResultsDiv.innerHTML = `<div {{ no_results_div }}>{{ flexsearch.no_results }}</div>`;
+            searchResultsDiv.innerHTML = `<div {no_results_div}>{ flexsearch.no_results }</div>`;
             console.error("Search index loading failed:", err);
-            if (alpineScope) {
+            if (alpineScope) {{
                 alpineScope.hasSearchResults = true;
-            } else {
+            }} else {{
                 searchResultsDiv.style.display = '';
                 console.warn("Alpine scope not ready in fetch catch block. Manually showing results div.");
-            }
-        }); 
-});
+            }}
+        }});
+}});
 </script>
 """
+

@@ -69,7 +69,7 @@ class Div:
     div_id:    Optional(Str, "div")
     div_class: Optional(Str, "")
     div_hover: Optional(Str, "")
-    inner:     Optional(Inner, "")
+    div_inner: Optional(Inner, "")
 
 @model
 class _FlexSearchTitle:

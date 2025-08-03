@@ -4,9 +4,10 @@ from utils import cmd, file, path
 from inspect import signature
 from typed import typed, Bool, List, Str, Nill, Dict, Any, Extension, Url
 from markdown import markdown
-from jinja2 import Environment, DictLoader, StrictUndefined, meta
+from jinja2 import DictLoader, StrictUndefined, meta
 from bs4 import BeautifulSoup
 from app.mods.types.base import Content
+from app.mods.helper.helper import _jinja_env
 from app.mods.helper.service import _style, _minify, _resolve_deps, _PublicPreview
 from app.mods.err import RenderErr, StyleErr, PreviewErr, MockErr
 from app.mods.types.base import COMPONENT, Jinja, PAGE
@@ -159,7 +160,7 @@ def render(
             full_jinja_context[dep_name] = make_rendered_dep_func(dep)
 
         template_name = getattr(definer, '__name__', 'template')
-        env = Environment(loader=DictLoader({template_name: jinja_html}), undefined=StrictUndefined)
+        env = _jinja_env(loader=DictLoader({template_name: jinja_html}), undefined=StrictUndefined)
         template = env.get_template(template_name)
         rendered_component = template.render(**full_jinja_context)
 

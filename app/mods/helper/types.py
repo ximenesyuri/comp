@@ -1,11 +1,11 @@
 import re
 from inspect import signature, getsource
-from jinja2 import Environment, meta
+from jinja2 import meta
 from typed import typed, Str, Json, Bool, Union, Extension, Path, TypedFuncType
 from typed.models import model, Optional
 from typed.more import Markdown
 from app.mods.types.meta import _COMPONENT
-from app.mods.helper.helper import _get_variables_map
+from app.mods.helper.helper import _jinja_env, _get_variables_map
 
 class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
     @property
@@ -34,7 +34,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
         Returns the tuple of all Jinja variables found in the definer's template.
         Uses _find_jinja_vars.
         """
-        env = Environment()
+        env = _jinja_env()
         jinja_content = self.jinja
         if not jinja_content:
             return ()

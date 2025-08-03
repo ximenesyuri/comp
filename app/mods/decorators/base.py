@@ -10,8 +10,7 @@ def _component(arg):
     from app.mods.helper.types import COMPONENT
     """base decorator to create a component"""
     if callable(arg):
-        is_dynamic_wrapper = hasattr(arg, '_is_dynamic_component') and \
-                             getattr(arg, '_is_dynamic_component') is True
+        is_dynamic_wrapper = hasattr(arg, '_is_dynamic_component') and getattr(arg, '_is_dynamic_component') is True
 
         if not is_dynamic_wrapper:
             original_sig = signature(arg)
@@ -35,17 +34,9 @@ def _component(arg):
                         f"     [received_type]: '{param.annotation}'"
                     )
 
-        def local_var_names(fn):
-            import dis
-            param_names = set(signature(fn).parameters)
-            return set(
-                instr.argval for instr in dis.get_instructions(fn)
-                if instr.opname == "STORE_FAST" and instr.argval not in param_names
-            )
         typed_arg = typed(arg)
         from app.mods.helper.types import COMPONENT
         typed_arg.__class__ = COMPONENT
-        typed_arg._local_vars = local_var_names(arg)
         from app.mods.types.base import Jinja
         if not issubclass(typed_arg.codomain, Jinja):
             raise TypeError(
@@ -62,30 +53,15 @@ def _component(arg):
                 typed_arg._combined_params_dict = arg._combined_params_dict
 
         @wraps(arg)
-        def locals_capture_wrapper(*args, **kwargs):
-            frame_container = {}
-            def tracer(frame, event, argval):
-                if event == "return" and frame.f_code == arg.__code__:
-                    frame_container['locals'] = frame.f_locals.copy()
-                return tracer
-            sys.setprofile(tracer)
-            try:
-                result = typed_arg(*args, **kwargs)
-            finally:
-                sys.setprofile(None)
-            if (isinstance(result, tuple) and len(result) == 2
-                    and isinstance(result[0], str)
-                    and isinstance(result[1], dict)):
-                return result
-            return (result, frame_container.get('locals', {}))
+        def component_wrapper(*args, **kwargs):
+            return typed_arg(*args, **kwargs)
 
-        locals_capture_wrapper.__signature__ = getattr(typed_arg, '__signature__', signature(arg))
-        locals_capture_wrapper.__annotations__ = getattr(arg, '__annotations__', {})
-        locals_capture_wrapper._local_vars = typed_arg._local_vars
-        locals_capture_wrapper._type = COMPONENT
-        wrapped = typed(locals_capture_wrapper)
+        component_wrapper.__signature__ = getattr(typed_arg, '__signature__', signature(arg))
+        component_wrapper.__annotations__ = getattr(arg, '__annotations__', {})
+        component_wrapper._type = COMPONENT
+        wrapped = typed(component_wrapper)
         wrapped.__class__ = COMPONENT
-        _FREE_COMPONENT_REGISTRY[arg.__name__] = locals_capture_wrapper
+        _FREE_COMPONENT_REGISTRY[arg.__name__] = component_wrapper
         return wrapped
 
     raise TypeError(

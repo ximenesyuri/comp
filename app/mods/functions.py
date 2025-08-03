@@ -3,8 +3,9 @@ from functools import wraps
 from typed import typed, Str, List, Tuple, Dict, Any
 from typed.models import MODEL
 from inspect import signature, Signature, Parameter, getmodule
-from jinja2 import meta, Environment, DictLoader, StrictUndefined
+from jinja2 import meta, DictLoader, StrictUndefined
 from app.mods.helper.helper import (
+    _jinja_env,
     _jinja_regex,
     _get_variables_map,
     _find_jinja_vars,
@@ -40,8 +41,7 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
     params2 = {k: v for k, v in sig2.parameters.items() if k != 'depends_on'}
     all_params = {**params2, **params1}
 
-    from jinja2 import Environment, meta, StrictUndefined
-    env = Environment()
+    env = _jinja_env()
     ast = env.parse(raw_jinja)
     jinja_vars = set(meta.find_undeclared_variables(ast))
     jinja_vars.discard(slot_var)
@@ -62,10 +62,6 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
     for name in sorted(jinja_vars - set(all_params)):
         new_parameters.append(Parameter(name, Parameter.KEYWORD_ONLY, default="", annotation=str))
 
-    from app.mods.types.base import Jinja
-    from typed import typed
-    from app.mods.helper.types import COMPONENT
-    from inspect import Signature
     new_sig = Signature(new_parameters)
 
     def dynamic_component(**kwargs):
@@ -74,7 +70,7 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
             if param.name not in context:
                 ann = param.annotation if hasattr(param, 'annotation') else str
                 context[param.name] = _make_placeholder_model(param.name, ann)
-        return "jinja\n" + Environment(undefined=StrictUndefined).from_string(raw_jinja).render(**context)
+        return "jinja\n" + _jinja_env(undefined=StrictUndefined).from_string(raw_jinja).render(**context)
 
     dynamic_component.__signature__ = new_sig
     dynamic_component.__annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
@@ -87,9 +83,6 @@ def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
 
 @typed
 def join(*components: Tuple(COMPONENT)) -> COMPONENT:
-    from typed.models import MODEL
-    from inspect import Parameter, Signature
-
     if not components:
         @typed
         def empty_join() -> str:
@@ -112,7 +105,7 @@ def join(*components: Tuple(COMPONENT)) -> COMPONENT:
             if n not in all_params:
                 all_params[n] = p
 
-    env = Environment()
+    env = _jinja_env()
     ast = env.parse(accumulated_raw_jinja_content)
     all_jinja_vars = set(meta.find_undeclared_variables(ast))
     all_jinja_vars.discard("depends_on")
@@ -142,7 +135,7 @@ def join(*components: Tuple(COMPONENT)) -> COMPONENT:
             if param.name not in context:
                 ann = param.annotation if hasattr(param, 'annotation') else str
                 context[param.name] = _make_placeholder_model(param.name, ann)
-        return "jinja\n" + Environment(undefined=StrictUndefined).from_string(accumulated_raw_jinja_content).render(**context)
+        return "jinja\n" + _jinja_env(undefined=StrictUndefined).from_string(accumulated_raw_jinja_content).render(**context)
 
     dynamic_joined_component.__signature__ = new_sig
     dynamic_joined_component.__annotations__ = __annotations__

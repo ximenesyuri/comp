@@ -18,13 +18,9 @@ def Tag(*tag_names: Tuple(Str)) -> TYPE:
 
     class _Tag(type(Jinja)):
         def __instancecheck__(cls, instance):
-            if isinstance(instance, tuple) and len(instance) == 2 and isinstance(instance[0], str):
-                instance_str = instance[0]
-            else:
-                instance_str = instance
             if not isinstance(instance_str, Str):
                 return False
-            if instance_str == """jinja """:
+            if instance_str.strip() == """jinja""":
                 return True
             return bool(tag_regex.match(instance_str))
 
