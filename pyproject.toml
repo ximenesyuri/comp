@@ -1,6 +1,6 @@
 [project]
 name = "app"
-version = "0.2.1"
+version = "0.3.0"
 description = "A typed solution to quickly create websites"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -8,6 +8,7 @@ license = {text = "BSD"}
 dependencies = [
     "typed @ git+https://github.com/ximenesyuri/typed",
     "utils @ git+https://github.com/ximenesyuri/utils",
+    "beautifulsoup4",
     "markdown",
     "pyyaml",
 ]
