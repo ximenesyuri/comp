@@ -6,7 +6,6 @@ from utils import func
 from inspect import signature, Signature, Parameter, getmodule, _empty
 from app.mods.decorators.base import component
 from app.mods.types.base import Jinja, COMPONENT, Inner
-from app.mods.helper.helper import _get_base_name
 from app.err import ConcatErr, JoinErr, EvalErr
 
 @typed
@@ -122,8 +121,45 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
         raise JoinErr(e)
 
 @typed
-def eval(component: COMPONENT, **fixed_args: Dict(Any)) -> COMPONENT:
-    try:
-        return component(func.eval(component, **fixed_args))
-    except Exception as e:
-        raise EvalErr(e)
+def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
+    sig = signature(func)
+    old_params = list(sig.parameters.items())
+    missing = [k for k in fixed_kwargs if k not in sig.parameters]
+    if missing:
+        raise TypeError(
+            f"{func.__name__} has no argument(s): {', '.join(missing)}"
+        )
+    new_params = []
+    for name, param in old_params:
+        if name in fixed_kwargs:
+            new_param = Parameter(
+                name,
+                kind=param.kind,
+                default=fixed_kwargs[name],
+                annotation=param.annotation
+            )
+            new_params.append(new_param)
+        else:
+            new_params.append(param)
+    new_sig = Signature(new_params)
+
+    def wrapper(*args, **kwargs):
+        ba = new_sig.bind_partial(*args, **kwargs)
+        ba.apply_defaults()
+        call_kwargs = dict(fixed_kwargs)
+        call_kwargs.update(ba.arguments)
+        template_str = func(**call_kwargs)
+
+        if isinstance(template_str, str):
+            from app.mods.helper.helper import _jinja_env
+            env = _jinja_env()
+            template = env.from_string(template_str)
+            return template.render(**call_kwargs)
+        else:
+            return template_str
+
+    wrapper.__signature__ = new_sig
+    if hasattr(func, '__annotations__'):
+        wrapper.__annotations__ = dict(func.__annotations__)
+
+    return component(wrapper)
