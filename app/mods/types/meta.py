@@ -23,17 +23,41 @@ class _Jinja(type(Str)):
             print(f"{e}")
             return False
 
-class _COMPONENT(type(TypedFuncType)):
-    def __instancecheck__(cls, instance):
-        if not isinstance(instance, TypedFuncType):
-            return False
-        return issubclass(instance.codomain, _Jinja('Jinja', (Str,), {}))
-
 class _Inner(type(str)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, str):
             return False
         return True
+
+class _COMPONENT(type(TypedFuncType)):
+    def __call__(cls, *args, **kwargs):
+        if not args and not kwargs:
+            return super().__call__(cls)
+
+        if args and isinstance(args[0], int):
+            n = args[0]
+        else:
+            raise TypeError("COMPONENT(...) expects a single integer argument for parameterization.")
+        from app.mods.helper.types import COMPONENT, _has_vars_of_given_type
+        if n < 0:
+            return COMPONENT
+        name = f"COMPONENT({n})"
+
+        class _COMPONENT_CALL(COMPONENT):
+            _inner_vars = n
+            __display__ = name
+
+            def __instancecheck__(cls, instance):
+                if not isinstance(instance, COMPONENT):
+                    return False
+                return _has_vars_of_given_type(instance, COMPONENT, _Inner, cls._inner_vars)
+
+        return _COMPONENT_CALL
+
+    def __instancecheck__(cls, instance):
+        if not isinstance(instance, TypedFuncType):
+            return False
+        return issubclass(instance.codomain, _Jinja('Jinja', (Str,), {}))
 
 def _check_page(page):
     from app.service import render

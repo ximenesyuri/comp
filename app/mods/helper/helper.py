@@ -87,11 +87,7 @@ def _jinja_regex(tag_name: Str = "") -> Pattern:
     return r"^jinja\s*\n?\s*(.*?)\s*$"
 
 def _extract_raw_jinja(jinja_string: Str) -> Str:
-    regex_str = re.compile(_jinja_regex(), re.DOTALL)
-    match = regex_str.match(jinja_string)
-    if match:
-        return match.group(1)
-    return ""
+    return re.sub(r"jinja\n?", "", jinja_string) 
 
 @typed
 def _find_jinja_vars(source: Str) -> Set(Str):
@@ -182,20 +178,6 @@ def _get_variables_map(seen, component, path=[]):
             print(f"Warning: Dependency '{dep}' is not a valid Component and cannot be inspected for variables.")
     return result
 
-def _make_placeholder_model(param_name, annotation):
-    if isinstance(annotation, type) and issubclass(annotation, MODEL):
-        fields = getattr(annotation, '__fields__', {})
-        field_kwargs = {}
-        for fname in fields:
-            field_kwargs[fname] = f"{{{{ {param_name}.{fname} }}}}"
-        return annotation(field_kwargs)
-    else:
-        return f"{{{{ {param_name} }}}}"
-
-def _get_annotation(param):
-        if param.annotation != Parameter.empty:
-            return param.annotation
-        elif param.default != Parameter.empty and isinstance(param.default, MODEL):
-            return type(param.default)
-        else:
-            return str
+def _get_base_name(name):
+    m = re.match(r"^(.*?)(?:_\d+)?$", name)
+    return m.group(1) if m else name

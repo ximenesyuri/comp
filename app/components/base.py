@@ -51,9 +51,9 @@ from app.models import (
 @component
 def header(header: Header=Header(), inner: Inner="") -> Jinja:
     return f"""jinja
-<div{ if_header(header) }>[% if header.inner %]
+<div{ if_header(header) }>[% if header.header_inner %]
     { header.header_inner }
-</div>[% elif inner %]
+</div>[% elif inner is defined %]
     { inner }
 </div>[% else %]</div>[% endif %]
 """
@@ -61,9 +61,9 @@ def header(header: Header=Header(), inner: Inner="") -> Jinja:
 @component
 def aside(aside: Aside=Aside(), inner: Inner="") -> Jinja:
     return f"""jinja
-<div{ if_aside(aside) }>[% if aside.inner %]
+<div{ if_aside(aside) }>[% if aside.aside_inner %]
     { aside.aside_inner }
-</div>[% elif inner %]
+</div>[% elif inner is defined %]
     { inner }
 </div>[% else %]</div>[% endif %]
 """
@@ -73,9 +73,9 @@ def div(div: Div=Div(), alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
     div_data    = if_div(div)
     alpine_data = if_alpine(alpine)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.inner %]
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner %]
+</div>[% elif inner is defined %]
     { inner }
 </div>[% else %]</div>[% endif %]
 """
@@ -84,7 +84,7 @@ def div(div: Div=Div(), alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
 def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
     alpine_data = if_alpine(alpine)
     return f"""jinja
-<div{ alpine_data }>[% if inner %]
+<div{ alpine_data }>[% if inner is defined %]
     { inner }
 </div>[% else %]</div>[% endif %]
 """
@@ -93,9 +93,9 @@ def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
 def text(text: Text=Text(), inner: Inner="") -> Jinja:
     text_data = if_text(text)
     return f"""jinja
-<p{ text_data }>[% if text.inner %]
+<p{ text_data }>[% if text.text_inner %]
     { text.text_inner }
-</p>[% elif inner %]
+</p>[% elif inner is defined %]
     { inner }
 </p>[% else %]</p>[% endif %]
 """
@@ -104,9 +104,9 @@ def text(text: Text=Text(), inner: Inner="") -> Jinja:
 def title(title: Title=Title(), inner: Inner="") -> Jinja:
     title_data = if_title(title)
     return f"""jinja
-<{ title.title_tag }{ title_data }>[% if title.inner %]
+<{ title.title_tag }{ title_data }>[% if title.title_inner %]
     { title.title_inner }
-</{ title.title_tag }>[% elif inner %]
+</{ title.title_tag }>[% elif inner is defined %]
     { inner }
 </{ title.title_tag }>[% else %]</{ title.title_tag }>[% endif %]
 """
@@ -115,9 +115,9 @@ def title(title: Title=Title(), inner: Inner="") -> Jinja:
 def link(link: Link=Link(), inner: Inner="") -> Jinja:
     link_data = if_link(link)
     return f"""jinja
-<a{ link_data }>[% if link.inner %]
+<a{ link_data }>[% if link.link_inner %]
     { link.link_inner }
-</a>[% elif inner %]
+</a>[% elif inner is defined %]
     { inner }
 </a>[% else %]</a>[% endif %] 
 """
@@ -143,9 +143,9 @@ def figure(figure: Figure=Figure()) -> Tag('figure'):
 def button(button: Button=Button(), inner: Inner="") -> Jinja:
     button_data = if_button(button)
     return f"""jinja 
-<button{ button_data }>[% if button.inner %]
+<button{ button_data }>[% if button.button_inner %]
     { button.button_inner }
-</button>[% elif inner %]
+</button>[% elif inner is defined %]
     { inner }
 </button>[% else %]</button>[% endif %]
 """
@@ -160,9 +160,9 @@ def asset(asset: Asset=Asset()) -> Tag('link'):
 def script(script: Script=Script(), inner: Inner="") -> Jinja:
     script_data = if_script(script)
     return f"""jinja
-<script{ script_data }>[% if script.inner %]
+<script{ script_data }>[% if script.script_inner %]
     { script.script_inner }
-</script>[% elif inner %]
+</script>[% elif inner is defined %]
     { inner }
 </script>[% else %]</script>[% endif %]
 """
@@ -171,9 +171,9 @@ def script(script: Script=Script(), inner: Inner="") -> Jinja:
 def item(item: Item=Item(), inner: Inner="") -> Jinja:
     item_data = if_item(item)
     return f"""jinja
-<li{ item_data }>[% if item.inner %]
+<li{ item_data }>[% if item.item_inner %]
     { item.item_inner }
-</li>[% elif inner %]
+</li>[% elif inner is defined %]
     { inner }
 </li>[% else %]</li>[% endif %]
 """
@@ -214,7 +214,7 @@ def nav(nav: Nav=Nav(), depends_on=[item, link]) -> Jinja:
     return f"""jinja
 <nav{ nav_data }>[% if nav.nav_items %]
     <ul{ ul_id }{ ul_class }{ ul_style }>[% for it in nav.nav_items %]
-        { item(item=it, inner=link(link=it.item_link)) }[% endfor %]
+        [[ item(item=it, inner=link(link=it.item_link)) ]][% endfor %]
     </ul>
 </nav>[% else %]</nav>[% endif %]
 """

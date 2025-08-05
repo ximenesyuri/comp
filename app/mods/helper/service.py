@@ -12,7 +12,7 @@ from jinja2 import Environment, DictLoader, StrictUndefined, meta
 from typed import typed, Dict, Any, Str
 from app.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
-from app.mods.err import StyleErr
+from app.err import StyleErr, MinifyErr, PreviewErr
 
 def _resolve_deps(deps):
     """
@@ -35,7 +35,6 @@ def _resolve_deps(deps):
                 stack.extend(list(dep_default))
     return all_deps
 
-
 @typed
 def _style(rendered_component: Str) -> Str:
     try:
@@ -49,7 +48,6 @@ def _style(rendered_component: Str) -> Str:
                         .replace('.', '\\.')
                     )
 
-        # Definitions
         MEDIA_PREFIXES = {
             "phone": "(min-width: 0px) and (max-width: 767px)",
             "tablet": "(min-width: 768px) and (max-width: 1024px)",
@@ -925,13 +923,25 @@ _preview = _Preview()
 
 class _PublicPreview:
     def add(self, comp, __name__=None, **kwargs):
-        _preview.add(comp, __name__=__name__, **kwargs)
+        try:
+            _preview.add(comp, __name__=__name__, **kwargs)
+        except Exception as e:
+            raise PreviewErr(e)
 
     def rm(self, identifier):
-        _preview.rm(identifier)
+        try:
+            _preview.rm(identifier)
+        except Exception as e:
+            raise PreviewErr(e)
 
     def clean(self):
-        _preview.clean()
+        try:
+            _preview.clean()
+        except Exception as e:
+            raise PreviewErr(e)
 
     def run(self, autoload=True):
-        _preview.run(autoload)
+        try:
+            _preview.run(autoload)
+        except Exception as e:
+            raise PreviewErr(e)

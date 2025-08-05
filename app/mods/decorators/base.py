@@ -10,18 +10,14 @@ def _component(arg):
     from app.mods.helper.types import COMPONENT
     """base decorator to create a component"""
     if callable(arg):
-        is_dynamic_wrapper = hasattr(arg, '_is_dynamic_component') and getattr(arg, '_is_dynamic_component') is True
-
-        if not is_dynamic_wrapper:
-            original_sig = signature(arg)
-            arg.__signature__ = original_sig
+        original_sig = signature(arg)
+        arg.__signature__ = original_sig
 
         if "depends_on" in signature(arg).parameters:
             param = signature(arg).parameters["depends_on"]
             expected_type_hint = List(COMPONENT)
             if param.annotation is Parameter.empty:
-                if not is_dynamic_wrapper:
-                    arg.__annotations__["depends_on"] = expected_type_hint
+                arg.__annotations__["depends_on"] = expected_type_hint
             else:
                 if isclass(param.annotation) and issubclass(param.annotation, List) and \
                    hasattr(param.annotation, '__args__') and param.annotation.__args__ and \
@@ -44,13 +40,6 @@ def _component(arg):
                 f" ==> '{arg.__name__}' codomain is not a subclass of Jinja\n"
                 f"     [received_type]: '{typed_arg.codomain.__name__}'"
             )
-        if is_dynamic_wrapper:
-            if hasattr(arg, '_is_dynamic_component'):
-                typed_arg._is_dynamic_component = arg._is_dynamic_component
-            if hasattr(arg, '_raw_combined_jinja'):
-                typed_arg._raw_combined_jinja = arg._raw_combined_jinja
-            if hasattr(arg, '_combined_params_dict'):
-                typed_arg._combined_params_dict = arg._combined_params_dict
 
         @wraps(arg)
         def component_wrapper(*args, **kwargs):

@@ -2,32 +2,31 @@ import re
 from typed import factory, Union, Str, List, Int, TYPE, Tuple
 
 @factory
-def Tag(*tag_names: Tuple(Str)) -> TYPE:
+def Tag(*tags: Tuple(Str)) -> TYPE:
     from app.mods.types.base    import Jinja
     from app.mods.helper.helper import _jinja_regex
 
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 
-    if len(tag_names) > 1:
-        tags_pattern = "|".join(tuple(tag_names))
+    if len(tags) > 1:
+        tags_pattern = "|".join(tags)
     else:
-        tags_pattern = tag_names
-    if all(tag in void_tags for tag in tag_names):
-        pattern_str = rf"^jinja\s*\n?\s*<({tags_pattern})\b[^>]*>(\s*)$"
+        tags_pattern = tags[0]
+    if all(tag in void_tags for tag in tuple(tags)):
+        pattern_str = rf"^\n?\s*<({tags_pattern})\b[^>]*>(\s*)$"
     else:
-        pattern_str = _jinja_regex(tags_pattern)
+        pattern_str = rf"^\n?\s*<{tags_pattern}\b[^>]*>(.*?)</{tags_pattern}>\s*$"
 
     tag_regex = re.compile(pattern_str, re.DOTALL)
 
     class _Tag(type(Jinja)):
         def __instancecheck__(cls, instance):
-            if not isinstance(instance_str, Str):
+            if not isinstance(instance, Str):
                 return False
-            if instance_str.strip() == """jinja""":
-                return True
-            return bool(tag_regex.match(instance_str))
-
-    return _Tag(f'Tag({tag_names})', (Jinja,), {'__display__': f'Tag({tag_names})'})
+            from app.mods.helper.helper import _extract_raw_jinja
+            jinja = _extract_raw_jinja(instance)
+            return bool(tag_regex.match(jinja))
+    return _Tag(f'Tag({tags})', (Jinja,), {'__display__': f'Tag({','.join(tags)})'})
 
 @factory
 def TAG(tag_name: Str) -> TYPE:
@@ -37,26 +36,7 @@ def TAG(tag_name: Str) -> TYPE:
             if not isinstance(instance, COMPONENT):
                 return False
             return issubclass(instance.codomain, Tag(tag_name))
-
     return _TAG(f'TagComponent({tag_name})', (COMPONENT,), {'__display__': f'TagComponent({tag_name})'})
-
-@factory
-def Component(n: int = -1) -> TYPE:
-    from app.mods.types.base import COMPONENT, Inner
-
-    if n < 0:
-        return COMPONENT
-
-    name = f"Component({n})"
-
-    class _Component(type(COMPONENT)):
-        def __instancecheck__(cls, instance):
-            if not isinstance(instance, COMPONENT):
-                return False
-            from app.mods.helper.types import _has_vars_of_given_type
-            return _has_vars_of_given_type(instance, COMPONENT, Inner, n)
-
-    return _Component(name, (COMPONENT,), {'_free_vars': n, '__display__': name})
 
 @factory
 def Static(*args: Tuple(Int)) -> TYPE:

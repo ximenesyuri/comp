@@ -1,7 +1,7 @@
 from typed import typed, Str, Any
 from app.models import Alpine
 
-_X_DATA_RESPONSIVE = """{{
+_X_DATA_RESPONSIVE = """{
     isPhoneQuery: window.matchMedia('(max-width: 639px)'),
     isTabletQuery: window.matchMedia('(min-width: 640px) and (max-width: 1023px)'),
     isDesktopQuery: window.matchMedia('(min-width: 1024px)'),
@@ -13,8 +13,8 @@ _X_DATA_RESPONSIVE = """{{
     isNotTablet: false,
     isNotDesktop: false,
     isnotMobole: false,
-    init() {{
-        const updateScreenSizes = () => {{
+    init() {
+        const updateScreenSizes = () => {
             this.isPhone = this.isPhoneQuery.matches;
             this.isTablet = this.isTabletQuery.matches;
             this.isDesktop = this.isDesktopQuery.matches;
@@ -28,8 +28,8 @@ _X_DATA_RESPONSIVE = """{{
         this.isTabletQuery.addEventListener('change', updateScreenSizes);
         this.isDesktopQuery.addEventListener('change', updateScreenSizes);
         updateScreenSizes();
-    }}
-}}"""
+    }
+}"""
 
 _RESPONSIVE  = Alpine(x_data=_X_DATA_RESPONSIVE)
 _DESKTOP     = Alpine(x_if="isDesktop")

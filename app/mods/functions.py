@@ -1,191 +1,129 @@
 import re
 from functools import wraps
+from collections import defaultdict
 from typed import typed, Str, List, Tuple, Dict, Any
-from typed.models import MODEL
-from inspect import signature, Signature, Parameter, getmodule
-from jinja2 import meta, DictLoader, StrictUndefined
-from app.mods.helper.helper import (
-    _jinja_env,
-    _jinja_regex,
-    _get_variables_map,
-    _find_jinja_vars,
-    _make_placeholder_model,
-    _get_annotation
-)
+from utils import func
+from inspect import signature, Signature, Parameter, getmodule, _empty
 from app.mods.decorators.base import component
-from app.mods.factories.base import Component
-from app.mods.types.base import Jinja, COMPONENT
+from app.mods.types.base import Jinja, COMPONENT, Inner
+from app.mods.helper.helper import _get_base_name
+from app.err import ConcatErr, JoinErr, EvalErr
 
 @typed
-def concat(component1: Component(1), component2: COMPONENT) -> COMPONENT:
-    from inspect import signature, Parameter
-    from app.mods.types.base import Inner
-
-    sig1 = signature(component1)
-    slot_args = [
-        name for name, param in sig1.parameters.items()
-        if getattr(param, "annotation", None) == Inner
-    ]
-    if len(slot_args) != 1:
-        raise ValueError(
-            f"Multiples 'Inner' arguments in '{component1.__name__}'."
-        )
-    slot_var = slot_args[0]
-
-    outer_jinja = component1.jinja
-    inner_jinja = component2.jinja
-    raw_jinja = outer_jinja.replace(f"{{{{ {slot_var} }}}}", inner_jinja).replace(f"{{{{{slot_var}}}}}", inner_jinja)
-
-    sig2 = signature(component2)
-    params1 = {k: v for k, v in sig1.parameters.items() if k != slot_var and k != 'depends_on'}
-    params2 = {k: v for k, v in sig2.parameters.items() if k != 'depends_on'}
-    all_params = {**params2, **params1}
-
-    env = _jinja_env()
-    ast = env.parse(raw_jinja)
-    jinja_vars = set(meta.find_undeclared_variables(ast))
-    jinja_vars.discard(slot_var)
-    jinja_vars.discard('depends_on')
-
-    from app.mods.helper.helper import _make_placeholder_model, _get_annotation
-    new_parameters = []
-    for n in all_params:
-        param = all_params[n]
-        annotation = _get_annotation(param)
-        if param.default != Parameter.empty:
-            default_val = param.default
-        elif isinstance(annotation, type) and hasattr(annotation, '__fields__'):
-            default_val = _make_placeholder_model(n, annotation)
-        else:
-            default_val = ""
-        new_parameters.append(Parameter(n, Parameter.KEYWORD_ONLY, default=default_val, annotation=annotation))
-    for name in sorted(jinja_vars - set(all_params)):
-        new_parameters.append(Parameter(name, Parameter.KEYWORD_ONLY, default="", annotation=str))
-
-    new_sig = Signature(new_parameters)
-
-    def dynamic_component(**kwargs):
-        context = dict(kwargs)
-        for param in new_parameters:
-            if param.name not in context:
-                ann = param.annotation if hasattr(param, 'annotation') else str
-                context[param.name] = _make_placeholder_model(param.name, ann)
-        return "jinja\n" + _jinja_env(undefined=StrictUndefined).from_string(raw_jinja).render(**context)
-
-    dynamic_component.__signature__ = new_sig
-    dynamic_component.__annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
-    dynamic_component.__annotations__['return'] = Jinja
-    dyn_typed = typed(dynamic_component)
-    dyn_typed.__class__ = COMPONENT
-    dyn_typed._raw_combined_jinja = raw_jinja
-    dyn_typed._is_dynamic_component = True
-    return dyn_typed
+def Component(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
+    return component(func.copy(comp, **renamed_args))
 
 @typed
-def join(*components: Tuple(COMPONENT)) -> COMPONENT:
-    if not components:
-        @typed
-        def empty_join() -> str:
-            return "jinja\n"
-        empty_join.__class__ = COMPONENT
-        empty_join._is_dynamic_component = True
-        empty_join._raw_combined_jinja = ""
-        return empty_join
+def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
+    try:
+        sig1 = signature(comp_1)
+        sig2 = signature(comp_2)
 
-    accumulated_raw_jinja_content = ""
-    for d in components:
-        accumulated_raw_jinja_content += d.jinja
+        inner_param_name: str | None = None
+        inner_param_obj: Parameter | None = None
+        for name, param in sig1.parameters.items():
+            if param.annotation is Inner or (hasattr(param.annotation, '__origin__') and param.annotation.__origin__ is TypeVar and Inner in param.annotation.__args__):
+                inner_param_name = name
+                inner_param_obj = param
+                break
+        if inner_param_name is None:
+            raise ValueError(f"comp_1 must have a parameter with type annotation '{Inner.__name__}'")
 
-    all_params = {}
-    for d in components:
-        sig = signature(d)
-        for n, p in sig.parameters.items():
-            if n == "depends_on":
-                continue
-            if n not in all_params:
-                all_params[n] = p
+        params_for_new_sig_from_comp1 = [p for p in sig1.parameters.values() if p.name != inner_param_name]
+        params_for_new_sig_from_comp2 = list(sig2.parameters.values())
 
-    env = _jinja_env()
-    ast = env.parse(accumulated_raw_jinja_content)
-    all_jinja_vars = set(meta.find_undeclared_variables(ast))
-    all_jinja_vars.discard("depends_on")
-    param_names = set(all_params)
-    missing_vars = all_jinja_vars - param_names
+        unique_params_dict: dict[str, Parameter] = {}
+        new_annotations: dict[str, Any] = {}
 
-    new_parameters = []
-    for n, p in all_params.items():
-        annotation = _get_annotation(p)
-        if p.default != Parameter.empty:
-            default_val = p.default
-        elif isinstance(annotation, type) and isinstance(annotation, MODEL):
-            default_val = _make_placeholder_model(n, annotation)
-        else:
-            default_val = ""
-        new_parameters.append(Parameter(n, Parameter.KEYWORD_ONLY, default=default_val, annotation=annotation))
-    for name in sorted(missing_vars):
-        new_parameters.append(Parameter(name, Parameter.KEYWORD_ONLY, default="", annotation=str))
+        for p in params_for_new_sig_from_comp1:
+            if p.name not in unique_params_dict:
+                unique_params_dict[p.name] = p
+                if p.annotation is not _empty:
+                    new_annotations[p.name] = p.annotation
 
-    new_sig = Signature(new_parameters)
-    __annotations__ = {p.name: p.annotation if hasattr(p, 'annotation') else str for p in new_parameters}
-    __annotations__['return'] = Jinja
+        for p in params_for_new_sig_from_comp2:
+            if p.name not in unique_params_dict:
+                unique_params_dict[p.name] = p
+                if p.annotation is not _empty:
+                    new_annotations[p.name] = p.annotation
 
-    def dynamic_joined_component(**kwargs):
-        context = dict(kwargs)
-        for param in new_parameters:
-            if param.name not in context:
-                ann = param.annotation if hasattr(param, 'annotation') else str
-                context[param.name] = _make_placeholder_model(param.name, ann)
-        return "jinja\n" + _jinja_env(undefined=StrictUndefined).from_string(accumulated_raw_jinja_content).render(**context)
+        new_params = list(unique_params_dict.values())
+        new_sig = Signature(parameters=new_params, return_annotation=Jinja)
 
-    dynamic_joined_component.__signature__ = new_sig
-    dynamic_joined_component.__annotations__ = __annotations__
+        def wrapper(*args, **kwargs):
+            ba = new_sig.bind(*args, **kwargs)
+            ba.apply_defaults()
 
-    dyn_typed = typed(dynamic_joined_component)
-    dyn_typed.__class__ = COMPONENT
-    dyn_typed._is_dynamic_component = True
-    dyn_typed._raw_combined_jinja = accumulated_raw_jinja_content
-    return dyn_typed
+            c1_args = {}
+            for p in sig1.parameters.values():
+                if p.name == inner_param_name:
+                    continue
+                c1_args[p.name] = ba.arguments[p.name]
+
+            c2_args = {}
+            for p in sig2.parameters.values():
+                c2_args[p.name] = ba.arguments[p.name]
+
+            inner_value = comp_2(**c2_args)
+            c1_args[inner_param_name] = inner_value
+            return comp_1(**c1_args)
+
+        wrapper.__signature__ = new_sig
+        wrapper.__annotations__ = {name: anno for name, anno in new_annotations.items()}
+        wrapper.__annotations__['return'] = Jinja
+
+        return component(wrapper)
+    except Exception as e:
+        raise ConcatErr(e)
 
 @typed
-def eval(some_component: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
-    sig = signature(some_component)
-    old_params = list(sig.parameters.items())
+def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
+    try:
+        if not comps:
+            raise ValueError("At least one component must be provided")
 
-    missing = [k for k in fixed_kwargs if k not in sig.parameters]
-    if missing:
-        raise TypeError(
-            f"{some_component.__name__} has no argument(s): {', '.join(missing)}"
-        )
+        sigs = [signature(comp) for comp in comps]
+        param_lists = [list(sig.parameters.values()) for sig in sigs]
 
-    new_params = []
-    for name, param in old_params:
-        if name in fixed_kwargs:
-            new_param = Parameter(
-                name,
-                kind=param.kind,
-                default=fixed_kwargs[name],
-                annotation=param.annotation
-            )
-            new_params.append(new_param)
-        else:
-            new_params.append(param)
+        unique_params_dict = {}
+        new_annotations = {}
 
-    new_sig = Signature(new_params)
+        for params in param_lists:
+            for p in params:
+                if p.name not in unique_params_dict:
+                    unique_params_dict[p.name] = p
+                    if p.annotation is not _empty:
+                        new_annotations[p.name] = p.annotation
 
-    def wrapped(*args, **kwargs):
-        ba = new_sig.bind_partial(*args, **kwargs)
-        ba.apply_defaults()
-        result = some_component(**ba.arguments)
-        if isinstance(result, tuple) and len(result) == 2 and isinstance(result[0], str) and isinstance(result[1], dict):
-            return result[0]
-        return result
+        new_params = list(unique_params_dict.values())
+        new_sig = Signature(parameters=new_params, return_annotation=Jinja)
 
-    wrapped.__signature__ = new_sig
-    if hasattr(some_component, '__annotations__'):
-        wrapped.__annotations__ = dict(some_component.__annotations__)
+        def wrapper(*args, **kwargs):
+            ba = new_sig.bind(*args, **kwargs)
+            ba.apply_defaults()
+            results = []
 
-    wrapped_typed = typed(wrapped)
-    from app.mods.helper.types import COMPONENT
-    wrapped_typed.__class__ = COMPONENT
-    wrapped_typed.func = wrapped
-    return wrapped_typed
+            for i, comp in enumerate(comps):
+                orig_sig = sigs[i]
+                func_args = {}
+                for orig_p in orig_sig.parameters.values():
+                    func_args[orig_p.name] = ba.arguments[orig_p.name]
+                results.append(comp(**func_args))
+
+            return ''.join(str(r) for r in results)
+
+        wrapper.__signature__ = new_sig
+
+        wrapper.__annotations__ = {name: anno for name, anno in new_annotations.items()}
+        wrapper.__annotations__['return'] = Jinja
+
+        return component(wrapper)
+    except Exception as e:
+        raise JoinErr(e)
+
+@typed
+def eval(component: COMPONENT, **fixed_args: Dict(Any)) -> COMPONENT:
+    try:
+        return component(func.eval(component, **fixed_args))
+    except Exception as e:
+        raise EvalErr(e)
