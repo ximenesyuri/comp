@@ -84,7 +84,7 @@ class _FlexSearchDesc:
     desc_id:     Optional(Str, "flexsearch-results-desc")
     desc_class:  Optional(Str, "")
     desc_hover:  Optional(Str, "")
-    desc_lenght: Optional(Int, 181)
+    desc_length: Optional(Int, 181)
     display:     Optional(Bool, False)
 
 @model
