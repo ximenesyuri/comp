@@ -30,34 +30,27 @@ class _Inner(type(str)):
         return True
 
 class _COMPONENT(type(TypedFuncType)):
+    _numbered = {}
     def __call__(cls, *args, **kwargs):
-        if not args and not kwargs:
+        if not args:
             return super().__call__(cls)
-
-        if args and isinstance(args[0], int):
-            n = args[0]
-        else:
-            raise TypeError("COMPONENT(...) expects a single integer argument for parameterization.")
-        from app.mods.helper.types import COMPONENT, _has_vars_of_given_type
-        if n < 0:
-            return COMPONENT
-        name = f"COMPONENT({n})"
-
-        class _COMPONENT_CALL(COMPONENT):
-            _inner_vars = n
-            __display__ = name
-
-            def __instancecheck__(cls, instance):
-                if not isinstance(instance, COMPONENT):
-                    return False
-                return _has_vars_of_given_type(instance, COMPONENT, _Inner, cls._inner_vars)
-
-        return _COMPONENT_CALL
+        n = args[0]
+        if n not in cls._numbered:
+            name = f"COMPONENT({n})"
+            from app.mods.helper.types import COMPONENT
+            class _COMPONENT_CALL(COMPONENT):
+                _inner_vars = n
+                __display__ = name
+            cls._numbered[n] = _COMPONENT_CALL
+        return cls._numbered[n]
 
     def __instancecheck__(cls, instance):
-        if not isinstance(instance, TypedFuncType):
-            return False
-        return issubclass(instance.codomain, _Jinja('Jinja', (Str,), {}))
+        if hasattr(cls, '_inner_vars'):
+            from app.mods.helper.types import COMPONENT, _has_vars_of_given_type
+            from app.mods.types.base import Inner
+            return _has_vars_of_given_type(instance, COMPONENT, Inner, cls._inner_vars)
+        else:
+            return super().__instancecheck__(instance)
 
 def _check_page(page):
     from app.service import render

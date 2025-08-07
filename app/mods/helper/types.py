@@ -12,9 +12,9 @@ def _has_vars_of_given_type(instance, BASE, typ, n):
         return isinstance(instance, BASE)
     count = 0
     ann = getattr(instance, '__annotations__', {})
-    for t in ann.values():
+    for name, t in ann.items():
         try:
-            if isinstance(t, type) and t is typ:
+            if isinstance(t, type) and (t is typ):
                 count += 1
         except Exception:
             pass
@@ -36,10 +36,6 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
 
     @property
     def jinja_vars(self):
-        """
-        Returns the tuple of all Jinja variables found in the definer's template.
-        Uses _find_jinja_vars.
-        """
         env = _jinja_env()
         jinja_content = self.jinja
         if not jinja_content:
@@ -64,13 +60,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
     def __mul__(self, other):
         if not isinstance(other, COMPONENT):
             return NotImplemented
-        from app.mods.decorators.base import _FREE_COMPONENT_REGISTRY
-        InstanceFree = _FREE_COMPONENT_REGISTRY.get('__FreeInstance__')
-        if InstanceFree is None:
-            InstanceFree = COMPONENT(1)
-            _FREE_COMPONENT_REGISTRY['__FreeInstance__'] = InstanceFree
-
-        if not isinstance(self, InstanceFree):
+        if not isinstance(self, COMPONENT(1)):
             raise TypeError(
                 f"The left operand of '*' (i.e., '{self.__name__}') must be a Definer with "
                 "exactly one free Jinja variable to be used with concat (Free(1)).\n"
