@@ -251,7 +251,8 @@ class InputPass:
 
 @model(extends=_InputBaseText)
 class InputSearch:
-    input_type: Optional(_InputType, "search")
+    input_type:  Optional(_InputType, "search")
+    input_value: Optional(Str)
 
 @model(extends=_InputBaseText)
 class InputEmail:
