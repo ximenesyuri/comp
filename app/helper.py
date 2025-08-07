@@ -21,12 +21,6 @@ from app.models import (
 )
 
 @typed
-def if_key_value(key: Str="", value: Str="") -> Str:
-    if key and value:
-        return f' {key}="{value}"'
-    return ""
-
-@typed
 def if_key(entry: Any=None, what: Str="id") -> Str:
     if entry and what:
         return f' {what}="{entry}"'
@@ -188,7 +182,7 @@ def if_img(img: Image=None) -> Str:
     result += if_class(getattr(img, 'img_class', None))
     result += if_style(getattr(img, 'img_style', None))
     if getattr(img, 'img_lazy', None):
-        result += if_key_value(img.img_lazy, "loading", "lazy")
+        result += if_key(img.img_lazy, "loading")
     if getattr(img, 'img_alt', None):
         result += if_key(img.img_alt, "alt")
     if getattr(img, 'img_src', None):
@@ -224,7 +218,7 @@ def if_asset(asset: Asset=None) -> Str:
     if getattr(asset, 'asset_href', None):
         result += if_key(asset.asset_href, "href")
     if getattr(asset, 'asset_mime', None):
-        result += if_key_value(asset.asset_mime, "type", asset.asset_mime)
+        result += if_key(asset.asset_mime, "type")
     if getattr(asset, 'asset_rel', None):
         result += if_key(asset.asset_rel, "rel")
     return result
