@@ -17,7 +17,9 @@ from app.models import (
     Nav,
     Header,
     Aside,
-    Sidebar
+    Sidebar,
+    Icon,
+    _InputBase
 )
 
 @typed
@@ -63,7 +65,7 @@ def if_style(entry: Any=None) -> Str:
     return if_key(entry, "style")
 
 @typed
-def if_div(div: Div=None) -> Str:
+def if_div(div: Maybe(Div)=None) -> Str:
     if not div:
         return ""
     result = if_globals(getattr(div, 'globals', None))
@@ -73,7 +75,7 @@ def if_div(div: Div=None) -> Str:
     return result
 
 @typed
-def if_alpine(alpine: Alpine=None) -> Str:
+def if_alpine(alpine: Maybe(Alpine)=None) -> Str:
     if not alpine:
         return ""
     result = ""
@@ -91,7 +93,7 @@ def if_alpine(alpine: Alpine=None) -> Str:
     return result
 
 @typed
-def if_header(header: Header=None) -> Str:
+def if_header(header: Maybe(Header)=None) -> Str:
     if not header:
         return ""
     result = if_globals(getattr(header, 'globals', None))
@@ -101,7 +103,7 @@ def if_header(header: Header=None) -> Str:
     return result
 
 @typed
-def if_aside(aside: Aside=None) -> Str:
+def if_aside(aside: Maybe(Aside)=None) -> Str:
     if not aside:
         return ""
     result = if_globals(getattr(aside, 'globals', None))
@@ -111,7 +113,7 @@ def if_aside(aside: Aside=None) -> Str:
     return result
 
 @typed
-def if_sidebar(sidebar: Sidebar=None) -> Str:
+def if_sidebar(sidebar: Maybe(Sidebar)=None) -> Str:
     if not sidebar:
         return ""
     result = if_globals(getattr(sidebar, 'globals', None))
@@ -121,7 +123,7 @@ def if_sidebar(sidebar: Sidebar=None) -> Str:
     return result
 
 @typed
-def if_text(text: Text=None) -> Str:
+def if_text(text: Maybe(Text)=None) -> Str:
     if not text:
         return ""
     result = if_globals(getattr(text, 'globals', None))
@@ -131,7 +133,7 @@ def if_text(text: Text=None) -> Str:
     return result
 
 @typed
-def if_title(title: Title=None) -> Str:
+def if_title(title: Maybe(Title)=None) -> Str:
     if not title:
         return ""
     result = if_globals(getattr(title, 'globals', None))
@@ -141,7 +143,7 @@ def if_title(title: Title=None) -> Str:
     return result
 
 @typed
-def if_link(link: Link=None) -> Str:
+def if_link(link: Maybe(Link)=None) -> Str:
     if not link:
         return ""
     result = ""
@@ -160,7 +162,7 @@ def if_link(link: Link=None) -> Str:
     return result
 
 @typed
-def if_button(button: Button=None) -> Str:
+def if_button(button: Maybe(Button)=None) -> Str:
     if not button:
         return ""
     result = if_globals(getattr(button, 'globals', None))
@@ -174,7 +176,7 @@ def if_button(button: Button=None) -> Str:
     return result
 
 @typed
-def if_img(img: Image=None) -> Str:
+def if_img(img: Maybe(Image)=None) -> Str:
     if not img:
         return ""
     result = if_globals(getattr(img, 'globals', None))
@@ -190,7 +192,7 @@ def if_img(img: Image=None) -> Str:
     return result
 
 @typed
-def if_figure(figure: Figure=None) -> Str:
+def if_figure(figure: Maybe(Figure)=None) -> Str:
     if not figure:
         return ""
     return if_globals(getattr(figure, 'globals', None))
@@ -211,7 +213,7 @@ def if_script(script: Script=None) -> Str:
     return result
 
 @typed
-def if_asset(asset: Asset=None) -> Str:
+def if_asset(asset: Maybe(Asset)=None) -> Str:
     if not asset:
         return ""
     result = ""
@@ -224,7 +226,7 @@ def if_asset(asset: Asset=None) -> Str:
     return result
 
 @typed
-def if_item(item: Item=None) -> str:
+def if_item(item: Maybe(Item)=None) -> str:
     if not item:
         return ""
     result = if_id(getattr(item, 'item_id', None))
@@ -233,7 +235,7 @@ def if_item(item: Item=None) -> str:
     return result
 
 @typed
-def if_ul(ul: Unordered=None) -> str:
+def if_ul(ul: Maybe(Unordered)=None) -> str:
     if not ul:
         return ""
     result = if_id(getattr(ul, 'ul_id', None))
@@ -242,7 +244,7 @@ def if_ul(ul: Unordered=None) -> str:
     return result
 
 @typed
-def if_ol(ol: Ordered=None) -> str:
+def if_ol(ol: Maybe(Ordered)=None) -> str:
     if not ol:
         return ""
     result = if_id(getattr(ol, 'ol_id', None))
@@ -251,10 +253,89 @@ def if_ol(ol: Ordered=None) -> str:
     return result
 
 @typed
-def if_nav(nav: Nav=None) -> str:
+def if_nav(nav: Maybe(Nav)=None) -> str:
     if not nav:
         return ""
     result = if_id(getattr(nav, 'nav_id', None))
     result += if_class(getattr(nav, 'nav_class', None))
     result += if_style(getattr(nav, 'nav_style', None))
+    return result
+
+@typed
+def if_icon(icon: Maybe(Icon)=None) -> Str:
+    if not icon:
+        return ""
+    result = ""
+    result += if_globals(getattr(icon, 'globals', None))
+    result += if_id(getattr(icon, 'icon_id', None))
+    result += if_class(getattr(icon, 'icon_class', None))
+    result += if_style(getattr(icon, 'icon_style', None))
+
+    if getattr(icon, 'icon_viewbox', None):
+        result += if_key(icon.icon_viewbox, "viewBox")
+    if getattr(icon, 'icon_size', None):
+        result += f' width="{icon.icon_size}" height="{icon.icon_size}"'
+    if getattr(icon, 'icon_fill', None):
+        result += if_key(icon.icon_fill, "fill")
+    if getattr(icon, 'icon_stroke', None):
+        result += if_key(icon.icon_stroke, "stroke")
+    if getattr(icon, 'icon_stroke_width', None):
+        result += if_key(icon.icon_stroke_width, "stroke-width")
+
+    return result
+
+@typed
+def if_input(input: Maybe(_InputBase)=None) -> Str:
+    if not input:
+        return ""
+    result = ""
+    result += if_globals(getattr(input, 'globals', None))
+    result += if_id(getattr(input, 'input_id', None))
+    result += if_class(getattr(input, 'input_class', None))
+    result += if_style(getattr(input, 'input_style', None))
+
+    if getattr(input, 'input_type', None):
+        result += if_key(input.input_type, "type")
+    if getattr(input, 'input_placeholder', None):
+        result += if_key(input.input_placeholder, "placeholder")
+    if getattr(input, 'input_value', None):
+        result += if_key(input.input_value, "value")
+    if getattr(input, 'input_name', None):
+        result += if_key(input.input_name, "name")
+    if getattr(input, 'input_autocomplete', None):
+        result += if_key(input.input_autocomplete, "autocomplete")
+    if getattr(input, 'input_required', None) and input.input_required:
+        result += if_attr("required")
+    if getattr(input, 'input_disabled', None) and input.input_disabled:
+        result += if_attr("disabled")
+    if getattr(input, 'input_readonly', None) and input.input_readonly:
+        result += if_attr("readonly")
+    if getattr(input, 'input_autofocus', None) and input.input_autofocus:
+        result += if_attr("autofocus")
+    if getattr(input, 'input_tabindex', None):
+        result += if_key(input.input_tabindex, "tabindex")
+    if getattr(input, 'input_form_id', None):
+        result += if_key(input.input_form_id, "form")
+    if getattr(input, 'input_minlength', None):
+        result += if_key(input.input_minlength, "minlength")
+    if getattr(input, 'input_maxlength', None):
+        result += if_key(input.input_maxlength, "maxlength")
+    if getattr(input, 'input_pattern', None):
+        result += if_key(input.input_pattern, "pattern")
+    if getattr(input, 'input_size', None):
+        result += if_key(input.input_size, "size")
+    if getattr(input, 'input_min', None):
+        result += if_key(input.input_min, "min")
+    if getattr(input, 'input_max', None):
+        result += if_key(input.input_max, "max")
+    if getattr(input, 'input_step', None):
+        result += if_key(input.input_step, "step")
+    if getattr(input, 'input_multiple', None) and input.input_multiple:
+        result += if_attr("multiple")
+    if getattr(input, 'input_accept', None):
+        result += if_key(input.input_accept, "accept")
+    if getattr(input, 'input_checked', None) and input.input_checked:
+        result += if_attr("checked")
+    if getattr(input, 'input_for', None):
+        result += if_key(input.input_for, "for")
     return result
