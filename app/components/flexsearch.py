@@ -1,8 +1,8 @@
 from app.mods.types.base import Jinja
 from app.mods.decorators.base import component
 from app.models import Div, Button, FlexSearch
-from app.components.inputs  import input_search
 from app.components.buttons import button_search
+from app.components.base import input
 from app.helper import if_div, if_class, if_id
 
 @component
@@ -31,7 +31,7 @@ def flexsearch(flexsearch: FlexSearch=FlexSearch(), __context__={}) -> Jinja:
     return f"""jinja
 <div { search_div }>
     <div { input_div } >
-        { input_search(flexsearch.input) }
+        { input(flexsearch.input) }
     </div>
     [% if not flexsearch.button == null_button %]
     <div { button_div }>

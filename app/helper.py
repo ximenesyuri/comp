@@ -19,7 +19,7 @@ from app.models import (
     Aside,
     Sidebar,
     Icon,
-    _InputBase
+    Input
 )
 
 @typed
@@ -285,7 +285,7 @@ def if_icon(icon: Maybe(Icon)=None) -> Str:
     return result
 
 @typed
-def if_input(input: Maybe(_InputBase)=None) -> Str:
+def if_input(input: Maybe(Input)=None) -> Str:
     if not input:
         return ""
     result = ""

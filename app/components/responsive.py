@@ -2,7 +2,6 @@ from app.mods.decorators.base import component
 from app.mods.types.base import Inner
 from app.mods.factories.base import Tag
 from app.mods.helper.components import (
-    _X_DATA_RESPONSIVE,
     _RESPONSIVE,
     _TABLET,
     _DESKTOP,
@@ -38,118 +37,94 @@ def responsive(div: Div=Div(), alpine: Alpine=_RESPONSIVE, inner: Inner="") -> T
 def desktop(div: Div=Div(), alpine: Alpine=_DESKTOP, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %]
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def tablet(div: Div=Div(), alpine: Alpine=_TABLET, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %] 
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def phone(div: Div=Div(), alpine: Alpine=_PHONE, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %]
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def mobile(div: Div=Div(), alpine: Alpine=_MOBILE, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %]
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def not_desktop(div: Div=Div(), alpine: Alpine=_NOT_DESKTOP, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %] 
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def not_tablet(div: Div=Div(), alpine: Alpine=_NOT_TABLET, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %] 
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def not_phone(div: Div=Div(), alpine: Alpine=_NOT_PHONE, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %] 
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """
 
 @component
 def not_mobile(div: Div=Div(), alpine: Alpine=_NOT_MOBILE, inner: Inner="") -> Tag('div'):
     div_data        = if_div(div)
     alpine_data     = if_alpine(alpine)
-    responsive_data = _X_DATA_RESPONSIVE
     return f"""jinja
-<div x-data="{ responsive_data }">
-    <div{ div_data }{ alpine_data }>[% if div.div_inner %]
-        { div.div_inner }
-    </div>[% elif inner is defined %]
-        { inner }
-    </div>[% else %]</div>[% endif %] 
-</div>
+<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+    { div.div_inner }
+</div>[% elif inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
 """

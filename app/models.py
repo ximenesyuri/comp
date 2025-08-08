@@ -16,14 +16,13 @@ from typed import (
     Url,
     PathUrl,
     null,
-    Any
+    Any,
+    Pattern
 )
 from typed.models import model, exact, Optional
 from app.mods.helper.models import (
     Div,
     Globals,
-    _InputBase,
-    _InputBaseText,
     _FormEnc,
     _InputType,
     _FlexSearchResults,
@@ -241,47 +240,34 @@ class Asset:
     asset_mime: Optional(Str)
     asset_rel:  Optional(Str, "stylesheet")
 
-@model(extends=_InputBaseText)
-class InputText:
-    input_type: Optional(_InputType, "text")
-
-@model(extends=_InputBaseText)
-class InputPass:
-    input_type: Optional(_InputType, "password")
-
-@model(extends=_InputBaseText)
-class InputSearch:
-    input_type:  Optional(_InputType, "search")
-    input_value: Optional(Str)
-
-@model(extends=_InputBaseText)
-class InputEmail:
-    input_type:     Optional(_InputType, "email")
-    input_multiple: Optional(Bool, False)
-
-@model(extends=_InputBase)
-class InputTextArea:
-    input_rows: Optional(Int, 2)
-    input_cols: Optional(Int, 20)
-    input_wrap: Optional(Enum(Str, "soft", "hard"), "soft")
-
-@model(extends=_InputBase)
-class InputNumber:
-    input_min:  Optional(Int)
-    input_max:  Optional(Int)
-    input_step: Optional(Union(Single("any"), Num), "any")
-
-
-@model(extends=_InputBase)
-class InputDate:
-    input_min:  Optional(Str)
-    input_max:  Optional(Str)
-    input_step: Optional(Str)
-
-@model(extends=_InputBase)
-class InputCheckbox:
-    input_checked: Optional(Bool)
-    input_value:   Optional(Str, "on")
+@model
+class Input:
+    input_type:         Optional(_InputType, "text")
+    input_id:           Optional(Str, "input")
+    input_class:        Optional(Str, "")
+    input_placeholder:  Optional(Str, "")
+    input_name:         Optional(Str, "")
+    input_autocomplete: Optional(Bool, False)
+    input_required:     Optional(Bool, False)
+    input_disabled:     Optional(Bool, False)
+    input_readonly:     Optional(Bool, False)
+    input_autofocus:    Optional(Bool, False)
+    input_tabindex:     Optional(Int, 0)
+    input_form_id:      Optional(Str, "")
+    input_minlength:    Optional(Int, 0)
+    input_maxlength:    Optional(Int, 524288)
+    input_pattern:      Optional(Pattern, r"")
+    input_size:         Optional(Int, 20)
+    input_value:        Optional(Str)
+    input_multiple:     Optional(Bool, False)
+    input_rows:         Optional(Int, 2)
+    input_cols:         Optional(Int, 20)
+    input_wrap:         Optional(Enum(Str, "soft", "hard"), "soft")
+    input_min:          Optional(Int)
+    input_max:          Optional(Int)
+    input_step:         Optional(Union(Single("any"), Num), "any")
+    input_checked:      Optional(Bool)
+    input_value:        Optional(Str, "on")
 
 @model
 class Form:
@@ -303,7 +289,7 @@ class Form:
 class FlexSearch:
     div:            Optional(Div, Div(div_id="flexsearch-div"))
     input_div:      Optional(Div, Div(div_id="flesearch-input-div"))
-    input:          Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
+    input:          Optional(Input, Input(input_type="search", input_id="flexsearch-input"))
     button_div:     Optional(Div, Div(div_id="flexsearch-button-div"))
     button:         Optional(Button)
     results_div:    Optional(Div, Div(div_id="flexsearch-results-div"))

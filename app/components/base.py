@@ -44,7 +44,8 @@ from app.models import (
     Ordered,
     Unordered,
     Nav,
-    Logo
+    Logo,
+    Input
 )
 
 
@@ -225,4 +226,11 @@ def logo(logo: Logo=Logo()) -> Jinja:
     link_data = if_link(logo.logo_link)
     return f"""jinja
 <a{link_data}><img{img_data}></a>
+"""
+
+@component
+def input(input: Input=Input()) -> Jinja:
+    input_data = if_input(input)
+    return f"""jinja
+<input{input_data}>
 """
