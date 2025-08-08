@@ -180,7 +180,7 @@ def item(item: Item=Item(), inner: Inner="") -> Jinja:
 li = item
 
 @component
-def unordered(ul: Unordered=Unordered(), depends_on=[item]) -> Jinja:
+def unordered(ul: Unordered=Unordered(), __depends_on__=[item]) -> Jinja:
     ul_data = if_ul(ul)
     return f"""jinja
 <ul{ ul_data }>[% if ul.ul_items %][% for i in ul.ul_items %]
@@ -190,7 +190,7 @@ def unordered(ul: Unordered=Unordered(), depends_on=[item]) -> Jinja:
 ul = unordered
 
 @component
-def ordered(ol: Ordered=Ordered(), depends_on=[item]) -> Jinja:
+def ordered(ol: Ordered=Ordered(), __depends_on__=[item]) -> Jinja:
     ol_data = if_ol(ol)
     return f"""jinja
 <ol{ ol_data }>[% if ol.ol_items %][% for i in ol.ol_items %]
@@ -201,7 +201,7 @@ ol = ordered
 
 
 @component
-def nav(nav: Nav=Nav(), depends_on=[item, link]) -> Jinja:
+def nav(nav: Nav=Nav(), __depends_on__=[item, link]) -> Jinja:
     nav_data = if_nav(nav)
     ul_id = if_id(nav.ul_id)
     ul_class = if_class(nav.ul_class)

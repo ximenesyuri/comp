@@ -109,7 +109,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
                     func_args[orig_p.name] = ba.arguments[orig_p.name]
                 results.append(comp(**func_args))
 
-            return ''.join(str(r) for r in results)
+            return Jinja(''.join(str(r) for r in results))
 
         wrapper.__signature__ = new_sig
 
@@ -156,7 +156,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
             template = env.from_string(template_str)
             return template.render(**call_kwargs)
         else:
-            return template_str
+            return Jinja(template_str)
 
     wrapper.__signature__ = new_sig
     if hasattr(func, '__annotations__'):

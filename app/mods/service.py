@@ -26,7 +26,7 @@ def render(
         definer = getattr(component, "func", component)
         sig = signature(definer)
         valid_params = set(sig.parameters.keys())
-        special = {"__scripts__", "__assets__", "depends_on", "__styled__"}
+        special = {"__scripts__", "__assets__", "__depends_on__", "__styled__"}
         valid_params = valid_params | special
 
         unknown_args = set(kwargs) - valid_params
@@ -55,17 +55,17 @@ def render(
                     kwargs[cname] = markdown(md_text)
                 else:
                     kwargs[cname] = markdown(value)
-        depends_on = []
-        if "depends_on" in sig.parameters:
-            depends_on_default = sig.parameters["depends_on"].default
-            depends_on = kwargs.pop("depends_on", depends_on_default) or []
-        if depends_on is None:
-            depends_on = []
-        all_depends_on = _resolve_deps(depends_on)
+        __depends_on__ = []
+        if "__depends_on__" in sig.parameters:
+            __depends_on__default = sig.parameters["__depends_on__"].default
+            __depends_on__ = kwargs.pop("__depends_on__", __depends_on__default) or []
+        if __depends_on__ is None:
+            __depends_on__ = []
+        all__depends__on = _resolve_deps(__depends_on__)
 
         call_args = {}
         for param in sig.parameters.values():
-            if param.name == "depends_on":
+            if param.name == "__depends_on__":
                 continue
             if param.name in kwargs:
                 call_args[param.name] = kwargs[param.name]
@@ -73,8 +73,8 @@ def render(
                 call_args[param.name] = param.default
             else:
                 call_args[param.name] = ""
-        if "depends_on" in sig.parameters:
-            result = component(**call_args, depends_on=depends_on)
+        if "__depends_on__" in sig.parameters:
+            result = component(**call_args, __depends_on__=__depends_on__)
         else:
             result = component(**call_args)
 
@@ -140,7 +140,7 @@ def render(
         context.update(call_args)
         context.update(kwargs)
 
-        for dep in all_depends_on:
+        for dep in all__depends__on:
             dep_name = getattr(dep, "__name__", str(dep))
 
             def _dep_context(dep):
