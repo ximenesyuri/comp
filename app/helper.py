@@ -35,7 +35,7 @@ def if_attr(attr: Str="") -> Str:
     return ""
 
 @typed
-def if_globals(globals: Maybe(Globals)=None) -> Str:
+def if_globals(globals: Globals=Globals()) -> Str:
     if not globals:
         return ""
     result = ""
@@ -65,7 +65,7 @@ def if_style(entry: Any=None) -> Str:
     return if_key(entry, "style")
 
 @typed
-def if_div(div: Maybe(Div)=None) -> Str:
+def if_div(div: Div=Div()) -> Str:
     if not div:
         return ""
     result = if_globals(getattr(div, 'globals', None))
@@ -75,7 +75,7 @@ def if_div(div: Maybe(Div)=None) -> Str:
     return result
 
 @typed
-def if_alpine(alpine: Maybe(Alpine)=None) -> Str:
+def if_alpine(alpine: Alpine=Alpine()) -> Str:
     if not alpine:
         return ""
     result = ""
@@ -93,7 +93,7 @@ def if_alpine(alpine: Maybe(Alpine)=None) -> Str:
     return result
 
 @typed
-def if_header(header: Maybe(Header)=None) -> Str:
+def if_header(header: Header=Header()) -> Str:
     if not header:
         return ""
     result = if_globals(getattr(header, 'globals', None))
@@ -103,7 +103,7 @@ def if_header(header: Maybe(Header)=None) -> Str:
     return result
 
 @typed
-def if_aside(aside: Maybe(Aside)=None) -> Str:
+def if_aside(aside: Aside=Aside()) -> Str:
     if not aside:
         return ""
     result = if_globals(getattr(aside, 'globals', None))
@@ -113,7 +113,7 @@ def if_aside(aside: Maybe(Aside)=None) -> Str:
     return result
 
 @typed
-def if_sidebar(sidebar: Maybe(Sidebar)=None) -> Str:
+def if_sidebar(sidebar: Sidebar=Sidebar()) -> Str:
     if not sidebar:
         return ""
     result = if_globals(getattr(sidebar, 'globals', None))
@@ -123,7 +123,7 @@ def if_sidebar(sidebar: Maybe(Sidebar)=None) -> Str:
     return result
 
 @typed
-def if_text(text: Maybe(Text)=None) -> Str:
+def if_text(text: Text=Text()) -> Str:
     if not text:
         return ""
     result = if_globals(getattr(text, 'globals', None))
@@ -133,7 +133,7 @@ def if_text(text: Maybe(Text)=None) -> Str:
     return result
 
 @typed
-def if_title(title: Maybe(Title)=None) -> Str:
+def if_title(title: Title=Title()) -> Str:
     if not title:
         return ""
     result = if_globals(getattr(title, 'globals', None))
@@ -143,7 +143,7 @@ def if_title(title: Maybe(Title)=None) -> Str:
     return result
 
 @typed
-def if_link(link: Maybe(Link)=None) -> Str:
+def if_link(link: Link=Link()) -> Str:
     if not link:
         return ""
     result = ""
@@ -162,7 +162,7 @@ def if_link(link: Maybe(Link)=None) -> Str:
     return result
 
 @typed
-def if_button(button: Maybe(Button)=None) -> Str:
+def if_button(button: Button=Button()) -> Str:
     if not button:
         return ""
     result = if_globals(getattr(button, 'globals', None))
@@ -176,7 +176,7 @@ def if_button(button: Maybe(Button)=None) -> Str:
     return result
 
 @typed
-def if_img(img: Maybe(Image)=None) -> Str:
+def if_img(img: Image=Image()) -> Str:
     if not img:
         return ""
     result = if_globals(getattr(img, 'globals', None))
@@ -192,13 +192,13 @@ def if_img(img: Maybe(Image)=None) -> Str:
     return result
 
 @typed
-def if_figure(figure: Maybe(Figure)=None) -> Str:
+def if_figure(figure: Figure=Figure()) -> Str:
     if not figure:
         return ""
     return if_globals(getattr(figure, 'globals', None))
 
 @typed
-def if_script(script: Script=None) -> Str:
+def if_script(script: Script=Script()) -> Str:
     if not script:
         return ""
     result = ""
@@ -213,7 +213,7 @@ def if_script(script: Script=None) -> Str:
     return result
 
 @typed
-def if_asset(asset: Maybe(Asset)=None) -> Str:
+def if_asset(asset: Asset=Asset()) -> Str:
     if not asset:
         return ""
     result = ""
@@ -226,7 +226,7 @@ def if_asset(asset: Maybe(Asset)=None) -> Str:
     return result
 
 @typed
-def if_item(item: Maybe(Item)=None) -> str:
+def if_item(item: Item=Item()) -> str:
     if not item:
         return ""
     result = if_id(getattr(item, 'item_id', None))
@@ -235,7 +235,7 @@ def if_item(item: Maybe(Item)=None) -> str:
     return result
 
 @typed
-def if_ul(ul: Maybe(Unordered)=None) -> str:
+def if_ul(ul: Unordered=Unordered()) -> str:
     if not ul:
         return ""
     result = if_id(getattr(ul, 'ul_id', None))
@@ -244,7 +244,7 @@ def if_ul(ul: Maybe(Unordered)=None) -> str:
     return result
 
 @typed
-def if_ol(ol: Maybe(Ordered)=None) -> str:
+def if_ol(ol: Ordered=Ordered()) -> str:
     if not ol:
         return ""
     result = if_id(getattr(ol, 'ol_id', None))
@@ -253,7 +253,7 @@ def if_ol(ol: Maybe(Ordered)=None) -> str:
     return result
 
 @typed
-def if_nav(nav: Maybe(Nav)=None) -> str:
+def if_nav(nav: Nav=Nav()) -> str:
     if not nav:
         return ""
     result = if_id(getattr(nav, 'nav_id', None))
@@ -262,7 +262,7 @@ def if_nav(nav: Maybe(Nav)=None) -> str:
     return result
 
 @typed
-def if_icon(icon: Maybe(Icon)=None) -> Str:
+def if_icon(icon: Icon=Icon()) -> Str:
     if not icon:
         return ""
     result = ""
@@ -285,7 +285,7 @@ def if_icon(icon: Maybe(Icon)=None) -> Str:
     return result
 
 @typed
-def if_input(input: Maybe(Input)=None) -> Str:
+def if_input(input: Input=Input()) -> Str:
     if not input:
         return ""
     result = ""
