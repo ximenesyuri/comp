@@ -35,7 +35,7 @@ def if_attr(attr: Str="") -> Str:
     return ""
 
 @typed
-def if_globals(globals: Globals=Globals()) -> Str:
+def if_globals(globals: Any=None) -> Str:
     if not globals:
         return ""
     result = ""
