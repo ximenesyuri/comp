@@ -103,10 +103,10 @@ class _FlexSearchKind:
 
 @model
 class _FlexSearchResults:
-    desc:  _FlexSearchDesc
-    title: _FlexSearchTitle
-    kind:  _FlexSearchKind
-    cover: _FlexSearchCover
+    desc:  Optional(_FlexSearchDesc)
+    title: Optional(_FlexSearchTitle)
+    kind:  Optional(_FlexSearchKind)
+    cover: Optional(_FlexSearchCover)
     limit: Optional(Int, 10)
 
 @model

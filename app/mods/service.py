@@ -116,7 +116,7 @@ def render(
 
         inserts = "\n".join(asset_inserts + script_inserts) + ("\n" if asset_inserts or script_inserts else "")
 
-        head_patttern = re.compile(r'(<head\b[^>]*>)(.*?)(</head>)', re.IGNORECASE | re.DOTALL)
+        head_pattern = re.compile(r'(<head\b[^>]*>)(.*?)(</head>)', re.IGNORECASE | re.DOTALL)
 
         def _insert_into_head(jinja, insert):
             m = head_pattern.search(jinja)

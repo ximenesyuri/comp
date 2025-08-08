@@ -305,7 +305,7 @@ class FlexSearch:
     input_div:      Optional(Div, Div(div_id="flesearch-input-div"))
     input:          Optional(InputSearch, InputSearch(input_id="flexsearch-input"))
     button_div:     Optional(Div, Div(div_id="flexsearch-button-div"))
-    button:         Optional(Button, Button())
+    button:         Optional(Button)
     results_div:    Optional(Div, Div(div_id="flexsearch-results-div"))
     results:        Optional(_FlexSearchResults)
     no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))

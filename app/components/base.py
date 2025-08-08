@@ -221,4 +221,8 @@ def nav(nav: Nav=Nav(), depends_on=[item, link]) -> Jinja:
 
 @component
 def logo(logo: Logo=Logo()) -> Jinja:
-    return (link * img)(link=logo.logo_link, img=logo.logo_img)
+    img_data = if_img(logo.logo_img)
+    link_data = if_link(logo.logo_link)
+    return f"""jinja
+<a{link_data}><img{img_data}></a>
+"""
