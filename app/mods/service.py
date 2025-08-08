@@ -5,7 +5,7 @@ from markdown import markdown
 from jinja2 import DictLoader, StrictUndefined, meta
 from app.mods.types.base import Content
 from app.mods.helper.helper import _jinja_env, _extract_raw_jinja
-from app.mods.helper.service import _style, _minify, _resolve_deps, _PublicPreview
+from app.mods.helper.service import _style, _minify, _PublicPreview
 from app.err import RenderErr, MockErr
 from app.mods.types.base import COMPONENT, Jinja, PAGE
 from app.components import script as script_component, asset as asset_component
@@ -15,18 +15,18 @@ from app.models import Script, Asset
 @typed
 def render(
         component: COMPONENT,
-        __scripts__: List(Script)=[],
-        __assets__: List(Asset)=[],
-        __styled__: Bool=True,
+        __scripts__:  List(Script)=[],
+        __assets__:   List(Asset)=[],
+        __styled__:   Bool=True,
         __minified__: Bool=False,
-        **kwargs: Dict(Any)
+        **kwargs:      Dict(Any)
     ) -> Str:
 
     try:
         definer = getattr(component, "func", component)
         sig = signature(definer)
         valid_params = set(sig.parameters.keys())
-        special = {"__scripts__", "__assets__", "__depends_on__", "__styled__"}
+        special = {"__scripts__", "__assets__", "__styled__"}
         valid_params = valid_params | special
 
         unknown_args = set(kwargs) - valid_params
@@ -55,30 +55,17 @@ def render(
                     kwargs[cname] = markdown(md_text)
                 else:
                     kwargs[cname] = markdown(value)
-        __depends_on__ = []
-        if "__depends_on__" in sig.parameters:
-            __depends_on__default = sig.parameters["__depends_on__"].default
-            __depends_on__ = kwargs.pop("__depends_on__", __depends_on__default) or []
-        if __depends_on__ is None:
-            __depends_on__ = []
-        all__depends__on = _resolve_deps(__depends_on__)
 
         call_args = {}
         for param in sig.parameters.values():
-            if param.name == "__depends_on__":
-                continue
             if param.name in kwargs:
                 call_args[param.name] = kwargs[param.name]
             elif param.default is not param.empty:
                 call_args[param.name] = param.default
             else:
                 call_args[param.name] = ""
-        if "__depends_on__" in sig.parameters:
-            result = component(**call_args, __depends_on__=__depends_on__)
-        else:
-            result = component(**call_args)
 
-        jinja = _extract_raw_jinja(result)
+        jinja = _extract_raw_jinja(component(**call_args))
 
         script_inserts = []
 
@@ -139,20 +126,6 @@ def render(
         context = {}
         context.update(call_args)
         context.update(kwargs)
-
-        for dep in all__depends__on:
-            dep_name = getattr(dep, "__name__", str(dep))
-
-            def _dep_context(dep):
-                def _inner(*a, **kw):
-                    dep_sig = signature(getattr(dep, "func", dep))
-                    dep_param_names = set(dep_sig.parameters.keys())
-                    dep_kwargs = {k: v for k, v in context.items() if k in dep_param_names}
-                    dep_kwargs.update(kw)
-                    return render(dep, **dep_kwargs, __styled__=False)
-                return _inner
-
-            context[dep_name] = _dep_context(dep)
 
         template_name = getattr(component, '__name__', 'template')
         env = _jinja_env(loader=DictLoader({template_name: jinja}), undefined=StrictUndefined)

@@ -14,22 +14,7 @@ def component(arg: Function) -> COMPONENT:
     from app.mods.helper.types import COMPONENT
     if callable(arg):
         original_sig = signature(arg)
-        arg.__signature__ = original_sig
-
-        if "__depends_on__" in signature(arg).parameters:
-            param = signature(arg).parameters["__depends_on__"]
-            expected_type_hint = List(COMPONENT)
-            if param.annotation is Parameter.empty:
-                arg.__annotations__["__depends_on__"] = expected_type_hint
-            else:
-                if issubclass(param.annotation, List(COMPONENT)):
-                    pass
-                else:
-                    raise TypeError(
-                        f"In a component, argument '__depends_on__' must be of type List(Component).\n"
-                        f" ==> '{arg.__name__}': has '__depends_on__' of wrong type\n"
-                        f"     [received_type]: '{param.annotation}'"
-                    )
+        arg.__signature__ = original_sig 
 
         if "__context__" in signature(arg).parameters:
             param = signature(arg).parameters["__context__"]

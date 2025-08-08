@@ -14,27 +14,6 @@ from app.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from app.err import StyleErr, MinifyErr, PreviewErr
 
-def _resolve_deps(deps):
-    """
-    Recursively collect all depends_on components from the given list.
-    Remove duplicates.
-    """
-    seen = set()
-    stack = list(deps)
-    all_deps = []
-    while stack:
-        dep = stack.pop()
-        if dep in seen:
-            continue
-        seen.add(dep)
-        all_deps.append(dep)
-        dep_sig = signature(getattr(dep, "func", dep))
-        if "depends_on" in dep_sig.parameters:
-            dep_default = dep_sig.parameters["depends_on"].default
-            if dep_default not in ([], None, dep_sig.parameters["depends_on"].empty):
-                stack.extend(list(dep_default))
-    return all_deps
-
 @typed
 def _style(rendered_component: Str) -> Str:
     try:

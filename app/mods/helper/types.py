@@ -5,7 +5,7 @@ from typed import typed, Str, Json, Bool, Union, Extension, Path, TypedFuncType
 from typed.models import model, Optional
 from typed.more import Markdown
 from app.mods.types.meta import _COMPONENT
-from app.mods.helper.helper import _jinja_env, _get_variables_map
+from app.mods.helper.helper import _jinja_env
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
     if n < 0:
@@ -48,8 +48,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
         """Returns the tuple of free Jinja variables (not corresponding to arguments)."""
         all_vars = set(self.jinja_vars)
         arg_vars = set(self.args)
-        arg_vars.discard("depends_on")
-        return tuple(sorted(list(all_vars - arg_vars))) 
+        return tuple(sorted(list(all_vars - arg_vars)))
 
     def __add__(self, other):
         if not isinstance(other, COMPONENT):

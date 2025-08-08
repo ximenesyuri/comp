@@ -6,7 +6,7 @@ from app.components.buttons import button_search
 from app.helper import if_div, if_class, if_id
 
 @component
-def flexsearch(flexsearch: FlexSearch=FlexSearch(), __depends_on__=[button_search, input_search], __context__={}) -> Jinja:
+def flexsearch(flexsearch: FlexSearch=FlexSearch(), __context__={}) -> Jinja:
     search_div          = if_div(flexsearch.div)
     button_div          = if_div(flexsearch.button_div)
     input_div           = if_div(flexsearch.input_div)
