@@ -11,19 +11,6 @@ def flexsearch(flexsearch: FlexSearch=FlexSearch(), __context__={}) -> Jinja:
     button_div          = if_div(flexsearch.button_div)
     input_div           = if_div(flexsearch.input_div)
     results_div         = if_div(flexsearch.results_div)
-    results_cover_div   = if_div(flexsearch.results.cover.cover_div)
-    results_cover_id    = if_id(flexsearch.results.cover.cover_id)
-    results_cover_class = if_class(flexsearch.results.cover.cover_class)
-    results_title_div   = if_div(flexsearch.results.title.title_div)
-    results_title_id    = if_id(flexsearch.results.title.title_id)
-    results_title_class = if_class(flexsearch.results.title.title_class)
-    results_kind_div    = if_div(flexsearch.results.kind.kind_div)
-    results_kind_id     = if_id(flexsearch.results.kind.kind_id)
-    results_kind_class  = if_class(flexsearch.results.kind.kind_class)
-    results_desc_div    = if_div(flexsearch.results.desc.desc_div)
-    results_desc_id     = if_id(flexsearch.results.desc.desc_id)
-    results_desc_class  = if_class(flexsearch.results.desc.desc_class)
-    no_results_div      = if_div(flexsearch.no_results_div)
     null_button         = Button()
     __context__['null_button'] = null_button
     results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
@@ -43,7 +30,25 @@ def flexsearch(flexsearch: FlexSearch=FlexSearch(), __context__={}) -> Jinja:
     style="{ results_div_style }"
 >
 </div>
-<script src="{ flexsearch.script_url }"></script>
+"""
+
+@component
+def flexsearch_script(flexsearch: FlexSearch=FlexSearch()) -> Jinja:
+    results_div         = if_div(flexsearch.results_div)
+    results_cover_div   = if_div(flexsearch.results.cover.cover_div)
+    results_cover_id    = if_id(flexsearch.results.cover.cover_id)
+    results_cover_class = if_class(flexsearch.results.cover.cover_class)
+    results_title_div   = if_div(flexsearch.results.title.title_div)
+    results_title_id    = if_id(flexsearch.results.title.title_id)
+    results_title_class = if_class(flexsearch.results.title.title_class)
+    results_kind_div    = if_div(flexsearch.results.kind.kind_div)
+    results_kind_id     = if_id(flexsearch.results.kind.kind_id)
+    results_kind_class  = if_class(flexsearch.results.kind.kind_class)
+    results_desc_div    = if_div(flexsearch.results.desc.desc_div)
+    results_desc_id     = if_id(flexsearch.results.desc.desc_id)
+    results_desc_class  = if_class(flexsearch.results.desc.desc_class)
+    no_results_div      = if_div(flexsearch.no_results_div)
+    return f"""jinja
 <script>
 document.addEventListener("DOMContentLoaded", function() {{
     let index = new FlexSearch.Document({{
@@ -189,6 +194,5 @@ document.addEventListener("DOMContentLoaded", function() {{
             }}
         }});
 }});
-</script>
+</script>    
 """
-
