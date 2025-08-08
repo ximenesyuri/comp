@@ -24,7 +24,8 @@ from app.helper import (
     if_item,
     if_ul,
     if_ol,
-    if_nav
+    if_nav,
+    if_input
 )
 from app.models import (
     Header,
