@@ -43,7 +43,18 @@ def _component(arg):
 
         @wraps(arg)
         def component_wrapper(*args, **kwargs):
-            return typed_arg(*args, **kwargs)
+            jinja_str = typed_arg(*args, **kwargs)
+            import re
+            jinja_src = re.sub(r"^jinja\s*\n?", "", jinja_str)
+            sig = signature(arg)
+            bound = sig.bind(*args, **kwargs)
+            bound.apply_defaults()
+            context = bound.arguments
+            from app.mods.helper.helper import _jinja_env
+            template = _jinja_env().from_string(jinja_src)
+            rendered = template.render(**context)
+            from app.mods.types.base import Jinja
+            return Jinja(rendered)
 
         component_wrapper.__signature__ = getattr(typed_arg, '__signature__', signature(arg))
         component_wrapper.__annotations__ = getattr(arg, '__annotations__', {})

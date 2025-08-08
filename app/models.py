@@ -179,7 +179,7 @@ class Link:
     link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top"), "_self")
     link_rel:      Optional(Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', ""), "")
     link_download: Optional(PathUrl, '')
-    link_inner:    Optional(Any, None)
+    link_inner:    Optional(Any)
 
 @model
 class Figure:
