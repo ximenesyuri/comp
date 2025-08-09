@@ -18,14 +18,14 @@ from app.err import StyleErr, MinifyErr, PreviewErr
 @typed
 def _responsive(html: Str) -> Str:
     _blocks = [
-        ("desktop",      "(min-width: 1024px)"),
-        ("tablet",       "(min-width: 640px) and (max-width: 1023px)"),
-        ("phone",        "(max-width: 639px)"),
-        ("mobile",       "(max-width: 1023px)"),
-        ("not-desktop",  "(max-width: 1023px)"),
-        ("not-tablet",   "(max-width: 639px), (min-width: 1024px)"),
-        ("not-phone",    "(min-width: 640px)"),
-        ("not-mobile",   "(min-width: 1024px)"),
+        ("desktop",      "(min-width: 1025px) and (max-width: 10000px)"),
+        ("tablet",       "(min-width: 768px) and (max-width: 1024px)"),
+        ("phone",        "(min-width: 0px) and (max-width: 767px)"),
+        ("mobile",       "(min-width: 0px) and (max-width: 1024px)"),
+        ("not-desktop",  "(min-width: 0px) and (max-width: 1024px)"),
+       # ("not-tablet",   "(max-width: 639px) and (min-width: 1024px)"),
+        ("not-phone",    "(min-width: 768px) and (max-width: 10000px)"),
+       # ("not-mobile",   "(min-width: 1024px)"),
     ]
     tag_css = []
     seen = set()
