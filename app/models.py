@@ -25,8 +25,8 @@ from app.mods.helper.models import (
     Globals,
     _FormEnc,
     _InputType,
-    _FlexSearchResults,
-    _FlexSearchIndex
+    _FlexResults,
+    _FlexIndex
 )
 from app.mods.types.base import Inner
 
@@ -244,30 +244,30 @@ class Asset:
 class Input:
     input_type:         Optional(_InputType, "text")
     input_id:           Optional(Str, "input")
-    input_class:        Optional(Str, "")
-    input_placeholder:  Optional(Str, "")
-    input_name:         Optional(Str, "")
-    input_autocomplete: Optional(Bool, False)
-    input_required:     Optional(Bool, False)
-    input_disabled:     Optional(Bool, False)
-    input_readonly:     Optional(Bool, False)
-    input_autofocus:    Optional(Bool, False)
-    input_tabindex:     Optional(Int, 0)
-    input_form_id:      Optional(Str, "")
-    input_minlength:    Optional(Int, 0)
-    input_maxlength:    Optional(Int, 524288)
-    input_pattern:      Optional(Pattern, r"")
-    input_size:         Optional(Int, 20)
+    input_class:        Optional(Str)
+    input_placeholder:  Optional(Str)
+    input_name:         Optional(Str)
+    input_autocomplete: Optional(Bool)
+    input_required:     Optional(Bool)
+    input_disabled:     Optional(Bool)
+    input_readonly:     Optional(Bool)
+    input_autofocus:    Optional(Bool)
+    input_tabindex:     Optional(Int)
+    input_form_id:      Optional(Str)
+    input_minlength:    Optional(Int)
+    input_maxlength:    Optional(Int)
+    input_pattern:      Optional(Pattern)
+    input_size:         Optional(Int)
     input_value:        Optional(Str)
-    input_multiple:     Optional(Bool, False)
-    input_rows:         Optional(Int, 2)
-    input_cols:         Optional(Int, 20)
-    input_wrap:         Optional(Enum(Str, "soft", "hard"), "soft")
+    input_multiple:     Optional(Bool)
+    input_rows:         Optional(Int)
+    input_cols:         Optional(Int)
+    input_wrap:         Optional(Enum(Str, "soft", "hard"))
     input_min:          Optional(Int)
     input_max:          Optional(Int)
-    input_step:         Optional(Union(Single("any"), Num), "any")
+    input_step:         Optional(Union(Single("any"), Num))
     input_checked:      Optional(Bool)
-    input_value:        Optional(Str, "on")
+    input_value:        Optional(Str)
 
 @model
 class Form:
@@ -286,15 +286,15 @@ class Form:
     form_rel:              Optional(Str)
 
 @model
-class FlexSearch:
-    div:            Optional(Div, Div(div_id="flexsearch-div"))
-    input_div:      Optional(Div, Div(div_id="flesearch-input-div"))
-    input:          Optional(Input, Input(input_type="search", input_id="flexsearch-input"))
-    button_div:     Optional(Div, Div(div_id="flexsearch-button-div"))
+class Flex:
+    div:            Optional(Div, Div(div_id="flex-div"))
+    input_div:      Optional(Div, Div(div_id="flex-input-div"))
+    input:          Optional(Input, Input(input_type="search", input_id="flex-input"))
+    button_div:     Optional(Div, Div(div_id="flex-button-div"))
     button:         Optional(Button)
-    results_div:    Optional(Div, Div(div_id="flexsearch-results-div"))
-    results:        Optional(_FlexSearchResults)
-    no_results_div: Optional(Div, Div(div_id="flexsearch-no-results-div"))
+    results_div:    Optional(Div, Div(div_id="flex-results-div"))
+    results:        Optional(_FlexResults)
+    no_results_div: Optional(Div, Div(div_id="flex-no-results-div"))
     no_results:     Optional(Str, "nenhum resultado encontrado...")
-    index:          Optional(_FlexSearchIndex)
-    script_url:     Optional(PathUrl, "https://unpkg.com/flexsearch@0.8.2/dist/module/index.js")
+    index:          Optional(_FlexIndex)
+    script_url:     Optional(PathUrl, "https://unpkg.com/flex@0.8.2/dist/module/index.js")

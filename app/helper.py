@@ -89,7 +89,7 @@ def if_alpine(alpine: Alpine=Alpine()) -> Str:
         result += if_key(alpine.x_data, "x-data")
     if getattr(alpine, 'x_cloak', None):
         if alpine.x_cloak:
-            result += if_attr(alpine.x_cloak, "x-cloak")
+            result += if_attr("x-cloak")
     return result
 
 @typed

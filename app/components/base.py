@@ -216,7 +216,7 @@ def nav(nav: Nav=Nav(), __context__={"link": link, "item": item}) -> Jinja:
     return f"""jinja
 <nav{ nav_data }>[% if nav.nav_items %]
     <ul{ ul_id }{ ul_class }{ ul_style }>[% for it in nav.nav_items %]
-        [[ item(item=it, inner=link(link=it.item_link)) ]][% endfor %]
+        <aaa>[% endfor %]
     </ul>
 </nav>[% else %]</nav>[% endif %]
 """

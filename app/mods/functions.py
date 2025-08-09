@@ -1,16 +1,9 @@
-import re
-from functools import wraps
-from collections import defaultdict
-from typed import typed, Str, List, Tuple, Dict, Any
-from utils import func
-from inspect import signature, Signature, Parameter, getmodule, _empty
+from inspect import signature, Parameter, Signature, _empty
+from typed import typed, Tuple, Dict, Any
 from app.mods.decorators.base import component
 from app.mods.types.base import Jinja, COMPONENT, Inner
 from app.err import ConcatErr, JoinErr, EvalErr
-
-@typed
-def Component(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
-    return component(func.copy(comp, **renamed_args))
+from app.mods.helper.functions import _merge_context
 
 @typed
 def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
@@ -18,59 +11,51 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
         sig1 = signature(comp_1)
         sig2 = signature(comp_2)
 
-        inner_param_name: str | None = None
-        inner_param_obj: Parameter | None = None
+        inner_param_name = None
         for name, param in sig1.parameters.items():
-            if param.annotation is Inner or (hasattr(param.annotation, '__origin__') and param.annotation.__origin__ is TypeVar and Inner in param.annotation.__args__):
+            if param.annotation is Inner:
                 inner_param_name = name
-                inner_param_obj = param
                 break
         if inner_param_name is None:
             raise ValueError(f"comp_1 must have a parameter with type annotation '{Inner.__name__}'")
 
-        params_for_new_sig_from_comp1 = [p for p in sig1.parameters.values() if p.name != inner_param_name]
-        params_for_new_sig_from_comp2 = list(sig2.parameters.values())
+        merged_params = []
+        param_names = set()
+        for p in sig1.parameters.values():
+            if p.name == inner_param_name:
+                continue
+            merged_params.append(p)
+            param_names.add(p.name)
+        for p in sig2.parameters.values():
+            if p.name not in param_names and p.name != '__context__':
+                merged_params.append(p)
+                param_names.add(p.name)
 
-        unique_params_dict: dict[str, Parameter] = {}
-        new_annotations: dict[str, Any] = {}
-
-        for p in params_for_new_sig_from_comp1:
-            if p.name not in unique_params_dict:
-                unique_params_dict[p.name] = p
-                if p.annotation is not _empty:
-                    new_annotations[p.name] = p.annotation
-
-        for p in params_for_new_sig_from_comp2:
-            if p.name not in unique_params_dict:
-                unique_params_dict[p.name] = p
-                if p.annotation is not _empty:
-                    new_annotations[p.name] = p.annotation
-
-        new_params = list(unique_params_dict.values())
-        new_sig = Signature(parameters=new_params, return_annotation=Jinja)
+        merged_ctx = _merge_context(comp_1, comp_2)
+        merged_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+        new_sig = Signature(parameters=merged_params, return_annotation=Jinja)
+        new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in merged_params]}
+        new_annotations['return'] = Jinja
 
         def wrapper(*args, **kwargs):
             ba = new_sig.bind(*args, **kwargs)
             ba.apply_defaults()
+            context = dict(merged_ctx)
+            user_ctx = ba.arguments.get('__context__', {})
+            context.update(user_ctx)
 
-            c1_args = {}
-            for p in sig1.parameters.values():
-                if p.name == inner_param_name:
-                    continue
-                c1_args[p.name] = ba.arguments[p.name]
-
-            c2_args = {}
-            for p in sig2.parameters.values():
-                c2_args[p.name] = ba.arguments[p.name]
-
-            inner_value = comp_2(**c2_args)
-            c1_args[inner_param_name] = inner_value
+            c2_args = {p.name: ba.arguments[p.name] for p in sig2.parameters.values() if p.name in ba.arguments and p.name != '__context__'}
+            if '__context__' in sig2.parameters:
+                c2_args['__context__'] = context
+            inner_result = comp_2(**c2_args)
+            c1_args = {p.name: ba.arguments[p.name] for p in sig1.parameters.values() if p.name in ba.arguments and p.name != inner_param_name and p.name != '__context__'}
+            c1_args[inner_param_name] = inner_result
+            if '__context__' in sig1.parameters:
+                c1_args['__context__'] = context
             return comp_1(**c1_args)
 
         wrapper.__signature__ = new_sig
-        wrapper.__annotations__ = {name: anno for name, anno in new_annotations.items()}
-        wrapper.__annotations__['return'] = Jinja
-
+        wrapper.__annotations__ = dict(new_annotations)
         return component(wrapper)
     except Exception as e:
         raise ConcatErr(e)
@@ -80,86 +65,83 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
     try:
         if not comps:
             raise ValueError("At least one component must be provided")
-
         sigs = [signature(comp) for comp in comps]
-        param_lists = [list(sig.parameters.values()) for sig in sigs]
-
-        unique_params_dict = {}
-        new_annotations = {}
-
-        for params in param_lists:
-            for p in params:
-                if p.name not in unique_params_dict:
-                    unique_params_dict[p.name] = p
-                    if p.annotation is not _empty:
-                        new_annotations[p.name] = p.annotation
-
-        new_params = list(unique_params_dict.values())
-        new_sig = Signature(parameters=new_params, return_annotation=Jinja)
+        param_names = set()
+        merged_params = []
+        for sig in sigs:
+            for p in sig.parameters.values():
+                if p.name not in param_names and p.name != '__context__':
+                    merged_params.append(p)
+                    param_names.add(p.name)
+        merged_ctx = _merge_context(*comps)
+        merged_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+        new_sig = Signature(parameters=merged_params, return_annotation=Jinja)
+        new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in merged_params]}
+        new_annotations['return'] = Jinja
 
         def wrapper(*args, **kwargs):
             ba = new_sig.bind(*args, **kwargs)
             ba.apply_defaults()
+            context = dict(merged_ctx)
+            user_ctx = ba.arguments.get('__context__', {})
+            context.update(user_ctx)
             results = []
-
-            for i, comp in enumerate(comps):
-                orig_sig = sigs[i]
-                func_args = {}
-                for orig_p in orig_sig.parameters.values():
-                    func_args[orig_p.name] = ba.arguments[orig_p.name]
-                results.append(comp(**func_args))
-
+            for comp, sig in zip(comps, sigs):
+                local_args = {p.name: ba.arguments[p.name] for p in sig.parameters.values() if p.name in ba.arguments and p.name != '__context__'}
+                if '__context__' in sig.parameters:
+                    local_args['__context__'] = context
+                results.append(comp(**local_args))
             return Jinja(''.join(str(r) for r in results))
-
         wrapper.__signature__ = new_sig
-
-        wrapper.__annotations__ = {name: anno for name, anno in new_annotations.items()}
-        wrapper.__annotations__['return'] = Jinja
-
+        wrapper.__annotations__ = dict(new_annotations)
         return component(wrapper)
     except Exception as e:
         raise JoinErr(e)
 
 @typed
 def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
-    sig = signature(func)
-    old_params = list(sig.parameters.items())
-    missing = [k for k in fixed_kwargs if k not in sig.parameters]
-    if missing:
-        raise TypeError(
-            f"{func.__name__} has no argument(s): {', '.join(missing)}"
-        )
-    new_params = []
-    for name, param in old_params:
-        if name in fixed_kwargs:
-            new_param = Parameter(
-                name,
-                kind=param.kind,
-                default=fixed_kwargs[name],
-                annotation=param.annotation
-            )
-            new_params.append(new_param)
-        else:
-            new_params.append(param)
-    new_sig = Signature(new_params)
+    try:
+        sig = signature(func)
+        old_params = list(sig.parameters.items())
 
-    def wrapper(*args, **kwargs):
-        ba = new_sig.bind_partial(*args, **kwargs)
-        ba.apply_defaults()
-        call_kwargs = dict(fixed_kwargs)
-        call_kwargs.update(ba.arguments)
-        template_str = func(**call_kwargs)
+        context_in_sig = '__context__' in sig.parameters
+        merged_ctx = get_default_context(func)
 
-        if isinstance(template_str, str):
-            from app.mods.helper.helper import _jinja_env
-            env = _jinja_env()
-            template = env.from_string(template_str)
-            return template.render(**call_kwargs)
-        else:
-            return Jinja(template_str)
+        new_params = []
+        for name, param in old_params:
+            if name in fixed_kwargs:
+                new_params.append(Parameter(name, kind=param.kind, default=fixed_kwargs[name], annotation=param.annotation))
+            elif name == '__context__':
+                new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+            else:
+                new_params.append(param)
+        if not context_in_sig:
+            new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+        new_sig = Signature(new_params)
 
-    wrapper.__signature__ = new_sig
-    if hasattr(func, '__annotations__'):
-        wrapper.__annotations__ = dict(func.__annotations__)
+        def wrapper(*args, **kwargs):
+            ba = new_sig.bind_partial(*args, **kwargs)
+            ba.apply_defaults()
+            context = dict(merged_ctx)
+            user_ctx = ba.arguments.get('__context__', {})
+            context.update(user_ctx)
+            call_kwargs = dict(fixed_kwargs)
+            call_kwargs.update({k: v for k, v in ba.arguments.items() if k != '__context__'})
+            call_kwargs['__context__'] = context
 
-    return component(wrapper)
+            template_str = func(**call_kwargs)
+            if isinstance(template_str, str):
+                from app.mods.helper.helper import _jinja_env
+                env = _jinja_env()
+                template = env.from_string(template_str)
+                return template.render(**call_kwargs)
+            else:
+                return Jinja(template_str)
+
+        wrapper.__signature__ = new_sig
+        if hasattr(func, '__annotations__'):
+            wrapper.__annotations__ = dict(func.__annotations__)
+        return component(wrapper)
+    except Exception as e:
+        raise EvalErr(e)
+

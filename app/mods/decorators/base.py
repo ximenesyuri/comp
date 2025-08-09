@@ -1,7 +1,7 @@
 import sys
 from inspect import signature, Parameter
 from functools import wraps
-from typed import typed, List, Function, Dict, Any
+from typed import typed, Function, Dict, Any
 from app.mods.types.base import STATIC, PAGE, STATIC_PAGE
 from collections import UserList
 from types import SimpleNamespace
@@ -14,7 +14,7 @@ def component(arg: Function) -> COMPONENT:
     from app.mods.helper.types import COMPONENT
     if callable(arg):
         original_sig = signature(arg)
-        arg.__signature__ = original_sig 
+        arg.__signature__ = original_sig
 
         if "__context__" in signature(arg).parameters:
             param = signature(arg).parameters["__context__"]
@@ -22,9 +22,7 @@ def component(arg: Function) -> COMPONENT:
             if param.annotation is Parameter.empty:
                 arg.__annotations__["__context__"] = expected_type_hint
             else:
-                if isclass(param.annotation) and issubclass(param.annotation, List) and \
-                   hasattr(param.annotation, '__args__') and param.annotation.__args__ and \
-                   issubclass(param.annotation.__args__[0], COMPONENT):
+                if issubclass(param.annotation, Dict(Any)):
                     pass
                 else:
                     raise TypeError(
