@@ -5,7 +5,7 @@ from markdown import markdown
 from jinja2 import DictLoader, StrictUndefined, meta
 from app.mods.types.base import Content
 from app.mods.helper.helper import _jinja_env, _extract_raw_jinja
-from app.mods.helper.service import _style, _minify, _PublicPreview
+from app.mods.helper.service import _style, _minify, _Preview
 from app.err import RenderErr, MockErr
 from app.mods.types.base import COMPONENT, Jinja, PAGE
 from app.components import script as script_component, asset as asset_component
@@ -14,10 +14,11 @@ from app.models import Script, Asset
 @typed
 def render(
         component: COMPONENT,
-        __scripts__:  List(Script)=[],
-        __assets__:   List(Asset)=[],
-        __styled__:   Bool=True,
-        __minified__: Bool=False,
+        __scripts__:    List(Script)=[],
+        __assets__:     List(Asset)=[],
+        __styled__:     Bool=True,
+        __minified__:   Bool=False,
+        __responsive__: Bool=False,
         **kwargs:      Dict(Any)
     ) -> Str:
 
@@ -129,7 +130,6 @@ def render(
             else:
                 jinja = jinja + scripts_insert
 
-
         context = {}
         context.update(call_args)
         context.update(kwargs)
@@ -143,6 +143,8 @@ def render(
             html = _style(html)
         if __minified__:
             html = _minify(html)
+        if __responsive__:
+            html = _responsive(html)
 
         return html
     except Exception as e:
@@ -176,4 +178,4 @@ def mock(component: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
     except Exception as e:
         raise MockErr(e)
 
-preview = _PublicPreview()
+preview = _Preview()

@@ -14,10 +14,43 @@ from app.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from app.err import StyleErr, MinifyErr, PreviewErr
 
+
 @typed
-def _style(rendered_component: Str) -> Str:
+def _responsive(html: Str) -> Str:
+    _blocks = [
+        ("desktop",      "(min-width: 1024px)"),
+        ("tablet",       "(min-width: 640px) and (max-width: 1023px)"),
+        ("phone",        "(max-width: 639px)"),
+        ("mobile",       "(max-width: 1023px)"),
+        ("not-desktop",  "(max-width: 1023px)"),
+        ("not-tablet",   "(max-width: 639px), (min-width: 1024px)"),
+        ("not-phone",    "(min-width: 640px)"),
+        ("not-mobile",   "(min-width: 1024px)"),
+    ]
+    tag_css = []
+    seen = set()
+    for tag, media in _blocks:
+        pat = r"<{0}[\s>]".format(tag.replace("-", "[-]?"))
+        if re.search(pat, html):
+            if tag not in seen:
+                seen.add(tag)
+                base = tag
+                tag1 = tag.replace("-", "")
+                tag_css.append(f"{base} "+"{ display: none; }")
+                tag_css.append(f"@media {media} "+"{ "+f"{base} "+"{ display: inline; }"+" }")
+    if tag_css:
+        style_tag = "<style>" + "\n".join(tag_css) + "</style>"
+        m = re.search(r"<head[^>]*>", html, re.IGNORECASE)
+        if m:
+            html = html[:m.end()] + style_tag + html[m.end():]
+        else:
+            html = style_tag + html
+    return html
+
+@typed
+def _style(html: Str) -> Str:
     try:
-        soup = BeautifulSoup(rendered_component, 'html.parser')
+        soup = BeautifulSoup(html, 'html.parser')
 
         def escape_class_selector(cls):
             return (cls.replace(':', '\\:')
@@ -627,7 +660,7 @@ def _minify(html: str) -> str:
     html = html.strip()
     return html
 
-class _Preview:
+class __Preview:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -637,7 +670,7 @@ class _Preview:
         return cls._instance
 
     def _init_singleton(self):
-        self.stack = [] # (comp, kwargs, __scripts__, __assets__, instance_name)
+        self.stack = []
         self.server_thread = None
         self.has_started = False
         self.port = 4955
@@ -649,23 +682,23 @@ class _Preview:
         self._reloader_thread = None
         self._browser_opened = False
 
-    def add(self, comp: COMPONENT, __name__=None, __scripts__=None, __assets__=None, **kwargs):
+    def _add(self, comp: COMPONENT, __name__=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
         """
         Adds a component to the preview stack.
         Can optionally accept a __name__ for the component instance, and lists of __scripts__ and __assets__.
         """
         with self.lock:
-            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __name__))
-            self.update_file_watch(comp)
+            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __responsive or True, __name__))
+            self._update_watch(comp)
             for scr in (__scripts__ or []):
                 if scr.script_src and not scr.script_src.startswith(('http://', 'https://')):
-                    self.update_file_watch(scr.script_src)
+                    self._update_watch(scr.script_src)
             for asset in (__assets__ or []):
                 if asset.asset_href and not asset.asset_href.startswith(('http://', 'https://')):
-                    self.update_file_watch(asset.asset_href)
-            self.touch_reload()
+                    self._update_watch(asset.asset_href)
+            self._touch_reload()
 
-    def rm(self, identifier):
+    def _rm(self, identifier):
         """
         Removes components from the preview stack.
         If `identifier` is a component function, removes all instances of that component.
@@ -686,32 +719,23 @@ class _Preview:
                         new_stack.append((item_comp, item_kwargs, item_scripts, item_assets, item_name))
                 if removed:
                     self.stack = new_stack
-                    self.touch_reload()
+                    self._touch_reload()
             else:
                 new_stack = [item for item in self.stack if item[0] is not identifier]
-                if len(new_stack) < len(self.stack): # If anything was removed
+                if len(new_stack) < len(self.stack):
                     self.stack = new_stack
                     if identifier in self.file_dependents:
                         del self.file_dependents[identifier]
-                    self.touch_reload()
+                    self._touch_reload()
 
-    def clean(self):
+    def _clean(self):
         """Removes all components from the preview stack."""
         with self.lock:
             self.stack.clear()
             self.file_dependents = {}
-            self.touch_reload()
+            self._touch_reload()
 
-    def __call__(self, comp=None, __scripts__=None, __assets__=None, **kwargs):
-        if comp:
-            with self.lock:
-                self.clean()
-                self.add(comp, __scripts=__scripts__, __assets=__assets__, **kwargs)
-            self.run()
-        else:
-            self.run()
-
-    def run(self, autoload=True):
+    def _run(self, autoload=True):
         if os.environ.get("APP_PREVIEW_BROWSER_OPENED") == '1':
             self._browser_opened = True
         if autoload and os.environ.get("APP_PREVIEW_CHILD") != "1":
@@ -735,25 +759,34 @@ class _Preview:
         self._reloader_thread = threading.Thread(target=self._watchdog_restart, daemon=True)
         try:
             main_script_path = os.path.abspath(sys.argv[0])
-            self.update_file_watch(main_script_path)
+            self._update_watch(main_script_path)
 
             for comp, _, scripts, assets, _ in self.stack:
-                self.update_file_watch(comp)
+                self._update_watch(comp)
                 for scr in scripts:
                     if scr.script_src and not scr.script_src.startswith(('http://', 'https://')):
-                        self.update_file_watch(scr.script_src)
+                        self._update_watch(scr.script_src)
                 for asset in assets:
                     if asset.asset_href and not asset.asset_href.startswith(('http://', 'https://')):
-                        self.update_file_watch(asset.asset_href)
+                        self._update_watch(asset.asset_href)
 
         except Exception as e:
             print(f"DEBUG: Initial script/component/asset watch failed: {e}")
         self._reloader_thread.start()
         self._serve_forever()
 
+    def __call__(self, comp=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
+        if comp:
+            with self.lock:
+                self._clean()
+                self._add(comp, __scripts=__scripts__, __assets=__assets__, __responsive__=__responsive__, **kwargs)
+            self._run()
+        else:
+            self._run()
+
 
     def _serve_forever(self):
-        Handler = self.make_handler()
+        Handler = self._make_handler()
         class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
             daemon_threads = True
         httpd = ThreadedHTTPServer(('', self.port), Handler)
@@ -772,7 +805,7 @@ class _Preview:
             print("Exiting preview server")
             sys.exit(0)
 
-    def make_handler(self):
+    def _make_handler(self):
         preview_mgr = self
         class PreviewHandler(BaseHTTPRequestHandler):
             def _send(self, data, code=200):
@@ -785,7 +818,7 @@ class _Preview:
                 if self.path.startswith("/__reload_check"):
                     self._send(preview_mgr.reload_ts)
                 elif self.path == "/" or self.path.startswith("/?"):
-                    html = preview_mgr.render_page()
+                    html = preview_mgr._render_page()
                     self._send(html)
                 else:
                     self._send("<h1>Not Found</h1>", 404)
@@ -794,11 +827,11 @@ class _Preview:
                 pass
         return PreviewHandler
 
-    def render_components(self):
+    def _render_comps(self):
         from app.mods.service import render
         html_parts = []
-        for idx, (comp, kwargs, scripts, assets, _) in enumerate(self.stack):
-            rendered = render(comp, __scripts__=scripts, __assets__=assets, **kwargs)
+        for idx, (comp, kwargs, scripts, assets, responsive, _) in enumerate(self.stack):
+            rendered = render(comp, __scripts__=scripts, __assets__=assets, __responsive__=responsive, **kwargs)
             html_parts.append(f'<div>{rendered}</div>')
             if idx < len(self.stack) - 1:
                 html_parts.append("""
@@ -808,7 +841,7 @@ class _Preview:
 """)
         return "\n".join(html_parts)
 
-    def _page_html(self, content):
+    def _generate_page(self, content):
         js = f"""
 <script>
 (function(){{
@@ -824,9 +857,6 @@ class _Preview:
 <head>
     <title>Component Preview</title>
     <meta charset="utf-8">
-    <style>
-     body {{ background: #f7f7fa; font-family: system-ui,Arial,sans-serif; color: #222; margin:0; padding:0; }}
-    </style>
     {js}
 </head>
 <body>
@@ -834,12 +864,11 @@ class _Preview:
 </body>
 </html>
 """
+    def _render_page(self):
+        html = self._render_comps()
+        return self._generate_page(html)
 
-    def render_page(self):
-        html = self.render_components()
-        return self._page_html(html)
-
-    def update_file_watch(self, obj):
+    def _update_watch(self, obj):
         src = None
         try:
             if callable(obj):
@@ -871,7 +900,7 @@ class _Preview:
         else:
             pass
 
-    def touch_reload(self):
+    def _touch_reload(self):
         self.reload_ts = str(time.time())
 
     def _watchdog_restart(self):
@@ -909,29 +938,27 @@ class _Preview:
                 os.execv(sys.executable, [sys.executable] + sys.argv)
             time.sleep(1.0)
 
-_preview = _Preview()
-
-class _PublicPreview:
-    def add(self, comp, __name__=None, __scripts__=None, __assets__=None, **kwargs):
+class _Preview:
+    def add(self, comp, __name__=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
         try:
-            _preview.add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, **kwargs)
+            __Preview()._add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, __responsive__=__responsive__, **kwargs)
         except Exception as e:
             raise PreviewErr(e)
 
     def rm(self, identifier):
         try:
-            _preview.rm(identifier)
+            __Preview()._rm(identifier)
         except Exception as e:
             raise PreviewErr(e)
 
     def clean(self):
         try:
-            _preview.clean()
+            __Preview()._clean()
         except Exception as e:
             raise PreviewErr(e)
 
     def run(self, autoload=True):
         try:
-            _preview.run(autoload)
+            __Preview()._run(autoload)
         except Exception as e:
             raise PreviewErr(e)
