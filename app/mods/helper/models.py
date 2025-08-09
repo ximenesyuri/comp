@@ -27,7 +27,7 @@ _InputType = Enum(
     "image"
 )
 
-@optional
+@optional(nullable=True)
 class Globals:
     anchor:    Str
     accesskey: Char
@@ -42,7 +42,7 @@ _FormEnc = Enum(
     "text/plain"
 )
 
-@optional
+@optional(nullable=True)
 class Div:
     globals:   Globals=Globals()
     div_id:    Str
@@ -50,14 +50,14 @@ class Div:
     div_style: Str
     div_inner: Inner
 
-@optional
+@optional(nullable=True)
 class _FlexTitle:
     title_div:   Div=Div(div_id="flex-results-title-div")
     title_id:    Str="flex-results-title"
     title_class: Str
     title_style: Str
 
-@optional
+@optional(nullable=True)
 class _FlexDesc:
     desc_div:    Div=Div(div_id="flex-results-desc-div")
     desc_id:     Str="flex-results-desc"
@@ -66,7 +66,7 @@ class _FlexDesc:
     desc_length: Int=181
     display:     Bool
 
-@optional
+@optional(nullable=True)
 class _FlexCover:
     cover_div:   Div=Div(div_id="flex-results-cover-div")
     cover_id:    Str="flex-results-cover"
@@ -74,14 +74,14 @@ class _FlexCover:
     cover_style: Str
     display:     Bool
 
-@optional
+@optional(nullable=True)
 class _FlexKind:
     kind_div:   Div=Div(div_id="flex-results-kind-div")
     kind_id:    Str="flex-results-kind"
     kind_class: Str
     display:    Bool
 
-@optional
+@optional(nullable=True)
 class _FlexResults:
     desc:  _FlexDesc
     title: _FlexTitle
@@ -89,7 +89,7 @@ class _FlexResults:
     cover: _FlexCover
     limit: Int=10
 
-@optional
+@optional(nullable=True)
 class _FlexIndex:
     index_types:       List(Str)=["title", "content", "tags", "category", "kind"]
     index_store_types: List(Str)=["id", "title", "content", "href", "tags", "category", "kind"]
