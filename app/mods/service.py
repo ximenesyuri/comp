@@ -5,7 +5,7 @@ from markdown import markdown
 from jinja2 import DictLoader, StrictUndefined, meta
 from app.mods.types.base import Content
 from app.mods.helper.helper import _jinja_env, _extract_raw_jinja
-from app.mods.helper.service import _style, _minify, _Preview
+from app.mods.helper.service import _style, _minify, _responsive, _Preview
 from app.err import RenderErr, MockErr
 from app.mods.types.base import COMPONENT, Jinja, PAGE
 from app.components import script as script_component, asset as asset_component

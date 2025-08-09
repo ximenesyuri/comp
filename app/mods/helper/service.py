@@ -660,12 +660,12 @@ def _minify(html: str) -> str:
     html = html.strip()
     return html
 
-class __Preview:
+class _PREVIEW:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(_Preview, cls).__new__(cls)
+            cls._instance = super(_PREVIEW, cls).__new__(cls)
             cls._instance._init_singleton()
         return cls._instance
 
@@ -688,7 +688,7 @@ class __Preview:
         Can optionally accept a __name__ for the component instance, and lists of __scripts__ and __assets__.
         """
         with self.lock:
-            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __responsive or True, __name__))
+            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __responsive__ or True, __name__))
             self._update_watch(comp)
             for scr in (__scripts__ or []):
                 if scr.script_src and not scr.script_src.startswith(('http://', 'https://')):
@@ -941,24 +941,24 @@ class __Preview:
 class _Preview:
     def add(self, comp, __name__=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
         try:
-            __Preview()._add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, __responsive__=__responsive__, **kwargs)
+            _PREVIEW()._add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, __responsive__=__responsive__, **kwargs)
         except Exception as e:
             raise PreviewErr(e)
 
     def rm(self, identifier):
         try:
-            __Preview()._rm(identifier)
+            _PREVIEW()._rm(identifier)
         except Exception as e:
             raise PreviewErr(e)
 
     def clean(self):
         try:
-            __Preview()._clean()
+            _PREVIEW()._clean()
         except Exception as e:
             raise PreviewErr(e)
 
     def run(self, autoload=True):
         try:
-            __Preview()._run(autoload)
+            _PREVIEW()._run(autoload)
         except Exception as e:
             raise PreviewErr(e)

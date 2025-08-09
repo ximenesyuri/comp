@@ -92,11 +92,11 @@ def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
 """
 
 @component
-def text(text_1: Text=Text(), inner: Inner="") -> Jinja:
-    text_data = if_text(text_1)
+def text(text: Text=Text(), inner: Inner="") -> Jinja:
+    text_data = if_text(text)
     return f"""jinja
-<p{ text_data }>[% if text_1.text_inner %]
-    { text_1.text_inner }
+<p{ text_data }>[% if text.text_inner %]
+    { text.text_inner }
 </p>[% elif inner is defined %]
     { inner }
 </p>[% else %]</p>[% endif %]
