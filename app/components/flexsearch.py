@@ -48,6 +48,7 @@ def flex_script(flex: Flex=Flex()) -> Jinja:
     results_desc_class  = if_class(flex.results.desc.desc_class)
     no_results_div      = if_div(flex.no_results_div)
     return f"""jinja
+<script src="{ flex.script }"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {{
     let index = new FlexSearch.Document({{

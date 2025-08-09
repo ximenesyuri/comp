@@ -232,7 +232,7 @@ class Nav:
 
 @optional(nullable=True)
 class Script:
-    script_src:   PathUrl
+    script_src:   Str
     script_defer: Bool
     script_type:  Enum(Str, "module", "importmap")
     script_async: Bool
@@ -240,7 +240,7 @@ class Script:
 
 @optional(nullable=True)
 class Asset:
-    asset_href: PathUrl
+    asset_href: Str
     asset_mime: Str
     asset_rel:  Str="stylesheet"
 
@@ -301,3 +301,4 @@ class Flex:
     no_results_div: Div=Div(div_id="flex-no-results-div")
     no_results:     Str="nenhum resultado encontrado..."
     index:          _FlexIndex
+    script:         Str="https://cdn.jsdelivr.net/gh/nextapps-de/flexsearch@0.8.2/dist/flexsearch.bundle.min.js"
