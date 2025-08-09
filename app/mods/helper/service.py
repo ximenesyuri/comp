@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from socketserver import ThreadingMixIn
 from inspect import signature, Parameter, getsourcefile
 from jinja2 import Environment, DictLoader, StrictUndefined, meta
-from typed import typed, Dict, Any, Str
+from typed import typed, Dict, Any, Str, List
 from app.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from app.err import StyleErr, MinifyErr, PreviewErr
@@ -637,7 +637,7 @@ class _Preview:
         return cls._instance
 
     def _init_singleton(self):
-        self.stack = []
+        self.stack = [] # (comp, kwargs, __scripts__, __assets__, instance_name)
         self.server_thread = None
         self.has_started = False
         self.port = 4955
@@ -649,15 +649,20 @@ class _Preview:
         self._reloader_thread = None
         self._browser_opened = False
 
-    def add(self, comp, **kwargs):
+    def add(self, comp: COMPONENT, __name__=None, __scripts__=None, __assets__=None, **kwargs):
         """
         Adds a component to the preview stack.
-        Can optionally accept a __name__ for the component instance.
+        Can optionally accept a __name__ for the component instance, and lists of __scripts__ and __assets__.
         """
         with self.lock:
-            instance_name = kwargs.pop("__name__", None)
-            self.stack.append((comp, kwargs, instance_name))
+            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __name__))
             self.update_file_watch(comp)
+            for scr in (__scripts__ or []):
+                if scr.script_src and not scr.script_src.startswith(('http://', 'https://')):
+                    self.update_file_watch(scr.script_src)
+            for asset in (__assets__ or []):
+                if asset.asset_href and not asset.asset_href.startswith(('http://', 'https://')):
+                    self.update_file_watch(asset.asset_href)
             self.touch_reload()
 
     def rm(self, identifier):
@@ -670,7 +675,7 @@ class _Preview:
             if isinstance(identifier, str):
                 new_stack = []
                 removed = False
-                for item_comp, item_kwargs, item_name in self.stack:
+                for item_comp, item_kwargs, item_scripts, item_assets, item_name in self.stack:
                     if item_name == identifier:
                         removed = True
                         if item_comp in self.file_dependents:
@@ -678,7 +683,7 @@ class _Preview:
                             if not other_instances:
                                 del self.file_dependents[item_comp]
                     else:
-                        new_stack.append((item_comp, item_kwargs, item_name))
+                        new_stack.append((item_comp, item_kwargs, item_scripts, item_assets, item_name))
                 if removed:
                     self.stack = new_stack
                     self.touch_reload()
@@ -697,11 +702,11 @@ class _Preview:
             self.file_dependents = {}
             self.touch_reload()
 
-    def __call__(self, comp=None, **kwargs):
+    def __call__(self, comp=None, __scripts__=None, __assets__=None, **kwargs):
         if comp:
             with self.lock:
                 self.clean()
-                self.add(comp, **kwargs)
+                self.add(comp, __scripts=__scripts__, __assets=__assets__, **kwargs)
             self.run()
         else:
             self.run()
@@ -732,11 +737,17 @@ class _Preview:
             main_script_path = os.path.abspath(sys.argv[0])
             self.update_file_watch(main_script_path)
 
-            for comp, _, _ in self.stack:
+            for comp, _, scripts, assets, _ in self.stack:
                 self.update_file_watch(comp)
+                for scr in scripts:
+                    if scr.script_src and not scr.script_src.startswith(('http://', 'https://')):
+                        self.update_file_watch(scr.script_src)
+                for asset in assets:
+                    if asset.asset_href and not asset.asset_href.startswith(('http://', 'https://')):
+                        self.update_file_watch(asset.asset_href)
 
         except Exception as e:
-            print(f"DEBUG: Initial script/component watch failed: {e}")
+            print(f"DEBUG: Initial script/component/asset watch failed: {e}")
         self._reloader_thread.start()
         self._serve_forever()
 
@@ -786,8 +797,8 @@ class _Preview:
     def render_components(self):
         from app.mods.service import render
         html_parts = []
-        for idx, (comp, kwargs, _) in enumerate(self.stack):
-            rendered = render(comp, **kwargs)
+        for idx, (comp, kwargs, scripts, assets, _) in enumerate(self.stack):
+            rendered = render(comp, __scripts__=scripts, __assets__=assets, **kwargs)
             html_parts.append(f'<div>{rendered}</div>')
             if idx < len(self.stack) - 1:
                 html_parts.append("""
@@ -838,7 +849,7 @@ class _Preview:
                     src = getattr(actual_obj_for_source, '__file__', None)
                 if not src:
                     try:
-                        src = inspect.getsourcefile(actual_obj_for_source)
+                        src = getsourcefile(actual_obj_for_source)
                     except TypeError:
                         pass
             elif isinstance(obj, str) and os.path.isfile(obj):
@@ -901,9 +912,9 @@ class _Preview:
 _preview = _Preview()
 
 class _PublicPreview:
-    def add(self, comp, __name__=None, **kwargs):
+    def add(self, comp, __name__=None, __scripts__=None, __assets__=None, **kwargs):
         try:
-            _preview.add(comp, __name__=__name__, **kwargs)
+            _preview.add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, **kwargs)
         except Exception as e:
             raise PreviewErr(e)
 
