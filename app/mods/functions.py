@@ -3,7 +3,7 @@ from typed import typed, Tuple, Dict, Any
 from app.mods.decorators.base import component
 from app.mods.types.base import Jinja, COMPONENT, Inner
 from app.err import ConcatErr, JoinErr, EvalErr
-from app.mods.helper.functions import _merge_context
+from app.mods.helper.functions import _merge_context, _get_context
 
 @typed
 def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
@@ -105,7 +105,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
         old_params = list(sig.parameters.items())
 
         context_in_sig = '__context__' in sig.parameters
-        merged_ctx = get_default_context(func)
+        merged_ctx = _get_context(func)
 
         new_params = []
         for name, param in old_params:
