@@ -34,7 +34,7 @@ def responsive(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def desktop(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def desktop(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_DESKTOP)
     return f"""jinja
@@ -46,7 +46,7 @@ def desktop(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def tablet(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def tablet(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_TABLET)
     return f"""jinja
@@ -58,7 +58,7 @@ def tablet(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def phone(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def phone(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_PHONE)
     return f"""jinja
@@ -70,7 +70,7 @@ def phone(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def mobile(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def mobile(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_MOBILE)
     return f"""jinja
@@ -82,7 +82,7 @@ def mobile(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def not_desktop(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def not_desktop(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_DESKTOP)
     return f"""jinja
@@ -94,7 +94,7 @@ def not_desktop(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def not_tablet(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def not_tablet(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_TABLET)
     return f"""jinja
@@ -106,7 +106,7 @@ def not_tablet(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def not_phone(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def not_phone(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_PHONE)
     return f"""jinja
@@ -118,7 +118,7 @@ def not_phone(div: Div=Div(), inner: Inner="") -> Tag('div'):
 """
 
 @component
-def not_mobile(div: Div=Div(), inner: Inner="") -> Tag('div'):
+def not_mobile(div: Div=Div(), inner: Inner="") -> Tag('template'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_MOBILE)
     return f"""jinja
