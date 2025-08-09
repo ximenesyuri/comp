@@ -207,9 +207,9 @@ def if_script(script: Script=Script()) -> Str:
     if getattr(script, 'script_type', None):
         result += if_key(script.script_type, "type")
     if getattr(script, 'script_defer', None) and script.script_defer:
-        result += if_attr(script.script_defer, "defer")
+        result += if_attr("defer")
     if getattr(script, 'script_async', None) and script.script_async:
-        result += if_attr(script.script_async, "async")
+        result += if_attr( "async")
     return result
 
 @typed
