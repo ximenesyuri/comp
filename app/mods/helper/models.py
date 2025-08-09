@@ -1,5 +1,5 @@
 from typed import Enum, Str, Bool, Int, Pattern, List, Extension, Char, Nat
-from typed.models import model, Optional
+from typed.models import optional
 from app.mods.types.base import Inner
 
 _InputType = Enum(
@@ -27,13 +27,13 @@ _InputType = Enum(
     "image"
 )
 
-@model
+@optional
 class Globals:
-    anchor: Optional(Str)
-    accesskey: Optional(Char)
-    title: Optional(Str)
-    tabindex: Optional(Nat)
-    hidden: Optional(Bool)
+    anchor:    Str
+    accesskey: Char
+    title:     Str
+    tabindex:  Nat
+    hidden:    Bool
 
 _FormEnc = Enum(
     Str,
@@ -42,54 +42,55 @@ _FormEnc = Enum(
     "text/plain"
 )
 
-@model
+@optional
 class Div:
-    globals:   Optional(Globals)
-    div_id:    Optional(Str)
-    div_class: Optional(Str)
-    div_hover: Optional(Str)
-    div_inner: Optional(Inner)
+    globals:   Globals=Globals()
+    div_id:    Str
+    div_class: Str
+    div_style: Str
+    div_inner: Inner
 
-@model
+@optional
 class _FlexTitle:
-    title_div:   Optional(Div, Div(div_id="flex-results-title-div"))
-    title_id:    Optional(Str, "flex-results-title")
-    title_class: Optional(Str)
-    title_hover: Optional(Str)
+    title_div:   Div=Div(div_id="flex-results-title-div")
+    title_id:    Str="flex-results-title"
+    title_class: Str
+    title_style: Str
 
-@model
+@optional
 class _FlexDesc:
-    desc_div:    Optional(Div, Div(div_id="flex-results-desc-div"))
-    desc_id:     Optional(Str, "flex-results-desc")
-    desc_class:  Optional(Str)
-    desc_hover:  Optional(Str)
-    desc_length: Optional(Int, 181)
-    display:     Optional(Bool)
+    desc_div:    Div=Div(div_id="flex-results-desc-div")
+    desc_id:     Str="flex-results-desc"
+    desc_class:  Str
+    desc_style:  Str
+    desc_length: Int=181
+    display:     Bool
 
-@model
+@optional
 class _FlexCover:
-    cover_div:   Optional(Div, Div(div_id="flex-results-cover-div"))
-    cover_id:    Optional(Str, "flex-results-cover")
-    cover_class: Optional(Str)
-    display:     Optional(Bool)
+    cover_div:   Div=Div(div_id="flex-results-cover-div")
+    cover_id:    Str="flex-results-cover"
+    cover_class: Str
+    cover_style: Str
+    display:     Bool
 
-@model
+@optional
 class _FlexKind:
-    kind_div:   Optional(Div, Div(div_id="flex-results-kind-div"))
-    kind_id:    Optional(Str, "flex-results-kind")
-    kind_class: Optional(Str)
-    display:    Optional(Bool)
+    kind_div:   Div=Div(div_id="flex-results-kind-div")
+    kind_id:    Str="flex-results-kind"
+    kind_class: Str
+    display:    Bool
 
-@model
+@optional
 class _FlexResults:
-    desc:  Optional(_FlexDesc)
-    title: Optional(_FlexTitle)
-    kind:  Optional(_FlexKind)
-    cover: Optional(_FlexCover)
-    limit: Optional(Int, 10)
+    desc:  _FlexDesc
+    title: _FlexTitle
+    kind:  _FlexKind
+    cover: _FlexCover
+    limit: Int=10
 
-@model
+@optional
 class _FlexIndex:
-    index_types:       Optional(List(Str), ["title", "content", "tags", "category", "kind"])
-    index_store_types: Optional(List(Str), ["id", "title", "content", "href", "tags", "category", "kind"])
-    index_json_file:   Optional(Extension('json'), "jsonindex.json")
+    index_types:       List(Str)=["title", "content", "tags", "category", "kind"]
+    index_store_types: List(Str)=["id", "title", "content", "href", "tags", "category", "kind"]
+    index_json_file:   Extension('json')="jsonindex.json"

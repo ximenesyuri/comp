@@ -19,7 +19,7 @@ from typed import (
     Any,
     Pattern
 )
-from typed.models import model, exact, Optional
+from typed.models import optional
 from app.mods.helper.models import (
     Div,
     Globals,
@@ -30,271 +30,274 @@ from app.mods.helper.models import (
 )
 from app.mods.types.base import Inner
 
-@model
+@optional
 class Alpine:
-    x_data:       Optional(Str)
-    x_init:       Optional(Str)
-    x_show:       Optional(Str)
-    x_if:         Optional(Str)
-    x_effect:     Optional(Str)
-    x_model:      Optional(Str)
-    x_for:        Optional(Str)
-    x_transition: Optional(Str)
-    x_id:         Optional(Str)
-    x_ref:        Optional(Str)
-    x_cloak:      Optional(Bool)
-    x_bind:       Optional(Dict(Str, Str))
-    x_on:         Optional(Dict(Str, Str))
-    x_attrs:      Optional(Dict(Str, Json))
+    x_data: Str
+    x_init:       Str
+    x_show:       Str
+    x_if:         Str
+    x_effect:     Str
+    x_model:      Str
+    x_for:        Str
+    x_transition: Str
+    x_id:         Str
+    x_ref:        Str
+    x_cloak:      Bool
+    x_bind:       Dict(Str, Str)
+    x_on:         Dict(Str, Str)
+    x_attrs:      Dict(Str, Json)
 
-@model
+@optional
 class HTMX:
-    hx_get:         Optional(Str)
-    hx_post:        Optional(Str)
-    hx_put:         Optional(Str)
-    hx_delete:      Optional(Str)
-    hx_patch:       Optional(Str)
-    hx_target:      Optional(Str)
-    hx_swap:        Optional(Str)
-    hx_trigger:     Optional(Str)
-    hx_confirm:     Optional(Str)
-    hx_include:     Optional(Str)
-    hx_indicator:   Optional(Str)
-    hx_select:      Optional(Str)
-    hx_select_oob:  Optional(Str)
-    hx_ext:         Optional(Str)
-    hx_params:      Optional(Str)
-    hx_vals:        Optional(Str)
-    hx_push_url:    Optional(Str)
-    hx_replace_url: Optional(Str)
-    hx_headers:     Optional(Json)
-    hx_preserve:    Optional(Bool)
-    hx_disable:     Optional(Bool)
-    hx_attrs:       Optional(Dict(Str, Json))
+    hx_get:         Str
+    hx_post:        Str
+    hx_put:         Str
+    hx_delete:      Str
+    hx_patch:       Str
+    hx_target:      Str
+    hx_swap:        Str
+    hx_trigger:     Str
+    hx_confirm:     Str
+    hx_include:     Str
+    hx_indicator:   Str
+    hx_select:      Str
+    hx_select_oob:  Str
+    hx_ext:         Str
+    hx_params:      Str
+    hx_vals:        Str
+    hx_push_url:    Str
+    hx_replace_url: Str
+    hx_headers:     Json
+    hx_preserve:    Bool
+    hx_disable:     Bool
+    hx_attrs:       Dict(Str, Json)
 
-@model
+@optional
 class Aria:
-    aria_label:       Optional(Str)
-    aria_labelledby:  Optional(Str)
-    aria_describedby: Optional(Str)
-    aria_controls:    Optional(Str)
-    aria_current:     Optional(Str)
-    aria_details:     Optional(Str)
-    aria_disabled:    Optional(Bool)
-    aria_expanded:    Optional(Bool)
-    aria_hidden:      Optional(Bool)
-    aria_live:        Optional(Str)
-    aria_pressed:     Optional(Str)
-    aria_readonly:    Optional(Bool)
-    aria_selected:    Optional(Bool)
-    aria_checked:     Optional(Str)
-    aria_required:    Optional(Bool)
-    aria_valuemax:    Optional(Str)
-    aria_valuemin:    Optional(Str)
-    aria_valuenow:    Optional(Str)
-    aria_valuetext:   Optional(Str)
-    aria_role:        Optional(Str)
-    aria_attrs:       Optional(Dict(Str, Str))
+    aria_label:       Str
+    aria_labelledby:  Str
+    aria_describedby: Str
+    aria_controls:    Str
+    aria_current:     Str
+    aria_details:     Str
+    aria_disabled:    Bool
+    aria_expanded:    Bool
+    aria_hidden:      Bool
+    aria_live:        Str
+    aria_pressed:     Str
+    aria_readonly:    Bool
+    aria_selected:    Bool
+    aria_checked:     Str
+    aria_required:    Bool
+    aria_valuemax:    Str
+    aria_valuemin:    Str
+    aria_valuenow:    Str
+    aria_valuetext:   Str
+    aria_role:        Str
+    aria_attrs:       Dict(Str, Str)
 
-@model
+@optional
 class Header:
-    globals:      Optional(Globals)
-    header_id:    Optional(Str, "header")
-    header_class: Optional(Str)
-    header_style: Optional(Str)
-    header_inner: Optional(Any)
+    globals:      Globals=Globals()
+    header_id:    Str="header"
+    header_class: Str
+    header_style: Str
+    header_inner: Any
 
-@model
+@optional
 class Aside:
-    globals:     Optional(Globals)
-    aside_id:    Optional(Str, "aside")
-    aside_class: Optional(Str)
-    aside_style: Optional(Str)
-    aside_inner: Optional(Any)
+    globals:     Globals=Globals()
+    aside_id:    Str="aside"
+    aside_class: Str
+    aside_style: Str
+    aside_inner: Any
 
-@model
+@optional
 class Sidebar:
-    globals:       Optional(Globals)
-    sidebar_id:    Optional(Str, "sidebar")
-    sidebar_class: Optional(Str)
-    sidebar_style: Optional(Str)
-    sidebar_inner: Optional(Any)
+    globals:       Globals=Globals()
+    sidebar_id:    Str="sidebar"
+    sidebar_class: Str
+    sidebar_style: Str
+    sidebar_inner: Any
 
-@model
+@optional
 class Button:
-    globals:      Optional(Globals)
-    button_id:    Optional(Str, "button")
-    button_class: Optional(Str)
-    button_style: Optional(Str)
-    button_type:  Optional(Enum(Str, "button", "reset", "submmit"), "button")
-    on_click:     Optional(Str)
-    click_away:   Optional(Str)
-    button_inner: Optional(Any)
+    globals:      Globals=Globals()
+    button_id:    Str="button"
+    button_class: Str
+    button_style: Str
+    button_type:  Enum(Str, "button", "reset", "submmit")="button"
+    on_click:     Str
+    click_away:   Str
+    button_inner: Any
 
-@model
+@optional
 class Icon:
-    icon_id:      Optional(Str, "icon")
-    icon_class:   Optional(Str)
-    icon_size:    Optional(Str, "24px")
-    icon_fill:    Optional(HEX, "#000000")
-    icon_viewbox: Optional(Str, "0 -960 960 960")
-    icon_stroke:  Optional(Float, 0.5)
+    icon_id:      Str="icon"
+    icon_class:   Str
+    icon_size:    Str="24px"
+    icon_fill:    HEX="#000000"
+    icon_viewbox: Str="0 -960 960 960"
+    icon_stroke:  Float=0.5
 
-@model
+@optional
 class Image:
-    globals:   Optional(Globals)
-    img_id:    Optional(Str, "img")
-    img_class: Optional(Str)
-    img_style: Optional(Str)
-    img_alt:   Optional(Str)
-    img_src:   Optional(PathUrl, "")
-    img_lazy:  Optional(Bool, True)
+    globals:   Globals=Globals()
+    img_id:    Str="img"
+    img_class: Str
+    img_style: Str
+    img_alt:   Str
+    img_src:   PathUrl=""
+    img_lazy:  Bool=True
 Img = Image
 
-@model
+@optional
 class Text:
-    globals:    Optional(Globals)
-    text_id:    Optional(Str, "text")
-    text_class: Optional(Str)
-    text_style: Optional(Str)
-    text_inner: Optional(Any)
+    globals:    Globals=Globals()
+    text_id:    Str="text"
+    text_class: Str
+    text_style: Str
+    text_inner: Any
 
-@model
+@optional
 class Title:
-    globals:     Optional(Globals)
-    title_id:    Optional(Str, "title")
-    title_class: Optional(Str)
-    title_style: Optional(Str)
-    title_tag:   Optional(Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6"), "h1")
-    title_inner: Optional(Any)
+    globals:     Globals=Globals()
+    title_id:    Str="title"
+    title_class: Str
+    title_style: Str
+    title_tag:   Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6")="h1"
+    title_inner: Any
 
-@model
+@optional
 class Link:
-    globals:       Optional(Globals)
-    link_id:       Optional(Str, "link")
-    link_class:    Optional(Str)
-    link_style:    Optional(Str)
-    link_href:     Optional(PathUrl, "https://")
-    link_target:   Optional(Enum(Str, "_self", "_blank", "_parent", "_top"), "_self")
-    link_rel:      Optional(Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', ""), "")
-    link_download: Optional(PathUrl, '')
-    link_inner:    Optional(Any)
+    globals:       Globals=Globals()
+    link_id:       Str="link"
+    link_class:    Str
+    link_style:    Str
+    link_href:     PathUrl="https://"
+    link_target:   Enum(Str, "_self", "_blank", "_parent", "_top")="_self"
+    link_rel:      Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', "")
+    link_download: PathUrl
+    link_inner:    Any
 
-@model
+@optional
 class Figure:
-    globals:        Optional(Globals)
-    figure_img:     Optional(Image)
-    figure_caption: Optional(Str)
+    globals:        Globals=Globals()
+    figure_img:     Image=Image()
+    figure_caption: Str
 
-@model
+@optional
 class Logo:
-    logo_img:  Optional(Image)
-    logo_link: Optional(Link, Link(link_href="/"))
+    logo_img:  Image=Image()
+    logo_link: Link=Link(link_href="/")
 
-@model
+@optional
 class Item:
-    item_id:    Optional(Str, "item")
-    item_class: Optional(Str)
-    item_style: Optional(Str)
-    item_inner: Optional(Any)
+    globals:    Globals=Globals()
+    item_id:    Str="item"
+    item_class: Str
+    item_style: Str
+    item_inner: Any
 
-@model
+@optional
 class Unordered:
-    ul_id:    Optional(Str, "ul")
-    ul_class: Optional(Str, "")
-    ul_style: Optional(Str, "")
-    ul_items: Optional(List(Item), [])
+    globals:  Globals=Globals()
+    ul_id:    Str="ul"
+    ul_class: Str
+    ul_style: Str
+    ul_items: List(Item)
 
-@model
+@optional
 class Ordered:
-    ol_id:    Optional(Str, "ol")
-    ol_class: Optional(Str, "")
-    ol_style: Optional(Str, "")
-    ol_items: Optional(List(Item), [])
+    globals:  Globals=Globals()
+    ol_id:    Str
+    ol_class: Str
+    ol_style: Str
+    ol_items: List(Item)
 
-@model(extends=Item)
+@optional(extends=Item)
 class NavItem:
-    item_link: Optional(Any, "")
+    item_link: Link=Link()
 
-@model
+@optional
 class Nav:
-    nav_id:        Optional(Str, "nav")
-    nav_class:     Optional(Str)
-    nav_direction: Optional(Enum(Str, "vertical", "horizontal"), "horizontal")
-    nav_items:     Optional(List(NavItem), [])
-    ul_id:         Optional(Str, "nav-ul")
-    ul_class:      Optional(Str)
-    ul_style:      Optional(Str, "list-style: none;")
+    globals:       Globals=Globals()
+    nav_id:        Str="nav"
+    nav_class:     Str
+    nav_direction: Enum(Str, "vertical", "horizontal")="horizontal"
+    nav_items:     List(NavItem)
+    ul_id:         Str="nav-ul"
+    ul_class:      Str
+    ul_style:      Str="list-style: none;"
 
-@exact
+@optional
 class Script:
-    script_src:   Optional(PathUrl, "")
-    script_defer: Optional(Bool)
-    script_type:  Optional(Enum(Str, "module", "importmap", ""), "")
-    script_async: Optional(Bool)
-    script_inner: Optional(Any)
+    script_src:   PathUrl
+    script_defer: Bool
+    script_type:  Enum(Str, "module", "importmap")
+    script_async: Bool
+    script_inner: Any
 
-@exact
+@optional
 class Asset:
-    asset_href: Optional(PathUrl, "")
-    asset_mime: Optional(Str)
-    asset_rel:  Optional(Str, "stylesheet")
+    asset_href: PathUrl
+    asset_mime: Str
+    asset_rel:  Str="stylesheet"
 
-@model
+@optional
 class Input:
-    input_type:         Optional(_InputType, "text")
-    input_id:           Optional(Str, "input")
-    input_class:        Optional(Str)
-    input_placeholder:  Optional(Str)
-    input_name:         Optional(Str)
-    input_autocomplete: Optional(Bool)
-    input_required:     Optional(Bool)
-    input_disabled:     Optional(Bool)
-    input_readonly:     Optional(Bool)
-    input_autofocus:    Optional(Bool)
-    input_tabindex:     Optional(Int)
-    input_form_id:      Optional(Str)
-    input_minlength:    Optional(Int)
-    input_maxlength:    Optional(Int)
-    input_pattern:      Optional(Pattern)
-    input_size:         Optional(Int)
-    input_value:        Optional(Str)
-    input_multiple:     Optional(Bool)
-    input_rows:         Optional(Int)
-    input_cols:         Optional(Int)
-    input_wrap:         Optional(Enum(Str, "soft", "hard"))
-    input_min:          Optional(Int)
-    input_max:          Optional(Int)
-    input_step:         Optional(Union(Single("any"), Num))
-    input_checked:      Optional(Bool)
-    input_value:        Optional(Str)
+    input_type:         _InputType="text"
+    input_id:           Str="input"
+    input_class:        Str
+    input_placeholder:  Str
+    input_name:         Str
+    input_autocomplete: Bool
+    input_required:     Bool
+    input_disabled:     Bool
+    input_readonly:     Bool
+    input_autofocus:    Bool
+    input_tabindex:     Int
+    input_form_id:      Str
+    input_minlength:    Int
+    input_maxlength:    Int
+    input_pattern:      Pattern
+    input_size:         Int
+    input_value:        Str
+    input_multiple:     Bool
+    input_rows:         Int
+    input_cols:         Int
+    input_wrap:         Enum(Str, "soft", "hard")
+    input_min:          Int
+    input_max:          Int
+    input_step:         Union(Single("any"), Num)
+    input_checked:      Bool
+    input_value:        Str
 
-@model
+@optional
 class Form:
-    form_id:               Optional(Str, "form")
-    form_class:            Optional(Str)
-    form_style:            Optional(Str)
-    form_name:             Optional(Str)
-    form_action:           Optional(Str)
-    form_method:           Optional(Str, "get")
-    form_enc:              Optional(_FormEnc, "application/x-www-form-urlencoded")
-    form_autocomplete:     Optional(Bool, False)
-    form_browser_validate: Optional(Bool, False)
-    form_target:           Optional(Str)
-    form_autofocus:        Optional(Bool, False)
-    form_charset:          Optional(Str, "UTF-8")
-    form_rel:              Optional(Str)
+    form_id:               Str="form"
+    form_class:            Str
+    form_style:            Str
+    form_name:             Str
+    form_action:           Str
+    form_method:           Str
+    form_enc:              _FormEnc="application/x-www-form-urlencoded"
+    form_autocomplete:     Bool
+    form_browser_validate: Bool
+    form_target:           Str
+    form_autofocus:        Bool
+    form_charset:          Str="UTF-8"
+    form_rel:              Str
 
-@model
+@optional
 class Flex:
-    div:            Optional(Div, Div(div_id="flex-div"))
-    input_div:      Optional(Div, Div(div_id="flex-input-div"))
-    input:          Optional(Input, Input(input_type="search", input_id="flex-input"))
-    button_div:     Optional(Div, Div(div_id="flex-button-div"))
-    button:         Optional(Button)
-    results_div:    Optional(Div, Div(div_id="flex-results-div"))
-    results:        Optional(_FlexResults)
-    no_results_div: Optional(Div, Div(div_id="flex-no-results-div"))
-    no_results:     Optional(Str, "nenhum resultado encontrado...")
-    index:          Optional(_FlexIndex)
-    script_url:     Optional(PathUrl, "https://unpkg.com/flex@0.8.2/dist/module/index.js")
+    div:            Div=Div(div_id="flex-div")
+    input_div:      Div=Div(div_id="flex-input-div")
+    input:          Input=Input(input_type="search", input_id="flex-input")
+    button_div:     Div=Div(div_id="flex-button-div")
+    button:         Button
+    results_div:    Div=Div(div_id="flex-results-div")
+    results:        _FlexResults
+    no_results_div: Div=Div(div_id="flex-no-results-div")
+    no_results:     Str="nenhum resultado encontrado..."
+    index:          _FlexIndex
