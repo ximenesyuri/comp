@@ -38,11 +38,11 @@ def desktop(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_DESKTOP)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -50,11 +50,11 @@ def tablet(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_TABLET)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -62,11 +62,11 @@ def phone(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_PHONE)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -74,11 +74,11 @@ def mobile(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_MOBILE)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -86,11 +86,11 @@ def not_desktop(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_DESKTOP)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -98,11 +98,11 @@ def not_tablet(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_TABLET)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -110,11 +110,11 @@ def not_phone(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_PHONE)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
 
 @component
@@ -122,9 +122,9 @@ def not_mobile(div: Div=Div(), inner: Inner="") -> Tag('div'):
     div_data = if_div(div)
     alpine_data = if_alpine(_NOT_MOBILE)
     return f"""jinja
-<div{ div_data }{ alpine_data }>[% if div.div_inner %]
+<template{ div_data }{ alpine_data }>[% if div.div_inner %]
     { div.div_inner }
-</div>[% elif inner is defined %]
+</template>[% elif inner is defined %]
     { inner }
-</div>[% else %]</div>[% endif %]
+</template>[% else %]</template>[% endif %]
 """
