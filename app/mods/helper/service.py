@@ -832,7 +832,7 @@ class _PREVIEW:
     def _render_comps(self):
         from app.mods.service import render
         html_parts = []
-        for idx, (comp, kwargs, scripts, assets, responsive, _) in enumerate(self.stack):
+        for idx, (comp, kwargs, scripts, assets, _) in enumerate(self.stack):
             rendered = render(comp, __scripts__=scripts, __assets__=assets, **kwargs)
             html_parts.append(f'<div>{rendered}</div>')
             if idx < len(self.stack) - 1:
