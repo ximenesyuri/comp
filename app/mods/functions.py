@@ -1,9 +1,13 @@
 from inspect import signature, Parameter, Signature, _empty
-from typed import typed, Tuple, Dict, Any
+from typed import typed, Tuple, Dict, Any, Str
 from app.mods.decorators.base import component
 from app.mods.types.base import Jinja, COMPONENT, Inner
 from app.err import ConcatErr, JoinErr, EvalErr
-from app.mods.helper.functions import _merge_context, _get_context
+from app.mods.helper.functions import _merge_context, _get_context, _copy
+
+@typed
+def copy(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
+    return component(_copy(comp, **renamed_args))
 
 @typed
 def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
