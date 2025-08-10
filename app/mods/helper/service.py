@@ -14,39 +14,6 @@ from app.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from app.err import StyleErr, MinifyErr, PreviewErr
 
-
-@typed
-def _responsive(html: Str) -> Str:
-    _blocks = [
-        ("desktop",      "(min-width: 1025px) and (max-width: 10000px)"),
-        ("tablet",       "(min-width: 768px) and (max-width: 1024px)"),
-        ("phone",        "(min-width: 0px) and (max-width: 767px)"),
-        ("mobile",       "(min-width: 0px) and (max-width: 1024px)"),
-        ("not-desktop",  "(min-width: 0px) and (max-width: 1024px)"),
-       # ("not-tablet",   "(max-width: 639px) and (min-width: 1024px)"),
-        ("not-phone",    "(min-width: 768px) and (max-width: 10000px)"),
-       # ("not-mobile",   "(min-width: 1024px)"),
-    ]
-    tag_css = []
-    seen = set()
-    for tag, media in _blocks:
-        pat = r"<{0}[\s>]".format(tag.replace("-", "[-]?"))
-        if re.search(pat, html):
-            if tag not in seen:
-                seen.add(tag)
-                base = tag
-                tag1 = tag.replace("-", "")
-                tag_css.append(f"{base} "+"{ display: none; }")
-                tag_css.append(f"@media {media} "+"{ "+f"{base} "+"{ display: inline; }"+" }")
-    if tag_css:
-        style_tag = "<style>" + "\n".join(tag_css) + "</style>"
-        m = re.search(r"<head[^>]*>", html, re.IGNORECASE)
-        if m:
-            html = html[:m.end()] + style_tag + html[m.end():]
-        else:
-            html = style_tag + html
-    return html
-
 @typed
 def _style(html: Str) -> Str:
     try:
@@ -213,6 +180,10 @@ def _style(html: Str) -> Str:
         }
 
         def style_for_base_class(class_name):
+            if class_name in ["phone", "tablet", "mobile", "desktop"]:
+                return "display: none;"
+            if class_name.startswith("not:") and class_name[4:] in ["phone", "tablet", "mobile", "desktop"]:
+                return "display: none;"
             css_rule = None
             match = patterns['padding_margin'].match(class_name)
             if match:
@@ -424,7 +395,6 @@ def _style(html: Str) -> Str:
             return css_rule
 
         def parse_prefixed_class(class_name: str):
-            """Parse aliases and collect flags. Return error if any illegal usage."""
             parts = class_name.split(':')
             original = class_name
             error = None
@@ -461,7 +431,6 @@ def _style(html: Str) -> Str:
                 elif lpart in PSEUDO_ALL:
                     pseudo = PSEUDO_PREFIXES[lpart]
                     if pseudo in found_pseudos:
-                        # duplicate pseudo
                         error = f"ERROR({original})"
                         return {'error': error}
                     found_pseudos.append(pseudo)
@@ -469,11 +438,33 @@ def _style(html: Str) -> Str:
                 else:
                     break
             base = ":".join(parts[i:])
+
+            if class_name in ["phone", "tablet", "mobile", "desktop"]:
+                return {
+                    'error': None,
+                    'important': False,
+                    'media': class_name,
+                    'pseudos': [],
+                    'not': False,
+                    'base': class_name,
+                    'original': class_name
+                }
+            if (class_name.startswith("not:") or class_name.startswith("n:")) and class_name[4:] in ["phone", "tablet", "mobile", "desktop"]:
+                c_name = class_name[4:]
+                return {
+                    'error': None,
+                    'important': False,
+                    'media': c_name,
+                    'pseudos': [],
+                    'not': True,
+                    'base': class_name,
+                    'original': class_name
+                }
+
             if found_not:
                 if not found_media or found_pseudos:
                     error = f"ERROR({original})"
                     return {'error': error}
-
             for j, part in enumerate(parts):
                 if part.lower() in NOT_ALL and j != 0:
                     error = f"ERROR({original})"
@@ -503,14 +494,12 @@ def _style(html: Str) -> Str:
             False: {False: [], True: []},
             True: {False: [], True: []}
         }
-
         bucket_not_media = {
             "phone": "(min-width: 768px)",
             "tablet": "(max-width: 767px), (min-width: 1025px)",
             "mobile": "(min-width: 1025px)",
             "desktop": "(max-width: 1024px)",
         }
-
         css_rules_errors = []
 
         for tag in soup.find_all(True):
@@ -522,18 +511,33 @@ def _style(html: Str) -> Str:
                         continue
 
                     base_rule = style_for_base_class(pref['base'])
+                    if class_name in ["phone", "tablet", "mobile", "desktop"]:
+                        selector = '.' + escape_class_selector(class_name)
+                        base_media = class_name
+                        hide_rule = f"{selector} {{\n    display: none;\n}}"
+                        show_rule = f"{selector} {{\n    display: inline;\n}}"
+                        css_buckets[base_media][False][False].append(hide_rule)
+                        media_query = MEDIA_PREFIXES[base_media]
+                        css_buckets[base_media][False][False].append(f"@media {media_query} {{\n    {show_rule}\n}}")
+                        continue
+                    if class_name.startswith("not:") and class_name[4:] in ["phone", "tablet", "mobile", "desktop"]:
+                        base_media = class_name[4:]
+                        selector = '.' + escape_class_selector(class_name)
+                        hide_rule = f"{selector} {{\n    display: none;\n}}"
+                        show_rule = f"{selector} {{\n    display: inline;\n}}"
+                        css_buckets[base_media][False][True].append(hide_rule)
+                        media_query = bucket_not_media[base_media]
+                        css_buckets[base_media][False][True].append(f"@media {media_query} {{\n    {show_rule}\n}}")
+                        continue
                     if not base_rule:
                         continue
                     selector = '.' + escape_class_selector(pref['original'])
                     for pseudo in pref['pseudos']:
                         selector += f":{pseudo}"
-
                     rule_content = base_rule.strip()
                     if pref['important']:
                         rule_content = re.sub(r'(?<!important)\s*;', ' !important;', rule_content)
-
                     rule_str = f"{selector} {{\n    {rule_content}\n}}"
-
                     if pref['not']:
                         canonical_media = pref['media'] if pref['media'] in CANONICAL_MEDIA_NAMES else None
                         css_buckets[canonical_media][pref['important']][True].append(rule_str)
@@ -547,7 +551,6 @@ def _style(html: Str) -> Str:
                         css_buckets[None][pref['important']][False].append(rule_str)
 
         new_css_rules_list = []
-
         new_css_rules_list.extend(css_buckets[None][False][False])
         new_css_rules_list.extend(css_buckets[None][True][False])
         for canonical_media_name in CANONICAL_MEDIA_NAMES:
@@ -563,10 +566,8 @@ def _style(html: Str) -> Str:
             if not_rules_for_this_mq:
                 not_mq_expression = bucket_not_media[canonical_media_name]
                 new_css_rules_list.append(f"@media {not_mq_expression} {{\n{chr(10).join(not_rules_for_this_mq)}\n}}\n")
-
         if css_rules_errors:
             new_css_rules_list.append('\n'.join(css_rules_errors))
-
         new_css_rules = "\n".join(new_css_rules_list)
         if new_css_rules:
             head_tag = soup.find('head')
@@ -597,6 +598,7 @@ def _style(html: Str) -> Str:
             return str(soup)
     except Exception as e:
         raise StyleErr(e)
+
 
 def _minify(html: str) -> str:
     """
@@ -682,13 +684,13 @@ class _PREVIEW:
         self._reloader_thread = None
         self._browser_opened = False
 
-    def _add(self, comp: COMPONENT, __name__=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
+    def _add(self, comp: COMPONENT, __name__=None, __scripts__=None, __assets__=None, **kwargs):
         """
         Adds a component to the preview stack.
         Can optionally accept a __name__ for the component instance, and lists of __scripts__ and __assets__.
         """
         with self.lock:
-            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __responsive__ or True, __name__))
+            self.stack.append((comp, kwargs, __scripts__ or [], __assets__ or [], __name__))
             self._update_watch(comp)
             for scr in (__scripts__ or []):
                 if scr.script_src and not scr.script_src.startswith(('http://', 'https://')):
@@ -775,11 +777,11 @@ class _PREVIEW:
         self._reloader_thread.start()
         self._serve_forever()
 
-    def __call__(self, comp=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
+    def __call__(self, comp=None, __scripts__=None, __assets__=None, **kwargs):
         if comp:
             with self.lock:
                 self._clean()
-                self._add(comp, __scripts=__scripts__, __assets=__assets__, __responsive__=__responsive__, **kwargs)
+                self._add(comp, __scripts=__scripts__, __assets=__assets__, **kwargs)
             self._run()
         else:
             self._run()
@@ -831,7 +833,7 @@ class _PREVIEW:
         from app.mods.service import render
         html_parts = []
         for idx, (comp, kwargs, scripts, assets, responsive, _) in enumerate(self.stack):
-            rendered = render(comp, __scripts__=scripts, __assets__=assets, __responsive__=responsive, **kwargs)
+            rendered = render(comp, __scripts__=scripts, __assets__=assets, **kwargs)
             html_parts.append(f'<div>{rendered}</div>')
             if idx < len(self.stack) - 1:
                 html_parts.append("""
@@ -941,7 +943,7 @@ class _PREVIEW:
 class _Preview:
     def add(self, comp, __name__=None, __scripts__=None, __assets__=None, __responsive__=True, **kwargs):
         try:
-            _PREVIEW()._add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, __responsive__=__responsive__, **kwargs)
+            _PREVIEW()._add(comp, __name__=__name__, __scripts__=__scripts__, __assets__=__assets__, **kwargs)
         except Exception as e:
             raise PreviewErr(e)
 
