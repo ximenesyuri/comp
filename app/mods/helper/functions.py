@@ -7,7 +7,7 @@ import sys
 from typed import typed, Function, Dict, Any, Str, Bool, Set, Tuple, TYPE
 from app.mods.types.base import Jinja
 from app.mods.helper.types import COMPONENT
-from app.mods.helper.helper import _VAR_DELIM_START, _VAR_DELIM_END
+from app.mods.helper.helper import _VAR_DELIM_START, _VAR_DELIM_END, _extract_raw_jinja
 
 def _get_context(func):
     sig = signature(getattr(func, "func", func))
@@ -212,6 +212,29 @@ def _copy(func, **rename_map):
     tree = JinjaVarRenamer(rename_map, _VAR_DELIM_START, _VAR_DELIM_END).visit(tree)
     ast.fix_missing_locations(tree)
 
+    copied_jinja_string = ""
+    found_return_node = False
+
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef):
+            for item in ast.walk(node):
+                if isinstance(item, ast.Return):
+                    found_return_node = True
+                    if isinstance(item.value, ast.JoinedStr):
+                        if sys.version_info >= (3, 9):
+                            unparsed_fstring = ast.unparse(item.value)
+                            content_match = re.match(r'f?([\'"]{1,3})(.*)\1$', unparsed_fstring, re.DOTALL)
+                            if content_match:
+                                inner_f_string_content = content_match.group(2)
+                                copied_jinja_string = _extract_raw_jinja(inner_f_string_content)
+                    elif isinstance(item.value, ast.Constant):
+                        if isinstance(item.value.value, str):
+                            match = re.search(r'jinja\s*\n([\s\S]*?)', item.value.value)
+                            if match:
+                                copied_jinja_string = match.group(1)
+                    break
+            break
+
     globs = _get_globals(func, extra_search_modules=True)
     locs = {}
 
@@ -223,6 +246,8 @@ def _copy(func, **rename_map):
 
     new_func = locs[func_name]
     update_wrapper(new_func, func)
+
+    new_func._jinja = copied_jinja_string
 
     old_sig = signature(func)
     new_params = []

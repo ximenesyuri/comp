@@ -1,9 +1,11 @@
+import re
 from inspect import signature, Parameter, Signature, _empty
 from typed import typed, Tuple, Dict, Any, Str
 from app.mods.decorators.base import component
 from app.mods.types.base import Jinja, COMPONENT, Inner
 from app.err import ConcatErr, JoinErr, EvalErr
 from app.mods.helper.functions import _merge_context, _get_context, _copy
+from app.mods.helper.helper import _get_jinja
 
 @typed
 def copy(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
@@ -14,7 +16,6 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
     try:
         sig1 = signature(comp_1)
         sig2 = signature(comp_2)
-
         inner_param_name = None
         for name, param in sig1.parameters.items():
             if param.annotation is Inner:
@@ -48,10 +49,12 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
             user_ctx = ba.arguments.get('__context__', {})
             context.update(user_ctx)
 
+            # Call comp_2 first to supply "inner" result into comp_1 at the right param.
             c2_args = {p.name: ba.arguments[p.name] for p in sig2.parameters.values() if p.name in ba.arguments and p.name != '__context__'}
             if '__context__' in sig2.parameters:
                 c2_args['__context__'] = context
             inner_result = comp_2(**c2_args)
+
             c1_args = {p.name: ba.arguments[p.name] for p in sig1.parameters.values() if p.name in ba.arguments and p.name != inner_param_name and p.name != '__context__'}
             c1_args[inner_param_name] = inner_result
             if '__context__' in sig1.parameters:
@@ -60,7 +63,15 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
 
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
-        return component(wrapper)
+        comp = component(wrapper)
+        jinja1 = _get_jinja(comp_1)
+        jinja2 = _get_jinja(comp_2)
+        concat_jinja = jinja1
+        concat_jinja = re.sub(r"^jinja\s*\n?", "", concat_jinja)
+        concat_jinja = re.sub(r'{\s*' + re.escape(inner_param_name) + r'\s*}', jinja2, concat_jinja)
+        concat_jinja = re.sub(r'\[\[\s*' + re.escape(inner_param_name) + r'\s*\]\]', jinja2, concat_jinja)
+        comp._jinja = concat_jinja
+        return comp
     except Exception as e:
         raise ConcatErr(e)
 
@@ -98,7 +109,15 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
             return Jinja(''.join(str(r) for r in results))
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
-        return component(wrapper)
+        comp = component(wrapper)
+
+        joined_jinja_list = [_get_jinja(c) for c in comps]
+        for i in range(len(joined_jinja_list)):
+            joined_jinja_list[i] = re.sub(r"^jinja\s*\n?", "", joined_jinja_list[i])
+        joined_jinja = "".join(joined_jinja_list)
+        comp._jinja = joined_jinja
+
+        return comp
     except Exception as e:
         raise JoinErr(e)
 
@@ -124,6 +143,8 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
         new_sig = Signature(new_params)
 
         def wrapper(*args, **kwargs):
+            if __context__ is None:
+                __context__ = dict(merged_ctx)
             ba = new_sig.bind_partial(*args, **kwargs)
             ba.apply_defaults()
             context = dict(merged_ctx)
@@ -145,7 +166,19 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
         wrapper.__signature__ = new_sig
         if hasattr(func, '__annotations__'):
             wrapper.__annotations__ = dict(func.__annotations__)
-        return component(wrapper)
+        wrapper.__annotations__["__context__"] = Dict(Any)
+        comp = component(wrapper)
+
+        base_jinja = _get_jinja(func)
+        base_jinja = re.sub(r'^jinja\s*\n?', '', base_jinja)
+        jinja_eval = base_jinja
+        for k, v in fixed_kwargs.items():
+            jinja_eval = re.sub(r'\[\[\s*' + re.escape(k) + r'\s*\]\]', str(v), jinja_eval)
+            jinja_eval = re.sub(r'{{\s*' + re.escape(k) + r'\s*}}', str(v), jinja_eval)
+            jinja_eval = re.sub(r'{\s*' + re.escape(k) + r'\s*}', str(v), jinja_eval)
+        comp._jinja = jinja_eval
+
+        return comp
     except Exception as e:
         raise EvalErr(e)
 

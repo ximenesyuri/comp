@@ -95,4 +95,3 @@ def page(comp: Function) -> PAGE:
 def static_page(comp: Function) -> STATIC_PAGE:
     comp = component(comp)
     return comp
-

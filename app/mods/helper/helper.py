@@ -89,6 +89,13 @@ def _jinja_regex(tag_name: Str = "") -> Pattern:
 def _extract_raw_jinja(jinja_string: Str) -> Str:
     return re.sub(r"jinja\n?", "", jinja_string)
 
+def _get_jinja(comp):
+    if hasattr(comp, "jinja"):
+        return comp.jinja
+    if hasattr(comp, "_jinja"):
+        return comp._jinja
+    return ""
+
 @typed
 def _find_jinja_vars(source: Str) -> Set(Str):
     regex_str = re.compile(_jinja_regex(), re.DOTALL)
