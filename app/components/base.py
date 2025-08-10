@@ -209,9 +209,9 @@ def nav(nav: Nav=Nav(), __context__={"link": link, "item": item}) -> Jinja:
     ul_class = if_class(nav.ul_class)
     ul_style = if_style(nav.ul_style)
     if nav.nav_direction == "horizontal":
-        ul_style = f" style='display: flex; flex-direction: row; [nav.ul_style]'"
+        ul_style = f" style='display: flex; flex-direction: row; {nav.ul_style}'"
     else:
-        ul_style = f" style='display: flex; flex-direction: column; [nav.ul_style]'"
+        ul_style = f" style='display: flex; flex-direction: column; {nav.ul_style}'"
 
     return f"""jinja
 <nav{ nav_data }>[% if nav.nav_items %]
