@@ -14,8 +14,10 @@ from app.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from app.err import StyleErr, MinifyErr, PreviewErr
 
-@typed
-def _style(html: Str) -> Str:
+class StyleErr(Exception):
+    pass
+
+def _style(html: str) -> str:
     try:
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -180,21 +182,18 @@ def _style(html: Str) -> Str:
         }
 
         def style_for_base_class(class_name):
-            if class_name in ["phone", "tablet", "mobile", "desktop"]:
-                return "display: none;"
-            if class_name.startswith("not:") and class_name[4:] in ["phone", "tablet", "mobile", "desktop"]:
-                return "display: none;"
             css_rule = None
             match = patterns['padding_margin'].match(class_name)
             if match:
                 prefix, value, unit = match.groups()
                 prop = style_property_map[prefix]
                 css_rule = f"{prop}: {value}{unit};"
-            match = patterns['margin_padding'].match(class_name)
-            if match:
-                prefix, value, unit = match.groups()
-                prop = style_property_map[prefix]
-                css_rule = f"{prop}: {value}{unit};"
+            if not css_rule:
+                match = patterns['margin_padding'].match(class_name)
+                if match:
+                    prefix, value, unit = match.groups()
+                    prop = style_property_map[prefix]
+                    css_rule = f"{prop}: {value}{unit};"
             if not css_rule:
                 match = patterns['border'].match(class_name)
                 if match:
@@ -439,7 +438,7 @@ def _style(html: Str) -> Str:
                     break
             base = ":".join(parts[i:])
 
-            if class_name in ["phone", "tablet", "mobile", "desktop"]:
+            if class_name in CANONICAL_MEDIA_NAMES:
                 return {
                     'error': None,
                     'important': False,
@@ -449,12 +448,11 @@ def _style(html: Str) -> Str:
                     'base': class_name,
                     'original': class_name
                 }
-            if (class_name.startswith("not:") or class_name.startswith("n:")) and class_name[4:] in ["phone", "tablet", "mobile", "desktop"]:
-                c_name = class_name[4:]
+            if class_name.startswith("not:") and class_name[4:] in CANONICAL_MEDIA_NAMES:
                 return {
                     'error': None,
                     'important': False,
-                    'media': c_name,
+                    'media': class_name[4:],
                     'pseudos': [],
                     'not': True,
                     'base': class_name,
@@ -484,22 +482,7 @@ def _style(html: Str) -> Str:
             }
 
         CANONICAL_MEDIA_NAMES = ["phone", "tablet", "mobile", "desktop"]
-        css_buckets = {
-            name: {
-                False: {False: [], True: []},
-                True: {False: [], True: []}
-            } for name in CANONICAL_MEDIA_NAMES
-        }
-        css_buckets[None] = {
-            False: {False: [], True: []},
-            True: {False: [], True: []}
-        }
-        bucket_not_media = {
-            "phone": "(min-width: 768px)",
-            "tablet": "(max-width: 767px), (min-width: 1025px)",
-            "mobile": "(min-width: 1025px)",
-            "desktop": "(max-width: 1024px)",
-        }
+        css_rules_parsed = []
         css_rules_errors = []
 
         for tag in soup.find_all(True):
@@ -510,65 +493,114 @@ def _style(html: Str) -> Str:
                         css_rules_errors.append(f".{escape_class_selector(class_name)} {{ color: red; font-weight: bold; content: '{pref['error']}'; }}")
                         continue
 
-                    base_rule = style_for_base_class(pref['base'])
-                    if class_name in ["phone", "tablet", "mobile", "desktop"]:
-                        selector = '.' + escape_class_selector(class_name)
-                        base_media = class_name
-                        hide_rule = f"{selector} {{\n    display: none;\n}}"
-                        show_rule = f"{selector} {{\n    display: inline;\n}}"
-                        css_buckets[base_media][False][False].append(hide_rule)
-                        media_query = MEDIA_PREFIXES[base_media]
-                        css_buckets[base_media][False][False].append(f"@media {media_query} {{\n    {show_rule}\n}}")
+                    selector_base = '.' + escape_class_selector(pref['original'])
+                    if pref['base'] in CANONICAL_MEDIA_NAMES and not pref['not']:
+                        css_rules_parsed.append({
+                            'selector': selector_base,
+                            'rule_content': 'display: none;',
+                            'media_query': None,
+                            'pseudo_elements': [],
+                            'important': False,
+                            'not_media': False,
+                            'original_class': class_name
+                        })
+                        css_rules_parsed.append({
+                            'selector': selector_base,
+                            'rule_content': 'display: inline;',
+                            'media_query': MEDIA_PREFIXES[pref['base']],
+                            'pseudo_elements': [],
+                            'important': False,
+                            'not_media': False,
+                            'original_class': class_name
+                        })
                         continue
-                    if class_name.startswith("not:") and class_name[4:] in ["phone", "tablet", "mobile", "desktop"]:
-                        base_media = class_name[4:]
-                        selector = '.' + escape_class_selector(class_name)
-                        hide_rule = f"{selector} {{\n    display: none;\n}}"
-                        show_rule = f"{selector} {{\n    display: inline;\n}}"
-                        css_buckets[base_media][False][True].append(hide_rule)
-                        media_query = bucket_not_media[base_media]
-                        css_buckets[base_media][False][True].append(f"@media {media_query} {{\n    {show_rule}\n}}")
+
+                    if pref['base'].startswith("not:") and pref['base'][4:] in CANONICAL_MEDIA_NAMES and pref['not']:
+                        base_media = pref['base'][4:]
+                        css_rules_parsed.append({
+                            'selector': selector_base,
+                            'rule_content': 'display: none;',
+                            'media_query': None,
+                            'pseudo_elements': [],
+                            'important': False,
+                            'not_media': True,
+                            'original_class': class_name
+                        })
+                        not_mq_expression = ""
+                        if base_media == "phone":
+                            not_mq_expression = "(min-width: 768px)"
+                        elif base_media == "tablet":
+                            not_mq_expression = "(max-width: 767px), (min-width: 1025px)"
+                        elif base_media == "mobile":
+                            not_mq_expression = "(min-width: 1025px)"
+                        elif base_media == "desktop":
+                            not_mq_expression = "(max-width: 1024px)"
+
+                        css_rules_parsed.append({
+                            'selector': selector_base,
+                            'rule_content': 'display: inline;',
+                            'media_query': not_mq_expression,
+                            'pseudo_elements': [],
+                            'important': False,
+                            'not_media': True,
+                            'original_class': class_name
+                        })
                         continue
-                    if not base_rule:
+
+                    base_rule_content = style_for_base_class(pref['base'])
+                    if not base_rule_content:
                         continue
+
                     selector = '.' + escape_class_selector(pref['original'])
                     for pseudo in pref['pseudos']:
                         selector += f":{pseudo}"
-                    rule_content = base_rule.strip()
+                    rule_content_str = base_rule_content.strip()
                     if pref['important']:
-                        rule_content = re.sub(r'(?<!important)\s*;', ' !important;', rule_content)
-                    rule_str = f"{selector} {{\n    {rule_content}\n}}"
-                    if pref['not']:
-                        canonical_media = pref['media'] if pref['media'] in CANONICAL_MEDIA_NAMES else None
-                        css_buckets[canonical_media][pref['important']][True].append(rule_str)
-                    elif pref['media']:
-                        canonical_media = pref['media'] if pref['media'] in CANONICAL_MEDIA_NAMES else pref['media']
-                        if canonical_media not in css_buckets:
-                            css_buckets[None][pref['important']][False].append(rule_str)
-                        else:
-                            css_buckets[canonical_media][pref['important']][False].append(rule_str)
-                    else:
-                        css_buckets[None][pref['important']][False].append(rule_str)
+                        rule_content_str = re.sub(r'(?<!important)\s*;', ' !important;', rule_content_str)
+                    media_query_str = None
+                    if pref['media'] and pref['media'] in MEDIA_PREFIXES:
+                        media_query_str = MEDIA_PREFIXES[pref['media']]
+                    css_rules_parsed.append({
+                        'selector': selector,
+                        'rule_content': rule_content_str,
+                        'media_query': media_query_str,
+                        'pseudo_elements': pref['pseudos'],
+                        'important': pref['important'],
+                        'not_media': pref['not'],
+                        'original_class': class_name
+                    })
+
+        final_css_buckets = {}
+
+        for rule_info in css_rules_parsed:
+            media_query = rule_info['media_query']
+            important = rule_info['important']
+            pseudos = tuple(rule_info['pseudo_elements'])
+            not_media = rule_info['not_media']
+            qualified_selector = rule_info['selector']
+            full_css_rule = f"{qualified_selector} {{\n    {rule_info['rule_content']}\n}}"
+            bucket_key = (media_query, important, pseudos, not_media)
+            if bucket_key not in final_css_buckets:
+                final_css_buckets[bucket_key] = []
+            final_css_buckets[bucket_key].append(full_css_rule)
+        sorted_keys = sorted(final_css_buckets.keys(), key=lambda k: (k[0] is not None, k[3], k[1]))
 
         new_css_rules_list = []
-        new_css_rules_list.extend(css_buckets[None][False][False])
-        new_css_rules_list.extend(css_buckets[None][True][False])
-        for canonical_media_name in CANONICAL_MEDIA_NAMES:
-            mq_expression = MEDIA_PREFIXES[canonical_media_name]
-            rules_for_this_mq = []
-            rules_for_this_mq.extend(css_buckets[canonical_media_name][False][False])
-            rules_for_this_mq.extend(css_buckets[canonical_media_name][True][False])
-            if rules_for_this_mq:
-                new_css_rules_list.append(f"@media {mq_expression} {{\n{chr(10).join(rules_for_this_mq)}\n}}\n")
-            not_rules_for_this_mq = []
-            not_rules_for_this_mq.extend(css_buckets[canonical_media_name][False][True])
-            not_rules_for_this_mq.extend(css_buckets[canonical_media_name][True][True])
-            if not_rules_for_this_mq:
-                not_mq_expression = bucket_not_media[canonical_media_name]
-                new_css_rules_list.append(f"@media {not_mq_expression} {{\n{chr(10).join(not_rules_for_this_mq)}\n}}\n")
+
+        for key in sorted_keys:
+            media_query, important, pseudos, not_media = key
+            rules_to_print = final_css_buckets[key]
+            if media_query:
+                grouped_rules = "\n".join(rules_to_print)
+                new_css_rules_list.append(f"@media {media_query} {{\n{grouped_rules}\n}}")
+            else:
+                new_css_rules_list.extend(rules_to_print)
+
         if css_rules_errors:
             new_css_rules_list.append('\n'.join(css_rules_errors))
+
         new_css_rules = "\n".join(new_css_rules_list)
+
         if new_css_rules:
             head_tag = soup.find('head')
             if head_tag:
@@ -598,6 +630,7 @@ def _style(html: Str) -> Str:
             return str(soup)
     except Exception as e:
         raise StyleErr(e)
+
 
 
 def _minify(html: str) -> str:
