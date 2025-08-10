@@ -75,8 +75,14 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
     def __truediv__(self, other):
         if not isinstance(other, dict):
             return NotImplemented
-        from app.mods.functions import eval as _eval
-        return _eval(self, **other)
+        from app.mods.functions import eval
+        return eval(self, **other)
+
+    def __xor__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+        from app.mods.functions import copy
+        return copy(self, **other)
 
 Content = Union(Markdown, Extension('md'))
 
