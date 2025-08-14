@@ -25,12 +25,12 @@ from app.mods.helper.models import (
     Globals,
     _FormEnc,
     _InputType,
-    _FlexResults,
-    _FlexIndex
+    _SearchResults,
+    _SearchIndex
 )
 from app.mods.types.base import Inner
 
-@optional(nullable=True)
+@optional
 class Alpine:
     x_data:       Str
     x_init:       Str
@@ -47,7 +47,7 @@ class Alpine:
     x_on:         Dict(Str, Str)
     x_attrs:      Dict(Str, Json)
 
-@optional(nullable=True)
+@optional
 class HTMX:
     hx_get:         Str
     hx_post:        Str
@@ -72,7 +72,7 @@ class HTMX:
     hx_disable:     Bool
     hx_attrs:       Dict(Str, Json)
 
-@optional(nullable=True)
+@optional
 class Aria:
     aria_label:       Str
     aria_labelledby:  Str
@@ -96,7 +96,7 @@ class Aria:
     aria_role:        Str
     aria_attrs:       Dict(Str, Str)
 
-@optional(nullable=True)
+@optional
 class Header:
     globals:      Globals=Globals()
     header_id:    Str="header"
@@ -104,7 +104,7 @@ class Header:
     header_style: Str
     header_inner: Any
 
-@optional(nullable=True)
+@optional
 class Aside:
     globals:     Globals=Globals()
     aside_id:    Str="aside"
@@ -112,7 +112,7 @@ class Aside:
     aside_style: Str
     aside_inner: Any
 
-@optional(nullable=True)
+@optional
 class Sidebar:
     globals:       Globals=Globals()
     sidebar_id:    Str="sidebar"
@@ -120,7 +120,7 @@ class Sidebar:
     sidebar_style: Str
     sidebar_inner: Any
 
-@optional(nullable=True)
+@optional
 class Button:
     globals:      Globals=Globals()
     button_id:    Str="button"
@@ -131,7 +131,7 @@ class Button:
     click_away:   Str
     button_inner: Any
 
-@optional(nullable=True)
+@optional
 class Icon:
     icon_id:      Str="icon"
     icon_class:   Str
@@ -140,7 +140,7 @@ class Icon:
     icon_viewbox: Str="0 -960 960 960"
     icon_stroke:  Float=0.5
 
-@optional(nullable=True)
+@optional
 class Image:
     globals:   Globals=Globals()
     img_id:    Str="img"
@@ -151,7 +151,7 @@ class Image:
     img_lazy:  Bool=True
 Img = Image
 
-@optional(nullable=True)
+@optional
 class Text:
     globals:    Globals=Globals()
     text_id:    Str="text"
@@ -159,7 +159,7 @@ class Text:
     text_style: Str
     text_inner: Any
 
-@optional(nullable=True)
+@optional
 class Title:
     globals:     Globals=Globals()
     title_id:    Str="title"
@@ -168,7 +168,7 @@ class Title:
     title_tag:   Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6")="h1"
     title_inner: Any
 
-@optional(nullable=True)
+@optional
 class Link:
     globals:       Globals=Globals()
     link_id:       Str="link"
@@ -180,18 +180,18 @@ class Link:
     link_download: PathUrl
     link_inner:    Any
 
-@optional(nullable=True)
+@optional
 class Figure:
     globals:        Globals=Globals()
     figure_img:     Image=Image()
     figure_caption: Str
 
-@optional(nullable=True)
+@optional
 class Logo:
     logo_img:  Image=Image()
     logo_link: Link=Link(link_href="/")
 
-@optional(nullable=True)
+@optional
 class Item:
     globals:    Globals=Globals()
     item_id:    Str="item"
@@ -199,7 +199,7 @@ class Item:
     item_style: Str
     item_inner: Any
 
-@optional(nullable=True)
+@optional
 class Unordered:
     globals:  Globals=Globals()
     ul_id:    Str="ul"
@@ -207,7 +207,7 @@ class Unordered:
     ul_style: Str
     ul_items: List(Item)
 
-@optional(nullable=True)
+@optional
 class Ordered:
     globals:  Globals=Globals()
     ol_id:    Str
@@ -215,11 +215,16 @@ class Ordered:
     ol_style: Str
     ol_items: List(Item)
 
-@optional(extends=Item)
+@optional
 class NavItem:
+    globals:    Globals=Globals()
+    item_id:    Str="item"
+    item_class: Str
+    item_style: Str
+    item_inner: Any
     item_link: Link=Link()
 
-@optional(nullable=True)
+@optional
 class Nav:
     globals:       Globals=Globals()
     nav_id:        Str="nav"
@@ -230,7 +235,7 @@ class Nav:
     ul_class:      Str
     ul_style:      Str="list-style: none;"
 
-@optional(nullable=True)
+@optional
 class Script:
     script_src:   Str
     script_defer: Bool
@@ -238,13 +243,13 @@ class Script:
     script_async: Bool
     script_inner: Any
 
-@optional(nullable=True)
+@optional
 class Asset:
     asset_href: Str
     asset_mime: Str
     asset_rel:  Str="stylesheet"
 
-@optional(nullable=True)
+@optional
 class Input:
     input_type:         _InputType="text"
     input_id:           Str="input"
@@ -273,7 +278,7 @@ class Input:
     input_checked:      Bool
     input_value:        Str
 
-@optional(nullable=True)
+@optional
 class Form:
     form_id:               Str="form"
     form_class:            Str
@@ -289,16 +294,16 @@ class Form:
     form_charset:          Str="UTF-8"
     form_rel:              Str
 
-@optional(nullable=True)
-class Flex:
-    div:            Div=Div(div_id="flex-div")
-    input_div:      Div=Div(div_id="flex-input-div")
-    input:          Input=Input(input_type="search", input_id="flex-input")
-    button_div:     Div=Div(div_id="flex-button-div")
-    button:         Button
-    results_div:    Div=Div(div_id="flex-results-div")
-    results:        _FlexResults
-    no_results_div: Div=Div(div_id="flex-no-results-div")
-    no_results:     Str="nenhum resultado encontrado..."
-    index:          _FlexIndex
-    script:         Str="https://cdn.jsdelivr.net/gh/nextapps-de/flexsearch@0.8.2/dist/flexsearch.bundle.min.js"
+@optional
+class Search:
+    search_div:            Div=Div(div_id="search-div")
+    search_input_div:      Div=Div(div_id="search-input-div")
+    search_input:          Input=Input(input_type="search", input_id="search-input")
+    search_button_div:     Div
+    search_button:         Button
+    search_results_div:    Div=Div(div_id="search-results-div")
+    search_results:        _SearchResults
+    search_no_results_div: Div=Div(div_id="search-no-results-div")
+    search_no_results:     Str="nenhum resultado encontrado..."
+    search_index:          _SearchIndex
+    search_script:         Str="https://cdn.jsdelivr.net/gh/nextapps-de/searchsearch@0.8.2/dist/searchsearch.bundle.min.js"

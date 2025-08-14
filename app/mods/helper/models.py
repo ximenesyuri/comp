@@ -27,7 +27,7 @@ _InputType = Enum(
     "image"
 )
 
-@optional(nullable=True)
+@optional
 class Globals:
     anchor:    Str
     accesskey: Char
@@ -42,7 +42,7 @@ _FormEnc = Enum(
     "text/plain"
 )
 
-@optional(nullable=True)
+@optional
 class Div:
     globals:   Globals=Globals()
     div_id:    Str
@@ -50,47 +50,47 @@ class Div:
     div_style: Str
     div_inner: Inner
 
-@optional(nullable=True)
-class _FlexTitle:
-    title_div:   Div=Div(div_id="flex-results-title-div")
-    title_id:    Str="flex-results-title"
+@optional
+class _SearchTitle:
+    title_div:   Div=Div(div_id="search-results-title-div")
+    title_id:    Str="search-results-title"
     title_class: Str
     title_style: Str
 
-@optional(nullable=True)
-class _FlexDesc:
-    desc_div:    Div=Div(div_id="flex-results-desc-div")
-    desc_id:     Str="flex-results-desc"
+@optional
+class _SearchDesc:
+    desc_div:    Div=Div(div_id="search-results-desc-div")
+    desc_id:     Str="search-results-desc"
     desc_class:  Str
     desc_style:  Str
     desc_length: Int=181
     display:     Bool
 
-@optional(nullable=True)
-class _FlexCover:
-    cover_div:   Div=Div(div_id="flex-results-cover-div")
-    cover_id:    Str="flex-results-cover"
+@optional
+class _SearchCover:
+    cover_div:   Div=Div(div_id="search-results-cover-div")
+    cover_id:    Str="search-results-cover"
     cover_class: Str
     cover_style: Str
     display:     Bool
 
-@optional(nullable=True)
-class _FlexKind:
-    kind_div:   Div=Div(div_id="flex-results-kind-div")
-    kind_id:    Str="flex-results-kind"
+@optional
+class _SearchKind:
+    kind_div:   Div=Div(div_id="search-results-kind-div")
+    kind_id:    Str="search-results-kind"
     kind_class: Str
     display:    Bool
 
-@optional(nullable=True)
-class _FlexResults:
-    desc:  _FlexDesc
-    title: _FlexTitle
-    kind:  _FlexKind
-    cover: _FlexCover
-    limit: Int=10
+@optional
+class _SearchResults:
+    results_desc:  _SearchDesc
+    results_title: _SearchTitle
+    results_kind:  _SearchKind
+    results_cover: _SearchCover
+    results_limit: Int=10
 
-@optional(nullable=True)
-class _FlexIndex:
+@optional
+class _SearchIndex:
     index_types:       List(Str)=["title", "content", "tags", "category", "kind"]
     index_store_types: List(Str)=["id", "title", "content", "href", "tags", "category", "kind"]
     index_json_file:   Extension('json')="jsonindex.json"
