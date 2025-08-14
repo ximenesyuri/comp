@@ -1,9 +1,8 @@
 import re
 from inspect import signature, getsource
 from jinja2 import meta
-from typed import typed, Str, Json, Bool, Union, Extension, Path, TypedFuncType
+from typed import typed, Str, Dict, Json, Bool, Union, Extension, Path, TypedFuncType
 from typed.models import model, Optional
-from typed.more import Markdown
 from app.mods.types.meta import _COMPONENT
 from app.mods.helper.helper import _jinja_env
 
@@ -55,18 +54,29 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
 
     def __add__(self, other):
         if not isinstance(other, COMPONENT):
-            return NotImplemented
+            raise TypeError(
+                    "Could not realize components 'join' operation:\n"
+                f" ==> '{other.__name__}') has wrong type.\n"
+                 "     [expected_type] COMPONENT\n"
+                f"     [received_type] {type(other).__name__}"
+            )
         from app.mods.functions import join
         return join(self, other)
 
     def __mul__(self, other):
         if not isinstance(other, COMPONENT):
-            return NotImplemented
+            raise TypeError(
+                "Could not realize components 'concat' operation:\n"
+                f" ==> '{other.__name__}' has wrong type.\n"
+                 "      [expected_type] COMPONENT\n"
+                f"      [received_type] {type(other).__name__}"
+            )
         if not isinstance(self, COMPONENT(1)):
             raise TypeError(
-                f"The left operand of '*' (i.e., '{self.__name__}') must be a Definer with "
-                "exactly one free Jinja variable to be used with concat (Free(1)).\n"
-                f"Its free variables are: {self.jinja_free_vars}"
+                "Could not realize components 'concat' operation:\n"
+                f"' ==> {self.__name__}' has wrong type.\n"
+                 "      [expected_type] COMPONENT(1)\n"
+                f"      [received_type] {type(self).__name__}"
             )
 
         from app.mods.functions import concat
@@ -74,17 +84,41 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
 
     def __truediv__(self, other):
         if not isinstance(other, dict):
-            return NotImplemented
+            raise TypeError(
+                "Could not realize component 'eval' operation:\n"
+                f" ==> '{other}' has wrong type.\n"
+                 "     [expected_type] Dict(Any)\n"
+                f"     [received_type] {type(other).__name__}"
+            )
+        if not isinstance(self, COMPONENT):
+            raise TypeError(
+                "Could not realize component 'eval' operation:\n"
+                f" ==> '{self.__name__}' has wrong type.\n"
+                 "     [expected_type] COMPONENT\n"
+                f"     [received_type] {type(self).__name__}"
+            )
         from app.mods.functions import eval
         return eval(self, **other)
 
     def __xor__(self, other):
-        if not isinstance(other, dict):
-            return NotImplemented
+        if not isinstance(other, Dict(Str)):
+            raise TypeError(
+                "Could not realize component 'copy' operation:\n"
+                f" ==> '{other}' has wrong type.\n"
+                 "     [expected_type] Dict(Any)\n"
+                f"     [received_type] {type(other).__name__}"
+            )
+        if not isinstance(self, COMPONENT):
+            raise TypeError(
+                "Could not realize component 'copy' operation:\n"
+                f" ==> '{self.__name__}' has wrong type.\n"
+                 "     [expected_type] COMPONENT\n"
+                f"     [received_type] {type(self).__name__}"
+            )
         from app.mods.functions import copy
         return copy(self, **other)
 
-Content = Union(Markdown, Extension('md'))
+Content = Union(Str, Extension('md'))
 
 @typed
 def _check_page(page: COMPONENT) -> Bool:

@@ -18,7 +18,7 @@ from typed import (
     List,
     null,
 )
-from typed.models import model, Optional, Instance, MODEL
+from typed.models import model, Optional, Validate, MODEL
 from typed.more import Markdown
 from jinja2 import Environment, meta, StrictUndefined
 from utils import md, file, json, to
