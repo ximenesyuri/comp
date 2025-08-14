@@ -143,7 +143,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
         new_sig = Signature(new_params)
 
         def wrapper(*args, **kwargs):
-            if __context__ is None:
+            if not context_in_sig:
                 __context__ = dict(merged_ctx)
             ba = new_sig.bind_partial(*args, **kwargs)
             ba.apply_defaults()
