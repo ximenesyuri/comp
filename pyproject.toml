@@ -1,6 +1,6 @@
 [project]
 name = "comp"
-version = "0.3.3"
+version = "0.4.0"
 description = "A functional typed component system for python"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -10,6 +10,7 @@ dependencies = [
     "beautifulsoup4",
     "markdown",
     "pyyaml",
+    "jinja2"
 ]
 
 [build-system]

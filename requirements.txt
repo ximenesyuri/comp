@@ -1,5 +1,5 @@
-fastapi
 jinja2
 pyyaml
 git+https://github.com/ximenesyuri/typed
+markdown
 beautifulsoup4
