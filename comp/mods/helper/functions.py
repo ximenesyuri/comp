@@ -5,9 +5,9 @@ from functools import update_wrapper
 import re
 import sys
 from typed import typed, Function, Dict, Any, Str, Bool, Set, Tuple, TYPE
-from app.mods.types.base import Jinja
-from app.mods.helper.types import COMPONENT
-from app.mods.helper.helper import _VAR_DELIM_START, _VAR_DELIM_END, _extract_raw_jinja
+from comp.mods.types.base import Jinja
+from comp.mods.helper.types import COMPONENT
+from comp.mods.helper.helper import _VAR_DELIM_START, _VAR_DELIM_END, _extract_raw_jinja
 
 def _get_context(func):
     sig = signature(getattr(func, "func", func))

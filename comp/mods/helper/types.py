@@ -1,10 +1,10 @@
 import re
 from inspect import signature, getsource
 from jinja2 import meta
-from typed import typed, Str, Dict, Json, Bool, Union, Extension, Path, TypedFuncType
+from typed import typed, Str, Dict, Json, Bool, Union, Extension, Path, Typed
 from typed.models import model, Optional
-from app.mods.types.meta import _COMPONENT
-from app.mods.helper.helper import _jinja_env
+from comp.mods.types.meta import _COMPONENT
+from comp.mods.helper.helper import _jinja_env
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
     if n < 0:
@@ -19,7 +19,7 @@ def _has_vars_of_given_type(instance, BASE, typ, n):
             pass
     return isinstance(instance, BASE) and count == n
 
-class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
+class COMPONENT(_COMPONENT('Component', (Typed,), {})):
     @property
     def jinja(self):
         if hasattr(self, '_jinja'):
@@ -60,7 +60,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
                  "     [expected_type] COMPONENT\n"
                 f"     [received_type] {type(other).__name__}"
             )
-        from app.mods.functions import join
+        from comp.mods.functions import join
         return join(self, other)
 
     def __mul__(self, other):
@@ -79,7 +79,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
                 f"      [received_type] {type(self).__name__}"
             )
 
-        from app.mods.functions import concat
+        from comp.mods.functions import concat
         return concat(self, other)
 
     def __truediv__(self, other):
@@ -97,7 +97,7 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
                  "     [expected_type] COMPONENT\n"
                 f"     [received_type] {type(self).__name__}"
             )
-        from app.mods.functions import eval
+        from comp.mods.functions import eval
         return eval(self, **other)
 
     def __xor__(self, other):
@@ -115,14 +115,14 @@ class COMPONENT(_COMPONENT('Component', (TypedFuncType,), {})):
                  "     [expected_type] COMPONENT\n"
                 f"     [received_type] {type(self).__name__}"
             )
-        from app.mods.functions import copy
+        from comp.mods.functions import copy
         return copy(self, **other)
 
 Content = Union(Str, Extension('md'))
 
 @typed
 def _check_page(page: COMPONENT) -> Bool:
-    from app.mods.service import render
+    from comp.mods.service import render
     errors = []
     html = render(page)
     html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)

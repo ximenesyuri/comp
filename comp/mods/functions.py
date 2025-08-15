@@ -1,11 +1,11 @@
 import re
 from inspect import signature, Parameter, Signature, _empty
 from typed import typed, Tuple, Dict, Any, Str
-from app.mods.decorators.base import component
-from app.mods.types.base import Jinja, COMPONENT, Inner
-from app.err import ConcatErr, JoinErr, EvalErr
-from app.mods.helper.functions import _merge_context, _get_context, _copy
-from app.mods.helper.helper import _get_jinja
+from comp.mods.decorators import component
+from comp.mods.types.base import Jinja, COMPONENT, Inner
+from comp.mods.err import ConcatErr, JoinErr, EvalErr
+from comp.mods.helper.functions import _merge_context, _get_context, _copy
+from comp.mods.helper.helper import _get_jinja
 
 @typed
 def copy(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
@@ -156,7 +156,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
 
             template_str = func(**call_kwargs)
             if isinstance(template_str, str):
-                from app.mods.helper.helper import _jinja_env
+                from comp.mods.helper.helper import _jinja_env
                 env = _jinja_env()
                 template = env.from_string(template_str)
                 return template.render(**call_kwargs)

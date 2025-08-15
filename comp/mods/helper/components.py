@@ -1,5 +1,5 @@
 from typed import typed, Str, Any, Maybe
-from app.models import (
+from comp.models import (
     Div,
     Alpine,
     Text,

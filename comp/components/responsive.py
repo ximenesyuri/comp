@@ -1,6 +1,6 @@
-from app.mods.decorators.base import component
-from app.mods.types.base import Inner
-from app.mods.factories.base import Tag
+from comp.mods.decorators import component
+from comp.mods.types.base import Inner
+from comp.mods.types.factories import Tag
 
 @component
 def desktop(inner: Inner="") -> Tag('div'):

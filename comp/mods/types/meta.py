@@ -1,6 +1,6 @@
 import re
 from inspect import signature, Parameter, getsource
-from typed import Union, Str, Int, Bool, Any, TypedFunc, TypedFuncType, Json, Prod, Dict
+from typed import Union, Str, Int, Bool, Any, Typed, Json, Prod, Dict
 from jinja2 import Environment
 
 class _Jinja(type(Str)):
@@ -8,7 +8,7 @@ class _Jinja(type(Str)):
         if not isinstance(instance, Str):
             return False
 
-        from app.mods.helper.helper import _jinja_regex
+        from comp.mods.helper.helper import _jinja_regex
         regex_str = re.compile(_jinja_regex(), re.DOTALL)
         if isinstance(instance, Str):
             match = regex_str.match(instance)
@@ -16,7 +16,7 @@ class _Jinja(type(Str)):
             return False
         jinja_content = match.group(1)
         try:
-            from app.mods.helper.helper import _jinja_env
+            from comp.mods.helper.helper import _jinja_env
             _jinja_env().parse(jinja_content)
             return True
         except Exception as e:
@@ -29,7 +29,7 @@ class _Inner(type(str)):
             return False
         return True
 
-class _COMPONENT(type(TypedFuncType)):
+class _COMPONENT(type(Typed)):
     _numbered = {}
     def __call__(cls, *args, **kwargs):
         if not args:
@@ -37,7 +37,7 @@ class _COMPONENT(type(TypedFuncType)):
         n = args[0]
         if n not in cls._numbered:
             name = f"COMPONENT({n})"
-            from app.mods.helper.types import COMPONENT
+            from comp.mods.helper.types import COMPONENT
             class _COMPONENT_CALL(COMPONENT):
                 _inner_vars = n
                 __display__ = name
@@ -46,14 +46,14 @@ class _COMPONENT(type(TypedFuncType)):
 
     def __instancecheck__(cls, instance):
         if hasattr(cls, '_inner_vars'):
-            from app.mods.helper.types import COMPONENT, _has_vars_of_given_type
-            from app.mods.types.base import Inner
+            from comp.mods.helper.types import COMPONENT, _has_vars_of_given_type
+            from comp.mods.types.base import Inner
             return _has_vars_of_given_type(instance, COMPONENT, Inner, cls._inner_vars)
         else:
             return super().__instancecheck__(instance)
 
 def _check_page(page):
-    from app.service import render
+    from comp.service import render
     errors = []
     html = render(page)
     html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
@@ -113,8 +113,8 @@ def _check_page(page):
 
 class _STATIC(_COMPONENT):
     def __instancecheck__(cls, instance):
-        from app.mods.helper.types import COMPONENT
-        from app.mods.types.base import Content
+        from comp.mods.helper.types import COMPONENT
+        from comp.mods.types.base import Content
         if not isinstance(instance, COMPONENT):
             return False
         try:

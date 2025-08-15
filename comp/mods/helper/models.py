@@ -1,6 +1,6 @@
 from typed import Enum, Str, Bool, Int, Pattern, List, Extension, Char, Nat
 from typed.models import optional
-from app.mods.types.base import Inner
+from comp.mods.types.base import Inner
 
 _InputType = Enum(
     Str,

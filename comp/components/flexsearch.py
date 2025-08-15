@@ -1,9 +1,9 @@
-from app.mods.types.base import Jinja
-from app.mods.decorators.base import component
-from app.models import Div, Button, Search
-from app.components.buttons import button_search
-from app.components.base import input
-from app.helper import if_div, if_class, if_id
+from comp.mods.types.base import Jinja
+from comp.mods.decorators import component
+from comp.models import Div, Button, Search
+from comp.components.buttons import button_search
+from comp.components.base import input
+from comp.mods.helper.components import if_div, if_class, if_id
 
 @component
 def search(search: Search=Search(), __context__={}) -> Jinja:

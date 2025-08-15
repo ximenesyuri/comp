@@ -7,7 +7,6 @@ from typed import (
     typed,
     Str,
     Pattern,
-    TypedFuncType,
     Json,
     Bool,
     Extension,

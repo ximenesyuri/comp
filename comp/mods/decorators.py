@@ -2,16 +2,16 @@ import sys
 from inspect import signature, Parameter
 from functools import wraps
 from typed import typed, Function, Dict, Any
-from app.mods.types.base import STATIC, PAGE, STATIC_PAGE
+from comp.mods.types.base import STATIC, PAGE, STATIC_PAGE
 from collections import UserList
 from types import SimpleNamespace
 from inspect import signature, Parameter, isclass, currentframe
 from functools import wraps
-from app.mods.helper.types import COMPONENT
+from comp.mods.helper.types import COMPONENT
 
 @typed
 def component(arg: Function) -> COMPONENT:
-    from app.mods.helper.types import COMPONENT
+    from comp.mods.helper.types import COMPONENT
     if callable(arg):
         original_sig = signature(arg)
         arg.__signature__ = original_sig
@@ -32,9 +32,9 @@ def component(arg: Function) -> COMPONENT:
                     )
 
         typed_arg = typed(arg)
-        from app.mods.helper.types import COMPONENT
+        from comp.mods.helper.types import COMPONENT
         typed_arg.__class__ = COMPONENT
-        from app.mods.types.base import Jinja
+        from comp.mods.types.base import Jinja
         if not issubclass(typed_arg.codomain, Jinja):
             raise TypeError(
                 "A component should create a Jinja string:\n"
@@ -62,10 +62,10 @@ def component(arg: Function) -> COMPONENT:
 
             import re
             jinja_src = re.sub(r"^jinja\s*\n?", "", jinja_str)
-            from app.mods.helper.helper import _jinja_env
+            from comp.mods.helper.helper import _jinja_env
             template = _jinja_env().from_string(jinja_src)
             rendered = template.render(**context)
-            from app.mods.types.base import Jinja
+            from comp.mods.types.base import Jinja
             return Jinja(rendered)
 
         component_wrapper.__signature__ = getattr(typed_arg, '__signature__', signature(arg))

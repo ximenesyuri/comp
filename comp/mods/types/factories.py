@@ -3,8 +3,8 @@ from typed import factory, Union, Str, List, Int, TYPE, Tuple
 
 @factory
 def Tag(*tags: Tuple(Str)) -> TYPE:
-    from app.mods.types.base    import Jinja
-    from app.mods.helper.helper import _jinja_regex
+    from comp.mods.types.base    import Jinja
+    from comp.mods.helper.helper import _jinja_regex
 
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 
@@ -23,14 +23,14 @@ def Tag(*tags: Tuple(Str)) -> TYPE:
         def __instancecheck__(cls, instance):
             if not isinstance(instance, Str):
                 return False
-            from app.mods.helper.helper import _extract_raw_jinja
+            from comp.mods.helper.helper import _extract_raw_jinja
             jinja = _extract_raw_jinja(instance)
             return bool(tag_regex.match(jinja))
     return _Tag(f'Tag({tags})', (Jinja,), {'__display__': f'Tag({','.join(tags)})'})
 
 @factory
 def TAG(tag_name: Str) -> TYPE:
-    from app.mods.helper.types import COMPONENT
+    from comp.mods.helper.types import COMPONENT
     class _TAG(type(COMPONENT)):
         def __instancecheck__(cls, instance):
             if not isinstance(instance, COMPONENT):
@@ -40,7 +40,7 @@ def TAG(tag_name: Str) -> TYPE:
 
 @factory
 def Static(*args: Tuple(Int)) -> TYPE:
-    from app.mods.types.base import STATIC
+    from comp.mods.types.base import STATIC
 
     if len(args) == 1:
         name = f'Static({args[0]})'
@@ -55,8 +55,8 @@ def Static(*args: Tuple(Int)) -> TYPE:
 
     class _Static(type(STATIC)):
         def __instancecheck__(cls, instance):
-            from app.mods.types.base import Inner, Content
-            from app.mods.helper.types import _has_vars_of_given_type
+            from comp.mods.types.base import Inner, Content
+            from comp.mods.helper.types import _has_vars_of_given_type
             if not isinstance(instance, STATIC):
                 return False
             if len(args) == 1:

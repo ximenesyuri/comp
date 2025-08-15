@@ -1,13 +1,12 @@
 [project]
-name = "app"
+name = "comp"
 version = "0.3.3"
-description = "A typed solution to quickly create websites"
+description = "A functional typed component system for python"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "BSD"}
 dependencies = [
     "typed @ git+https://github.com/ximenesyuri/typed",
-    "utils @ git+https://github.com/ximenesyuri/utils",
     "beautifulsoup4",
     "markdown",
     "pyyaml",
@@ -19,4 +18,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*"]           
+include = ["comp*"]           

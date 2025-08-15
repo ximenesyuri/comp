@@ -20,7 +20,7 @@ from typed import (
     Pattern
 )
 from typed.models import optional
-from app.mods.helper.models import (
+from comp.mods.helper.models import (
     Div,
     Globals,
     _FormEnc,
@@ -28,7 +28,7 @@ from app.mods.helper.models import (
     _SearchResults,
     _SearchIndex
 )
-from app.mods.types.base import Inner
+from comp.mods.types.base import Inner
 
 @optional
 class Alpine:
@@ -95,6 +95,35 @@ class Aria:
     aria_valuetext:   Str
     aria_role:        Str
     aria_attrs:       Dict(Str, Str)
+
+@optional
+class Flex:
+    globals:        Globals=Globals()
+    flex_id:        Str
+    flex_class:     Str="display: flex"
+    flex_style:     Str
+    flex_direction: Enum(Str, 'row', 'column')
+
+@optional
+class Inline:
+    globals:      Globals=Globals()
+    inline_id:    Str
+    inline_class: Str="display: inline"
+    inline_style: Str
+
+@optional
+class Block:
+    globals:      Globals=Globals()
+    inline_id:    Str
+    inline_class: Str="display: block"
+    inline_style: Str
+
+@optional
+class Cell:
+    globals:      Globals=Globals()
+    inline_id:    Str
+    inline_class: Str="display: inline"
+    inline_style: Str
 
 @optional
 class Header:
@@ -304,6 +333,6 @@ class Search:
     search_results_div:    Div=Div(div_id="search-results-div")
     search_results:        _SearchResults
     search_no_results_div: Div=Div(div_id="search-no-results-div")
-    search_no_results:     Str="nenhum resultado encontrado..."
+    search_no_results:     Str="no results..."
     search_index:          _SearchIndex
     search_script:         Str="https://cdn.jsdelivr.net/gh/nextapps-de/searchsearch@0.8.2/dist/searchsearch.bundle.min.js"

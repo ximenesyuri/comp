@@ -3,13 +3,13 @@ from inspect import signature
 from typed import typed, Bool, List, Str, Nill, Dict, Any, Extension, Url
 from markdown import markdown
 from jinja2 import DictLoader, StrictUndefined, meta
-from app.mods.types.base import Content
-from app.mods.helper.helper import _jinja_env, _extract_raw_jinja
-from app.mods.helper.service import _style, _minify, _Preview
-from app.err import RenderErr, MockErr
-from app.mods.types.base import COMPONENT, Jinja, PAGE
-from app.components import script as script_component, asset as asset_component
-from app.models import Script, Asset
+from comp.mods.types.base import Content
+from comp.mods.helper.helper import _jinja_env, _extract_raw_jinja
+from comp.mods.helper.service import _style, _minify, _Preview
+from comp.mods.err import RenderErr, MockErr
+from comp.mods.types.base import COMPONENT, Jinja, PAGE
+from comp.components import script as script_component, asset as asset_component
+from comp.models import Script, Asset
 
 @typed
 def render(
@@ -158,7 +158,7 @@ def mock(component: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
         if html_match and head_match and body_match:
             return component
 
-        from app.mods.decorators.base import page
+        from comp.mods.decorators.base import page
         def new_definer() -> Jinja:
             return f"""jinja
 <html>

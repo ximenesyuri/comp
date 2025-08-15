@@ -1,8 +1,8 @@
 from typed import null
-from app.mods.types.base import Inner, Jinja
-from app.mods.factories.base import Tag
-from app.mods.decorators.base import component
-from app.helper import (
+from comp.mods.types.base import Inner, Jinja
+from comp.mods.types.factories import Tag
+from comp.mods.decorators import component
+from comp.mods.helper.components import (
     if_key,
     if_id,
     if_class,
@@ -27,7 +27,7 @@ from app.helper import (
     if_nav,
     if_input
 )
-from app.models import (
+from comp.models import (
     Header,
     Aside,
     Sidebar,

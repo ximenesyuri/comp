@@ -2,5 +2,4 @@ fastapi
 jinja2
 pyyaml
 git+https://github.com/ximenesyuri/typed
-git+https://github.com/ximenesyuri/utils
 beautifulsoup4

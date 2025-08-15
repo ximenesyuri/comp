@@ -10,9 +10,9 @@ from socketserver import ThreadingMixIn
 from inspect import signature, Parameter, getsourcefile
 from jinja2 import Environment, DictLoader, StrictUndefined, meta
 from typed import typed, Dict, Any, Str, List
-from app.mods.helper.types import COMPONENT
+from comp.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
-from app.err import StyleErr, MinifyErr, PreviewErr
+from comp.mods.err import StyleErr, MinifyErr, PreviewErr
 
 class StyleErr(Exception):
     pass
@@ -863,7 +863,7 @@ class _PREVIEW:
         return PreviewHandler
 
     def _render_comps(self):
-        from app.mods.service import render
+        from comp.mods.service import render
         html_parts = []
         for idx, (comp, kwargs, scripts, assets, _) in enumerate(self.stack):
             rendered = render(comp, __scripts__=scripts, __assets__=assets, **kwargs)

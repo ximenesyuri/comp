@@ -2,8 +2,8 @@ import re
 from typed import Str, Union, Extension
 from typed.more import Markdown
 from typed.models import Model
-from app.mods.types.meta import _Jinja, _Inner, _STATIC
-from app.mods.helper.types import (
+from comp.mods.types.meta import _Jinja, _Inner, _STATIC
+from comp.mods.helper.types import (
     COMPONENT,
     _PAGE
 )

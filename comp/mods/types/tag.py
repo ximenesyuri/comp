@@ -1,4 +1,4 @@
-from app.mods.factories.base import TAG
+from comp.mods.types.factories import TAG
 
 HEAD   = TAG('head')
 BODY   = TAG('body')
