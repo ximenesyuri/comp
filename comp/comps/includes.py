@@ -2,7 +2,7 @@ from typed import null
 from comp.mods.types.base import Inner, Jinja
 from comp.mods.types.factories import Tag
 from comp.mods.decorators import component
-from comp.mods.helper.components import if_script, if_asset
+from comp.mods.helper.comps import if_script, if_asset
 from comp.models import Script, Asset
 
 

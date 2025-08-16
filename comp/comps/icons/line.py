@@ -1,8 +1,8 @@
 from typed import typed, Str, null
 from comp.mods.types.factories import Tag
 from comp.mods.decorators import component
-from comp.models import Icon
-from comp.mods.helper.components import if_icon
+from comp.models.content import Icon
+from comp.mods.helper.comps import if_icon
 
 @component
 def icon_search(icon: Icon=Icon()) -> Tag('svg'):

@@ -1,8 +1,8 @@
 from comp.mods.types.base import Jinja
 from comp.mods.decorators import component
-from comp.components import button as _button
+from comp.comps.content import button as _button
 from comp.models import Button, Icon
-from comp.components.icons.line import (
+from comp.comps.icons.line import (
     icon_close,
     icon_menu,
     icon_search,
