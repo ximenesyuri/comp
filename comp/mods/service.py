@@ -8,7 +8,7 @@ from comp.mods.helper.helper import _jinja_env, _extract_raw_jinja
 from comp.mods.helper.service import _style, _minify, _Preview
 from comp.mods.err import RenderErr, MockErr
 from comp.mods.types.base import COMPONENT, Jinja, PAGE
-from comp.components import script as script_component, asset as asset_component
+from comp.comps.includes import script as script_component, asset as asset_component
 from comp.models import Script, Asset
 
 @typed

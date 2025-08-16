@@ -1,3 +1,3 @@
-from comp.main import *
+from comp.main   import *
 from comp.models import *
-from comp.components import *
+from comp.comps  import *

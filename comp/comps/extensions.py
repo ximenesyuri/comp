@@ -1,9 +1,18 @@
-from comp.mods.types.base import Jinja
+from comp.mods.types.base import Jinja, Inner
 from comp.mods.decorators import component
-from comp.models import Div, Button, Search
-from comp.components.buttons import button_search
-from comp.components.base import input
-from comp.mods.helper.components import if_div, if_class, if_id
+from comp.models import Div, Button, Search, Alpine
+from comp.comps.buttons import button_search
+from comp.comps.form import input
+from comp.mods.helper.comps import if_div, if_class, if_id, if_alpine
+
+@component
+def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
+    alpine_data = if_alpine(alpine)
+    return f"""jinja
+<div{ alpine_data }>[% if inner is defined %]
+    { inner }
+</div>[% else %]</div>[% endif %]
+"""
 
 @component
 def search(search: Search=Search(), __context__={}) -> Jinja:

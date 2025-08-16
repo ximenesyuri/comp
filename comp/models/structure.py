@@ -64,23 +64,23 @@ class Sidebar:
     sidebar_inner: Any
 
 @optional
-class Cell:
-    globals:    Globals
-    aria:       Aria
-    cell_id:    Str
-    cell_class: Str
-    cell_style: Str
-    cell_inner: Any
-
-@optional
 class Column:
     globals:   Globals
     aria:      Aria
     col_id:    Str
     col_class: Str
     col_style: Str
-    col_cells: List(Cell)
+    col_inner: Any
 Col = Column
+
+@optional
+class Row:
+    globals:   Globals
+    aria:      Aria
+    row_id:    Str
+    row_class: Str
+    row_style: Str
+    row_cols:  List(Column)
 
 @optional
 class Grid:
@@ -89,4 +89,4 @@ class Grid:
     grid_id:    Str
     grid_class: Str
     grid_style: Str
-    grid_cols:  List(Column)
+    grid_rows:  List(Row)
