@@ -19,6 +19,29 @@ def _style(html: str) -> str:
     try:
         soup = BeautifulSoup(html, 'html.parser')
 
+        for row in soup.find_all(class_='row'):
+            cols = [child for child in row.find_all(recursive=False)
+                    if hasattr(child, 'get') and child.get('class') and
+                       any(re.fullmatch(r'col(?:-\d+)?', cl) for cl in child.get('class'))]
+            col_specs = []
+            for col in cols:
+                col_weight = None
+                for cl in col.get('class', []):
+                    m = re.fullmatch(r'col-(\d+)', cl)
+                    if m:
+                        col_weight = int(m.group(1))
+                        break
+                    elif cl == "col":
+                        col_weight = 1
+                if col_weight is not None:
+                    col_specs.append((col, col_weight))
+            sumN = sum(N for _, N in col_specs) or 1
+            for col, N in col_specs:
+                pct = N * 100.0 / sumN
+                prev_style = col.get('style', '')
+                restyle = re.sub(r'(flex|width|max-width)\s*:[^;]+;', '', prev_style)
+                col['style'] = (restyle + f' flex: 0 0 {pct:.6f}%; max-width: {pct:.6f}%;').strip() 
+
         def escape_class_selector(cls):
             return (cls.replace(':', '\\:')
                         .replace('#', '\\#')
@@ -797,10 +820,11 @@ class _PREVIEW:
             self.file_dependents[key].add(src)
             try:
                 self.source_cache[src] = os.path.getmtime(src)
+                print("[preview] Watching", src, "mtime", self.source_cache[src])
             except FileNotFoundError:
                 pass
         else:
-            pass
+            print("[preview] Could not resolve file for object:", obj)
 
     def _touch_reload(self):
         self.reload_ts = str(time.time())
