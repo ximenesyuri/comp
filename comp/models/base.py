@@ -1,4 +1,4 @@
-from typed import Str, Bool, Dict, Char, Nat
+from typed import Str, Bool, List, Char, Nat
 from typed.models import optional
 
 @optional
@@ -23,7 +23,7 @@ class Aria:
     aria_valuenow:    Str
     aria_valuetext:   Str
     aria_role:        Str
-    aria_attrs:       Dict(Str, Str)
+    aria_attrs:       List(Str)
 
 @optional
 class Globals:

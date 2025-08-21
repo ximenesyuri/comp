@@ -5,8 +5,8 @@ from comp.models.content import Link
 
 @optional
 class Item:
-    globals:    Globals
-    aria:       Aria
+    globals:    Globals=Globals()
+    aria:       Aria=Aria()
     item_id:    Str="item"
     item_class: Str
     item_style: Str
@@ -14,8 +14,8 @@ class Item:
 
 @optional
 class Unordered:
-    globals:  Globals
-    aria:     Aria
+    globals:  Globals=Globals()
+    aria:     Aria=Aria()
     ul_id:    Str="ul"
     ul_class: Str
     ul_style: Str
@@ -23,8 +23,8 @@ class Unordered:
 
 @optional
 class Ordered:
-    globals:  Globals
-    aria:     Aria
+    globals:  Globals=Globals()
+    aria:     Aria=Aria()
     ol_id:    Str
     ol_class: Str
     ol_style: Str
@@ -32,8 +32,8 @@ class Ordered:
 
 @optional
 class NavItem:
-    globals:    Globals
-    aria:       Aria
+    globals:    Globals=Globals()
+    aria:       Aria=Aria()
     item_id:    Str="item"
     item_class: Str
     item_style: Str
@@ -42,8 +42,8 @@ class NavItem:
 
 @optional
 class Nav:
-    globals:       Globals
-    aria:          Aria
+    globals:       Globals=Globals()
+    aria:          Aria=Aria()
     nav_id:        Str="nav"
     nav_class:     Str
     nav_direction: Enum(Str, "vertical", "horizontal")="horizontal"

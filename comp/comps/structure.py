@@ -134,7 +134,7 @@ def row(row: Row=Row(), __context__={"col": col}) -> Jinja:
 def grid(grid: Grid=Grid(), __context__={"row": row}) -> Jinja:
     grid_data = if_grid(grid)
     return f"""jinja
-<div{ grid_data }>[% if grid.grid_rows %][% for row in grid.grid_rows %]
-    [[ row(row=row) ]][% endfor %]
+<div{ grid_data }>[% if grid.grid_rows %][% for r in grid.grid_rows %]
+    [[ row(row=r) ]][% endfor %]
 </div>[% else %]</div>[% endif %]
 """

@@ -1,4 +1,4 @@
-from typed import typed, Str, Any
+from typed import typed, Str, Any, Maybe
 from comp.models import (
     Div,
     Alpine,
@@ -86,7 +86,7 @@ def if_aria(aria: Any = None) -> Str:
     return result
 
 @typed
-def if_globals(globals: Globals = None) -> Str:
+def if_globals(globals: Maybe(Globals) = None) -> Str:
     if not globals:
         return ""
     return (

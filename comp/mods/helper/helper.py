@@ -18,7 +18,6 @@ from typed import (
     null,
 )
 from typed.models import model, Optional, Validate, MODEL
-from typed.more import Markdown
 from jinja2 import Environment, meta, StrictUndefined
 from utils import md, file, json, to
 
@@ -54,9 +53,9 @@ def _get_delim(env_var, supported, default):
         )
     return default
 
-_VAR_DELIM_START, _VAR_DELIM_END = _get_delim("APP_JINJA_VAR_DELIMITERS", _VAR_DELIM, _DEFAULT_VAR_DELIM)
-_BLOCK_DELIM_START, _BLOCK_DELIM_END = _get_delim("APP_JINJA_BLOCK_DELIMITERS", _BLOCK_DELIM, _DEFAULT_BLOCK_DELIM)
-_COMMENT_DELIM_START, _COMMENT_DELIM_END = _get_delim("APP_JINJA_COMMENT_DELIMITERS", _COMMENT_DELIM, _DEFAULT_COMMENT_DELIM)
+_VAR_DELIM_START, _VAR_DELIM_END = _get_delim("COMP_JINJA_VAR_DELIM", _VAR_DELIM, _DEFAULT_VAR_DELIM)
+_BLOCK_DELIM_START, _BLOCK_DELIM_END = _get_delim("COMP_JINJA_BLOCK_DELIM", _BLOCK_DELIM, _DEFAULT_BLOCK_DELIM)
+_COMMENT_DELIM_START, _COMMENT_DELIM_END = _get_delim("COMP_JINJA_COMMENT_DELIM", _COMMENT_DELIM, _DEFAULT_COMMENT_DELIM)
 
 _JINJA_DELIM= {
     "variable_start_string": _VAR_DELIM_START,
@@ -105,3 +104,26 @@ def _find_jinja_vars(source: Str) -> Set(Str):
     env = _jinja_env()
     ast = env.parse(jinja_src)
     return meta.find_undeclared_variables(ast)
+
+def _find_jinja_inner_vars(jinja_src, block_start="[%", block_end="%]"):
+    inner_vars = {}
+    set_pattern = re.compile(
+        rf"{re.escape(block_start)}\s*set\s+([a-zA-Z_][\w]*)\s*=\s*(.*?)\s*{re.escape(block_end)}",
+        re.DOTALL
+    )
+    for m in set_pattern.finditer(jinja_src):
+        var = m.group(1)
+        val = m.group(2)
+        val2 = val.strip()
+        if val2.startswith('"') and val2.endswith('"'):
+            val2 = val2[1:-1]
+        elif val2.startswith("'") and val2.endswith("'"):
+            val2 = val2[1:-1]
+        inner_vars[var] = val2
+    return inner_vars
+
+def _render_jinja(jinja_string, **context):
+    jinja_src = _extract_raw_jinja(jinja_string)
+    env = _jinja_env()
+    template = env.from_string(jinja_src)
+    return template.render(**context)

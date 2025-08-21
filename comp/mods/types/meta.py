@@ -23,7 +23,7 @@ class _Jinja(type(Str)):
             print(f"{e}")
             return False
 
-class _Inner(type(str)):
+class _Inner(type(Str)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, str):
             return False

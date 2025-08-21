@@ -17,9 +17,9 @@ class Alpine:
     x_id:         Str
     x_ref:        Str
     x_cloak:      Bool
-    x_bind:       Dict(Str, Str)
-    x_on:         Dict(Str, Str)
-    x_attrs:      Dict(Str, Json)
+    x_bind:       Dict(Str)
+    x_on:         Dict(Str)
+    x_attrs:      Dict(Str)
 
 @optional
 class HTMX:
@@ -79,10 +79,10 @@ class _SearchKind:
 
 @optional
 class _SearchResults:
-    results_desc:  _SearchDesc
-    results_title: _SearchTitle
-    results_kind:  _SearchKind
-    results_cover: _SearchCover
+    results_desc:  _SearchDesc=_SearchDesc()
+    results_title: _SearchTitle=_SearchTitle()
+    results_kind:  _SearchKind=_SearchKind()
+    results_cover: _SearchCover=_SearchCover()
     results_limit: Int=10
 
 @optional
@@ -99,8 +99,8 @@ class Search:
     search_button_div:     Div
     search_button:         Button
     search_results_div:    Div=Div(div_id="search-results-div")
-    search_results:        _SearchResults
+    search_results:        _SearchResults=_SearchResults()
     search_no_results_div: Div=Div(div_id="search-no-results-div")
     search_no_results:     Str="no results..."
-    search_index:          _SearchIndex
+    search_index:          _SearchIndex=_SearchIndex()
     search_script:         Str="https://cdn.jsdelivr.net/gh/nextapps-de/searchsearch@0.8.2/dist/searchsearch.bundle.min.js"

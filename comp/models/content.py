@@ -4,8 +4,8 @@ from comp.models.base import Globals, Aria
 
 @optional
 class Button:
-    globals:      Globals
-    aria:         Aria
+    globals:      Globals=Globals()
+    aria:         Aria=Aria()
     button_id:    Str="button"
     button_class: Str
     button_style: Str
@@ -16,7 +16,7 @@ class Button:
 
 @optional
 class Icon:
-    globals:      Globals
+    globals:      Globals=Globals()
     icon_id:      Str="icon"
     icon_class:   Str
     icon_size:    Str="24px"
@@ -26,8 +26,8 @@ class Icon:
 
 @optional
 class Image:
-    globals:   Globals
-    aria:      Aria
+    globals:   Globals=Globals()
+    aria:      Aria=Aria()
     img_id:    Str="img"
     img_class: Str
     img_style: Str
@@ -38,8 +38,8 @@ Img = Image
 
 @optional
 class Text:
-    globals:    Globals
-    aria:       Aria
+    globals:    Globals=Globals()
+    aria:       Aria=Aria()
     text_id:    Str="text"
     text_class: Str
     text_style: Str
@@ -47,8 +47,8 @@ class Text:
 
 @optional
 class Title:
-    globals:     Globals
-    aria:        Aria
+    globals:     Globals=Globals()
+    aria:        Aria=Aria()
     title_id:    Str="title"
     title_class: Str
     title_style: Str
@@ -57,27 +57,27 @@ class Title:
 
 @optional
 class Link:
-    globals:       Globals
-    aria:          Aria
+    globals:       Globals=Globals()
+    aria:          Aria=Aria()
     link_id:       Str="link"
     link_class:    Str
     link_style:    Str
     link_href:     PathUrl="https://"
     link_target:   Enum(Str, "_self", "_blank", "_parent", "_top")="_self"
-    link_rel:      Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc', "")
-    link_download: PathUrl
+    link_rel:      Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc')
+    link_download: PathUrl=""
     link_inner:    Any
 
 @optional
 class Figure:
-    globals:        Globals
-    aria:           Aria
-    figure_img:     Image
+    globals:        Globals=Globals()
+    aria:           Aria=Aria()
+    figure_img:     Image=Image()
     figure_caption: Str
 
 @optional
 class Logo:
-    globals:   Globals
-    aria:      Aria
-    logo_img:  Image
+    globals:   Globals=Globals()
+    aria:      Aria=Aria()
+    logo_img:  Image=Image()
     logo_link: Link=Link(link_href="/")

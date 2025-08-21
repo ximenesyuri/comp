@@ -1,12 +1,12 @@
-from typed import Str, Bool, Int, Pattern, Union, Enum, Single, Num
+from typed import Str, Bool, Int, Pattern, Union, Enum, Single, Num, Maybe
 from typed.models import optional
 from comp.models.base import Aria, Globals
 from comp.mods.helper.models import _FormEnc, _InputType
 
 @optional
 class Input:
-    globals:            Globals
-    aria:               Aria
+    globals:            Globals=Globals()
+    aria:               Aria=Aria()
     input_type:         _InputType="text"
     input_id:           Str="input"
     input_class:        Str
@@ -36,8 +36,8 @@ class Input:
 
 @optional
 class Form:
-    globals:               Globals
-    aria:                  Aria
+    globals:               Globals=Globals()
+    aria:                  Aria=Aria()
     form_id:               Str="form"
     form_class:            Str
     form_style:            Str
