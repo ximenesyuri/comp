@@ -24,13 +24,11 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
     def jinja(self):
         if hasattr(self, '_jinja'):
             return self._jinja.encode('utf-8').decode('unicode_escape')
-
-        code = getsource(self)
-        regex_str = re.compile(r"\"\"\"jinja([\s\S]*?)\"\"\"", re.DOTALL)
-        match = regex_str.search(code)
-        if match:
-            return match.group(1)
-        return ""
+        import inspect
+        func = getattr(self, 'func', self)
+        while hasattr(func, '__wrapped__'):
+            func = func.__wrapped__
+        return inspect.getsource(func)
 
     def render(self, **context):
         """
