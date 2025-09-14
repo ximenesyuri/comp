@@ -113,7 +113,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
             '__context__',
             kind=Parameter.KEYWORD_ONLY,
             default=merged_ctx,
-            annotation=Dict(Any)
+            annotation=Dict
         )
         keyword_only = [p for p in keyword_only if p.name != '__context__']
         keyword_only.append(context_param)
