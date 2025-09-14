@@ -82,16 +82,51 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
             raise ValueError("At least one component must be provided")
         sigs = [signature(comp) for comp in comps]
         param_names = set()
-        merged_params = []
+        param_map = {}
         for sig in sigs:
             for p in sig.parameters.values():
-                if p.name not in param_names and p.name != '__context__':
-                    merged_params.append(p)
+                if p.name not in param_map:
+                    param_map[p.name] = p
                     param_names.add(p.name)
         merged_ctx = _merge_context(*comps)
-        merged_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
-        new_sig = Signature(parameters=merged_params, return_annotation=Jinja)
-        new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in merged_params]}
+
+        positional_only = []
+        positional_or_keyword = []
+        var_positional = None
+        keyword_only = []
+        var_keyword = None
+
+        for name in param_names:
+            p = param_map[name]
+            if p.kind == Parameter.POSITIONAL_ONLY:
+                positional_only.append(p)
+            elif p.kind == Parameter.POSITIONAL_OR_KEYWORD:
+                positional_or_keyword.append(p)
+            elif p.kind == Parameter.VAR_POSITIONAL:
+                var_positional = p
+            elif p.kind == Parameter.KEYWORD_ONLY:
+                keyword_only.append(p)
+            elif p.kind == Parameter.VAR_KEYWORD:
+                var_keyword = p
+
+        context_param = Parameter(
+            '__context__',
+            kind=Parameter.KEYWORD_ONLY,
+            default=merged_ctx,
+            annotation=Dict(Any)
+        )
+        keyword_only = [p for p in keyword_only if p.name != '__context__']
+        keyword_only.append(context_param)
+
+        ordered_params = positional_only + positional_or_keyword
+        if var_positional:
+            ordered_params.append(var_positional)
+        ordered_params += keyword_only
+        if var_keyword:
+            ordered_params.append(var_keyword)
+
+        new_sig = Signature(parameters=ordered_params, return_annotation=Jinja)
+        new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
         new_annotations['return'] = Jinja
 
         def wrapper(*args, **kwargs):
@@ -102,11 +137,16 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
             context.update(user_ctx)
             results = []
             for comp, sig in zip(comps, sigs):
-                local_args = {p.name: ba.arguments[p.name] for p in sig.parameters.values() if p.name in ba.arguments and p.name != '__context__'}
+                local_args = {
+                    p.name: ba.arguments[p.name]
+                    for p in sig.parameters.values()
+                    if p.name in ba.arguments and p.name != '__context__'
+                }
                 if '__context__' in sig.parameters:
                     local_args['__context__'] = context
                 results.append(comp(**local_args))
             return Jinja(''.join(str(r) for r in results))
+
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
         comp = component(wrapper)
