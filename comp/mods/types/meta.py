@@ -1,9 +1,9 @@
 import re
 from inspect import signature, Parameter, getsource
-from typed import Union, Str, Int, Bool, Any, Typed, Json, Prod, Dict
+from typed import TYPE, Union, Str, Int, Bool, Any, Typed, Json, Prod, Dict
 from jinja2 import Environment
 
-class _Jinja(type(Str)):
+class _Jinja(TYPE(Str)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, Str):
             return False
@@ -23,13 +23,13 @@ class _Jinja(type(Str)):
             print(f"{e}")
             return False
 
-class _Inner(type(Str)):
+class _Inner(TYPE(Str)):
     def __instancecheck__(cls, instance):
-        if not isinstance(instance, str):
+        if not isinstance(instance, Str):
             return False
         return True
 
-class _COMPONENT(type(Typed)):
+class _COMPONENT(TYPE(Typed)):
     _numbered = {}
     def __call__(cls, *args, **kwargs):
         if not args:
@@ -110,32 +110,3 @@ def _check_page(page):
         err_text = "\n".join(errors)
         raise AssertionError(f"[check_page] HTML structure validation failed:\n{err_text}\nActual HTML:\n{html[:500]}...")
     return True
-
-class _STATIC(_COMPONENT):
-    def __instancecheck__(cls, instance):
-        from comp.mods.helper.types import COMPONENT
-        from comp.mods.types.base import Content
-        if not isinstance(instance, COMPONENT):
-            return False
-        try:
-            ann = getattr(instance, '__annotations__', {})
-            for t in ann.values():
-                try:
-                    if isinstance(t, type) and t is Content:
-                        return True
-                except Exception:
-                    pass
-            if hasattr(instance, '_local_vars'):
-                for v in instance._local_vars:
-                    val = getattr(instance, v, None)
-                    if isinstance(val, Content):
-                        return True
-            if hasattr(instance, 'depends_on'):
-                depends_on = getattr(instance, 'depends_on')
-                if isinstance(depends_on, (list, tuple)):
-                    for dep in depends_on:
-                        if isinstance(dep, COMPONENT):
-                            return True
-            return False
-        except Exception:
-            return False

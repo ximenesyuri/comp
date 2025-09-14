@@ -1,28 +1,48 @@
 import re
 from inspect import signature
-from typed import typed, Bool, List, Str, Nill, Dict, Any, Extension, Url
+from typed import typed, Bool, List, Str, Nill, Dict, Any, Extension, Url, Union
 from markdown import markdown
 from jinja2 import DictLoader, StrictUndefined, meta
 from comp.mods.types.base import Content
-from comp.mods.helper.helper import _jinja_env, _extract_raw_jinja
+from comp.mods.helper.helper import _jinja_env, _extract_raw_jinja, _render_jinja, _find_jinja_inner_vars, _find_jinja_vars
 from comp.mods.helper.service import _style, _minify, _Preview
 from comp.mods.err import RenderErr, MockErr
 from comp.mods.types.base import COMPONENT, Jinja, PAGE
-from comp.comps.includes import script as script_component, asset as asset_component
+from comp.comps.includes import script as script_entity, asset as asset_entity
 from comp.models import Script, Asset
 
 @typed
+def jinja_vars(entity: Union(Jinja, COMPONENT)) -> Dict(Any):
+    if isinstance(entity, Jinja):
+        inner = _find_jinja_inner_vars(_extract_raw_jinja(entity))
+        all_vars = set(_find_jinja_vars(entity))
+        free_vars = tuple(sorted(all_vars - set(inner.keys())))
+        return {"inner": inner, "free": free_vars}
+    if isinstance(entity, COMPONENT):
+        return jinja_vars("jinja" + entity.jinja)
+
+@typed
+def jinja_inner_vars(entity: Union(Jinja, COMPONENT)) -> Dict(Any):
+    return jinja_vars(entity)["inner"]
+
+@typed
+def jinja_free_vars(entity: Union(Jinja, COMPONENT)) -> Dict(Any):
+    return jinja_vars(entity)["free"]
+
 def render(
-        component: COMPONENT,
+        entity: Union(Jinja, COMPONENT),
         __scripts__:    List(Script)=[],
         __assets__:     List(Asset)=[],
         __styled__:     Bool=True,
         __minified__:   Bool=False,
-        **kwargs:      Dict(Any)
+        **kwargs:       Dict(Any)
     ) -> Str:
 
     try:
-        definer = getattr(component, "func", component)
+        if isinstance(entity, Jinja):
+            return _render_jinja(entity, **kwargs)
+
+        definer = getattr(entity, "func", entity)
         sig = signature(definer)
         valid_params = set(sig.parameters.keys())
         special = {"__scripts__", "__assets__", "__styled__"}
@@ -64,7 +84,7 @@ def render(
             else:
                 call_args[param.name] = ""
 
-        jinja = _extract_raw_jinja(component(**call_args))
+        jinja = _extract_raw_jinja(entity(**call_args))
 
         script_tags = []
         for scr in __scripts__:
@@ -78,7 +98,7 @@ def render(
                     tag = f"<!-- [Could not read {script_src}: {e}] -->"
                 script_tags.append(tag)
             else:
-                tag = render(script_component, script=scr, __styled__=False)
+                tag = render(script_entity, script=scr, __styled__=False)
                 script_tags.append(tag)
         scripts_insert = "\n".join(script_tags)
 
@@ -94,10 +114,10 @@ def render(
                     tag = f"<!-- [Could not read {href}: {e}] -->"
                 asset_tags.append(tag)
             elif href and isinstance(href, Url('http', 'https')):
-                tag = render(asset_component, asset=ast, __styled__=False)
+                tag = render(asset_entity, asset=ast, __styled__=False)
                 asset_tags.append(tag)
             else:
-                tag = render(asset_component, asset=ast, __styled__=False)
+                tag = render(asset_entity, asset=ast, __styled__=False)
                 asset_tags.append(tag)
         assets_insert = "\n".join(asset_tags)
 
@@ -133,10 +153,7 @@ def render(
         context.update(call_args)
         context.update(kwargs)
 
-        template_name = getattr(component, '__name__', 'template')
-        env = _jinja_env(loader=DictLoader({template_name: jinja}), undefined=StrictUndefined)
-        template = env.get_template(template_name)
-        html = template.render(**context)
+        html = _render_jinja(jinja, **context)
 
         if __styled__:
             html = _style(html)
@@ -148,18 +165,18 @@ def render(
         raise RenderErr(e)
 
 @typed
-def mock(component: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
+def mock(entity: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
     try:
-        html = render(component, **kwargs)
+        html = render(entity, **kwargs)
         html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
         head_match = re.search(r"<head[^>]*>(.*?)</head>", html, flags=re.IGNORECASE | re.DOTALL)
         body_match = re.search(r"<body[^>]*>(.*?)</body>", html, flags=re.IGNORECASE | re.DOTALL)
 
         if html_match and head_match and body_match:
-            return component
+            return entity
 
-        from comp.mods.decorators.base import page
-        def new_definer() -> Jinja:
+        from comp.mods.decorators import page
+        def new_comp() -> Jinja:
             return f"""jinja
 <html>
 <head>
@@ -171,7 +188,7 @@ def mock(component: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
 </body>
 </html>
 """
-        return page(new_definer)
+        return page(new_comp)
     except Exception as e:
         raise MockErr(e)
 

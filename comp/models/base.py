@@ -1,4 +1,4 @@
-from typed import Str, Bool, List, Char, Nat
+from typed import Str, Bool, List, Nat, Len
 from typed.models import optional
 
 @optional
@@ -28,7 +28,7 @@ class Aria:
 @optional
 class Globals:
     anchor:    Str
-    accesskey: Char
+    accesskey: Len(Str, 1)
     title:     Str
     tabindex:  Nat
     hidden:    Bool

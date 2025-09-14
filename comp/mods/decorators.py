@@ -1,13 +1,24 @@
 import sys
 from inspect import signature, Parameter
 from functools import wraps
-from typed import typed, Function, Dict, Any
-from comp.mods.types.base import STATIC, PAGE, STATIC_PAGE
+from typed import TYPE, name, typed, Function, Dict, Typed, Any, Union, Str
+from comp.mods.types.base import PAGE
 from collections import UserList
 from types import SimpleNamespace
 from inspect import signature, Parameter, isclass, currentframe
 from functools import wraps
 from comp.mods.helper.types import COMPONENT
+from comp.mods.helper.helper import _jinja
+from comp.mods.types.base import Jinja
+
+@typed
+def jinja(arg: Union(Typed(Any, cod=Str), Str)) -> Jinja:
+    if isinstance(arg, Str):
+        return _jinja(arg)
+    else:
+        if arg.codomain <= Jinja:
+            return arg
+
 
 @typed
 def component(arg: Function) -> COMPONENT:
@@ -18,28 +29,28 @@ def component(arg: Function) -> COMPONENT:
 
         if "__context__" in signature(arg).parameters:
             param = signature(arg).parameters["__context__"]
-            expected_type_hint = Dict(Any)
+            expected_type_hint = Dict
             if param.annotation is Parameter.empty:
                 arg.__annotations__["__context__"] = expected_type_hint
             else:
-                if issubclass(param.annotation, Dict(Any)):
+                if issubclass(param.annotation, Dict):
                     pass
                 else:
                     raise TypeError(
-                        f"In a component, argument '__context__' must be of type Dict(Any).\n"
-                        f" ==> '{arg.__name__}': has '__context__' of wrong type\n"
-                        f"     [received_type]: '{param.annotation}'"
+                        f"In a component, argument '__context__' must be of type Dict.\n"
+                        f" ==> '{name(arg)}': has '__context__' of wrong type\n"
+                        f"     [received_type]: '{name(param.annotation)}'"
                     )
 
         typed_arg = typed(arg)
         from comp.mods.helper.types import COMPONENT
         typed_arg.__class__ = COMPONENT
         from comp.mods.types.base import Jinja
-        if not issubclass(typed_arg.codomain, Jinja):
+        if not typed_arg.codomain <= Jinja:
             raise TypeError(
                 "A component should create a Jinja string:\n"
-                f" ==> '{arg.__name__}' codomain is not a subclass of Jinja\n"
-                f"     [received_type]: '{typed_arg.codomain.__name__}'"
+                f" ==> '{name(arg)}' codomain is not a subclass of Jinja\n"
+                f"     [received_type]: '{name(typed_arg.codomain)}'"
             )
 
         func_sig = signature(arg)
@@ -65,8 +76,7 @@ def component(arg: Function) -> COMPONENT:
             from comp.mods.helper.helper import _jinja_env
             template = _jinja_env().from_string(jinja_src)
             rendered = template.render(**context)
-            from comp.mods.types.base import Jinja
-            return Jinja(rendered)
+            return _jinja(rendered)
 
         component_wrapper.__signature__ = getattr(typed_arg, '__signature__', signature(arg))
         component_wrapper.__annotations__ = getattr(arg, '__annotations__', {})
@@ -82,16 +92,6 @@ def component(arg: Function) -> COMPONENT:
     )
 
 @typed
-def static(comp: Function) -> STATIC:
-    comp = component(comp)
-    return comp
-
-@typed
 def page(comp: Function) -> PAGE:
-    comp = component(comp)
-    return comp
-
-@typed
-def static_page(comp: Function) -> STATIC_PAGE:
     comp = component(comp)
     return comp

@@ -1,4 +1,4 @@
-from comp.mods.decorators import component, static, page
+from comp.mods.decorators import *
 from comp.mods.types.base import *
 from comp.mods.types.tag  import *
 from comp.mods.types.factories import *

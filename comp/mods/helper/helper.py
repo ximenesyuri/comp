@@ -84,8 +84,20 @@ def _jinja_regex(tag_name: Str = "") -> Pattern:
         return rf"^jinja\s*\n?\s*<{tag_name}\b[^>]*>(.*?)</{tag_name}>\s*$"
     return r"^jinja\s*\n?\s*(.*?)\s*$"
 
+def _is_jinja(jinja_string: str, tag_name: str = "") -> bool:
+    pattern = _jinja_regex(tag_name)
+    regex = re.compile(pattern, re.DOTALL)
+    return regex.match(jinja_string) is not None
+
 def _extract_raw_jinja(jinja_string: Str) -> Str:
     return re.sub(r"jinja\n?", "", jinja_string)
+
+def _jinja(string: Str) -> Str:
+    if _is_jinja(string):
+        return string
+    else:
+        return f"""jinja 
+{string}"""
 
 def _get_jinja(comp):
     if hasattr(comp, "jinja"):

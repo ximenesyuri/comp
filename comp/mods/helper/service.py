@@ -9,447 +9,753 @@ from urllib.parse import urlparse
 from socketserver import ThreadingMixIn
 from inspect import signature, Parameter, getsourcefile
 from jinja2 import Environment, DictLoader, StrictUndefined, meta
-from typed import typed, Dict, Any, Str, List
+from typed import typed, Dict, Str, List
 from comp.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from comp.mods.err import StyleErr, MinifyErr, PreviewErr
 
-
 def _style(html: str) -> str:
     try:
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
-        for row in soup.find_all(class_='row'):
-            cols = [child for child in row.find_all(recursive=False)
-                    if hasattr(child, 'get') and child.get('class') and
-                       any(re.fullmatch(r'col(?:-\d+)?', cl) for cl in child.get('class'))]
+        # 1. (Not changed) Handle .row/.col calculation
+        for row in soup.find_all(class_="row"):
+            cols = [
+                c
+                for c in row.find_all(recursive=False)
+                if hasattr(c, "get")
+                and c.get("class")
+                and any(
+                    re.fullmatch(r"col(?:-\d+)?", cl) for cl in c.get("class")
+                )
+            ]
             col_specs = []
             for col in cols:
-                col_weight = None
-                for cl in col.get('class', []):
-                    m = re.fullmatch(r'col-(\d+)', cl)
+                weight = None
+                for cl in col.get("class", []):
+                    m = re.fullmatch(r"col-(\d+)", cl)
                     if m:
-                        col_weight = int(m.group(1))
+                        weight = int(m.group(1))
                         break
                     elif cl == "col":
-                        col_weight = 1
-                if col_weight is not None:
-                    col_specs.append((col, col_weight))
-            sumN = sum(N for _, N in col_specs) or 1
-            for col, N in col_specs:
-                pct = N * 100.0 / sumN
-                prev_style = col.get('style', '')
-                restyle = re.sub(r'(flex|width|max-width)\s*:[^;]+;', '', prev_style)
-                col['style'] = (restyle + f' flex: 0 0 {pct:.6f}%; max-width: {pct:.6f}%;').strip() 
+                        weight = 1
+                if weight is not None:
+                    col_specs.append((col, weight))
+            total = sum(w for _, w in col_specs) or 1
+            for col, w in col_specs:
+                pct = w * 100.0 / total
+                prev = col.get("style", "")
+                rest = re.sub(r"(flex|width|max-width)\s*:[^;]+;", "", prev)
+                col["style"] = (
+                    rest
+                    + f" flex: 0 0 {pct:.6f}%;"
+                    + f" max-width: {pct:.6f}%;"
+                ).strip()
 
-        def escape_class_selector(cls):
-            return (cls.replace(':', '\\:')
-                        .replace('#', '\\#')
-                        .replace('[', '\\[')
-                        .replace(']', '\\]')
-                        .replace('.', '\\.')
-                    )
+        def escape_class_selector(cls: str) -> str:
+            return (
+                cls.replace(":", "\\:")
+                .replace("#", "\\#")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+                .replace(".", "\\.")
+            )
 
+        # ------------------------------
+        # Font-family (table 15)
+        FONT_FAMILY_PATTERNS = [
+            (re.compile(r"^(?:font-family-|ff-)(.+)$", re.I), ""),  # font-family-<x>, ff-<x>
+            (re.compile(r"^(?:font-family-sans-|ff-sans-|ff-ss-|sans-)(.+)$", re.I), 'sans-serif'),  # font-family-sans-<x>, sans-<x>
+            (re.compile(r"^(?:font-family-serif-|ff-serif-|ff-s-|serif-)(.+)$", re.I), 'serif'),    # font-family-serif-<x>, serif-<x>
+            (re.compile(r"^(?:font-family-mono-|ff-mono-|ff-m-|mono-)(.+)$", re.I), 'monospace'),  # font-family-mono-<x>, mono-<x>
+        ]
+
+        # Font-size (table 16)
+        FONT_SIZE_KEYWORDS = {
+            # xx-small
+            "font-size-xx-small": "xx-small", "xx-small": "xx-small", "fz-xx-small": "xx-small",
+            "fz-xx-s": "xx-small", "fz-xxs": "xx-small",
+            # x-small
+            "font-size-x-small": "x-small", "x-small": "x-small", "fz-x-small": "x-small",
+            "fz-x-s": "x-small", "fz-xs": "x-small",
+            # small
+            "font-size-small": "small", "small": "small", "fz-small": "small", "fz-s": "small",
+            # medium
+            "font-size-medium": "medium", "medium": "medium", "fz-medium": "medium", "fz-m": "medium",
+            # large
+            "font-size-large": "large", "large": "large", "fz-large": "large", "fz-l": "large",
+            # x-large
+            "font-size-x-large": "x-large", "x-large": "x-large", "fz-x-large": "x-large", "fz-x-l": "x-large",
+            "fz-xl": "x-large",
+            # xx-large
+            "font-size-xx-large": "xx-large", "xx-large": "xx-large", "fz-xx-large": "xx-large",
+            "fz-xx-l": "xx-large", "fz-xxl": "xx-large",
+            # huge
+            "font-size-huge": "xxx-large", "huge": "xxx-large", "fz-huge": "xxx-large", "fz-h": "xxx-large",
+            "fz-xxx-l": "xxx-large", "fz-xxxl": "xxx-large",
+        }
+        # Regex for font-size-<num><unit>
+        FONT_SIZE_VAL_PATTERN = re.compile(r"^(?:font-size-?|fz-)(\d+(?:\.\d+)?)(px|em|rem|%)$", re.I)
+
+        # Font-weight (table 17)
+        FONT_WEIGHT_KEYWORDS = {
+            # XX-Light
+            "font-weight-xx-light": 100,
+            "xx-light": 100, "fw-xx-l": 100, "fw-xxl": 100,
+            # X-Light
+            "font-weight-x-light": 200,
+            "x-light": 200, "fw-extra-light": 200, "fw-x-l": 200, "fw-xl": 200,
+            # Light
+            "font-weight-light": 300, "light": 300, "fw-light": 300, "fw-l": 300,
+            # Normal
+            "font-weight-normal": 400, "normal": 400, "fw-normal": 400, "fw-n": 400,
+            # X-Normal / Semi-bold
+            "font-weight-x-normal": 600,
+            "x-normal": 600, "semi-bold": 600, "fw-x-normal": 600, "fw-semi-bold": 600,
+            "fw-sb": 600, "fw-x-n": 600, "fw-xn": 600,
+            # Bold
+            "font-weight-bold": 700, "bold": 700, "fw-bold": 700, "fw-b": 700,
+            # X-Bold
+            "font-weight-x-bold": 800, "x-bold": 800, "fw-x-bold": 800,
+            "fw-x-b": 800, "fw-xb": 800,
+            # XX-Bold/Black
+            "font-weight-xx-bold": 900, "Bold": 900, "xx-bold": 900, "fw-xx-bold": 900,
+            "fw-black": 900, "fw-xxb": 900, "fw-B": 900,
+        }
+        # Regex for font-weight-<num>
+        FONT_WEIGHT_VAL_PATTERN = re.compile(r"^(?:font-weight-?|fw-)(\d{3})$", re.I)
+
+        # Font-style & font-color (table 18)
+        FONT_STYLE_ALIASES = {
+            "font-style-italic": "italic", "italic": "italic", "it": "italic",
+            "fs-italic": "italic", "fs-it": "italic", "fs-i": "italic",
+        }
+        COLOR_PATTERNS = (
+            (re.compile(r"^(?:font-color-|color-|fc-)(.+)$", re.I),),
+        )
+
+        # -- Text property tables (see prior answers)
+        TEXT_ALIGN_ALIASES = {
+            # center
+            "text-align-center": ("text-align", "center"),
+            "txt-alg-center": ("text-align", "center"),
+            "txt-alg-cnt": ("text-align", "center"),
+            "txt-alg-c": ("text-align", "center"),
+            "ta-c": ("text-align", "center"),
+            # left
+            "text-align-left": ("text-align", "left"),
+            "txt-alg-left": ("text-align", "left"),
+            "txt-alg-lft": ("text-align", "left"),
+            "txt-alg-l": ("text-align", "left"),
+            "ta-l": ("text-align", "left"),
+            # right
+            "text-align-right": ("text-align", "right"),
+            "txt-alg-right": ("text-align", "right"),
+            "txt-alg-rgt": ("text-align", "right"),
+            "txt-alg-r": ("text-align", "right"),
+            "ta-r": ("text-align", "right"),
+            # start
+            "text-align-start": ("text-align", "start"),
+            "txt-alg-start": ("text-align", "start"),
+            "txt-alg-st": ("text-align", "start"),
+            "txt-alg-s": ("text-align", "start"),
+            "ta-s": ("text-align", "start"),
+            # end
+            "text-align-end": ("text-align", "end"),
+            "txt-alg-end": ("text-align", "end"),
+            "txt-alg-e": ("text-align", "end"),
+            "ta-e": ("text-align", "end"),
+            # justify
+            "text-align-justify": ("text-align", "justify"),
+            "txt-alg-justify": ("text-align", "justify"),
+            "txt-alg-just": ("text-align", "justify"),
+            "txt-alg-jst": ("text-align", "justify"),
+            "txt-alg-j": ("text-align", "justify"),
+            "ta-j": ("text-align", "justify"),
+        }
+        TEXT_JUSTIFY_ALIASES = {
+            "text-justify-none": ("text-justify", "none"),
+            "txt-just-none": ("text-justify", "none"),
+            "tj-none": ("text-justify", "none"),
+            "tj-n": ("text-justify", "none"),
+            "text-justify-auto": ("text-justify", "auto"),
+            "txt-just-auto": ("text-justify", "auto"),
+            "tj-auto": ("text-justify", "auto"),
+            "tj-a": ("text-justify", "auto"),
+            "text-justify-distribute": ("text-justify", "distribute"),
+            "txt-just-distribute": ("text-justify", "distribute"),
+            "tj-dist": ("text-justify", "distribute"),
+            "tj-d": ("text-justify", "distribute"),
+            "text-justify-word": ("text-justify", "inter-word"),
+            "text-just-word": ("text-justify", "inter-word"),
+            "tj-word": ("text-justify", "inter-word"),
+            "tj-w": ("text-justify", "inter-word"),
+            "text-justify-character": ("text-justify", "inter-character"),
+            "text-just-char": ("text-justify", "inter-character"),
+            "tj-char": ("text-justify", "inter-character"),
+            "tj-c": ("text-justify", "inter-character"),
+        }
+        TEXT_WRAP_ALIASES = {
+            "text-wrap": ("text-wrap", "wrap"),
+            "wrap": ("text-wrap", "wrap"),
+            "txt-wrap": ("text-wrap", "wrap"),
+            "tw": ("text-wrap", "wrap"),
+            "text-nowrap": ("text-wrap", "nowrap"),
+            "nowrap": ("text-wrap", "nowrap"),
+            "txt-nowrap": ("text-wrap", "nowrap"),
+            "txt-wrap-none": ("text-wrap", "nowrap"),
+            "tw-none": ("text-wrap", "nowrap"),
+            "tw-no": ("text-wrap", "nowrap"),
+            "tw-n": ("text-wrap", "nowrap"),
+            "text-wrap-balance": ("text-wrap", "balance"),
+            "txt-wrap-bal": ("text-wrap", "balance"),
+            "tw-bal": ("text-wrap", "balance"),
+            "tw-b": ("text-wrap", "balance"),
+            "text-wrap-pretty": ("text-wrap", "pretty"),
+            "txt-wrap-pretty": ("text-wrap", "pretty"),
+            "txt-wrap-pty": ("text-wrap", "pretty"),
+            "tw-pretty": ("text-wrap", "pretty"),
+            "tw-pty": ("text-wrap", "pretty"),
+            "tw-p": ("text-wrap", "pretty"),
+        }
+        TEXT_TRANSFORM_ALIASES = {
+            "text-transform-uppercase": "uppercase",
+            "uppercase": "uppercase",
+            "upper": "uppercase",
+            "txt-trans-upper": "uppercase",
+            "tt-upper": "uppercase",
+            "tt-u": "uppercase",
+            "text-transform-lowercase": "lowercase",
+            "lowercase": "lowercase",
+            "lower": "lowercase",
+            "txt-trans-lower": "lowercase",
+            "tt-lower": "lowercase",
+            "tt-l": "lowercase",
+            "text-transform-capitalize": "capitalize",
+            "capitalize": "capitalize",
+            "cap": "capitalize",
+            "txt-trans-cap": "capitalize",
+            "tt-cap": "capitalize",
+            "tt-c": "capitalize",
+        }
+        DECORATION_TYPE_MAP = {
+            "underline": ["underline", "under", "txt-decor-under", "td-under", "td-u"],
+            "overline": ["overline", "txt-decor-over", "td-over", "td-o"],
+            "line-through": ["through", "txt-decor-thr", "td-thr", "td-t"],
+        }
+        DECORATION_TYPE_RE = "|".join(
+            [
+                "|".join([rf"{n}" for n in DECORATION_TYPE_MAP[variant]])
+                for variant in DECORATION_TYPE_MAP
+            ]
+        )
+        # text-decoration-underline-2px-red-dashed
+        DECORATION_PATTERN = (
+            rf"(?:text-decoration-)?(?P<variant>{DECORATION_TYPE_RE})-(?P<size>[\d\.]+)(?P<unit>px|em|rem|%)"
+            rf"-(?P<color>#[\da-fA-F]+|rgb\(.*?\)|[a-zA-Z\-]+)"
+            rf"-(?P<line>(solid|double|dotted|dashed|wavy|underline|overline|line-through))"
+        )
+        decopat = (
+            rf"(?:{DECORATION_TYPE_RE})-(?P<size>[\d\.]+)(?P<unit>px|em|rem|%)"
+            rf"-(?P<color>#[\da-fA-F]+|rgb\(.*?\)|[a-zA-Z\-]+)"
+            rf"-(?P<line>(solid|double|dotted|dashed|wavy|underline|overline|line-through))"
+        )
+
+        # Remap all class keys to lower-case for easy lookup
+        def cls_lookup(d):
+            return {k.lower(): v for k, v in d.items()}
+
+        TEXT_ALIGN_ALIASES = cls_lookup(TEXT_ALIGN_ALIASES)
+        TEXT_JUSTIFY_ALIASES = cls_lookup(TEXT_JUSTIFY_ALIASES)
+        TEXT_WRAP_ALIASES = cls_lookup(TEXT_WRAP_ALIASES)
+        TEXT_TRANSFORM_ALIASES = cls_lookup(TEXT_TRANSFORM_ALIASES)
+        FONT_SIZE_KEYWORDS = cls_lookup(FONT_SIZE_KEYWORDS)
+        FONT_WEIGHT_KEYWORDS = cls_lookup(FONT_WEIGHT_KEYWORDS)
+        FONT_STYLE_ALIASES = cls_lookup(FONT_STYLE_ALIASES)
+
+        # --- The main property/shortcut map for everything except font/text etc. ---
+        DISPLAY_PROPERTY_MAP = {
+            'display': 'display', 'd': 'display'
+        }
+        BOX_PROPERTY_MAP = {
+            'margin': 'margin',   'm': 'margin',
+            'margin-top':'margin-top','mt':'margin-top',
+            'margin-right':'margin-right','mr':'margin-right',
+            'margin-bottom':'margin-bottom','mb':'margin-bottom',
+            'margin-left':'margin-left','ml':'margin-left',
+            'padding':'padding',   'p':'padding',
+            'padding-top':'padding-top','pt':'padding-top',
+            'padding-right':'padding-right','pr':'padding-right',
+            'padding-bottom':'padding-bottom','pb':'padding-bottom',
+            'padding-left':'padding-left','pl':'padding-left',
+            'gap':'gap', 'g':'gap'
+        }
+        SIZE_PROPERTY_MAP = {
+            'width':'width','w':'width',
+            'min-width':'min-width','mw':'min-width',
+            'max-width':'max-width','xw':'max-width',
+            'height':'height','h':'height',
+            'min-height':'min-height','mh':'min-height',
+            'max-height':'max-height','xh':'max-height'
+        }
+        BORDER_PROPERTY_MAP = {
+            'border':'border','b':'border',
+            'border-top':'border-top','bt':'border-top',
+            'border-right':'border-right','br':'border-right',
+            'border-bottom':'border-bottom','bb':'border-bottom',
+            'border-left':'border-left','bl':'border-left',
+            'border-radius':'border-radius','bR':'border-radius','radius':'border-radius'
+        }
+        BG_PROPERTY_MAP = {
+            'background':'background',
+            'background-color':'background-color','bg':'background-color',
+            'background-size':'background-size','bgz':'background-size','bg-sz':'background-size',
+            'background-image':'background-image','bgi':'background-image','bg-img':'background-image',
+            'background-position':'background-position','bgp':'background-position','bg-pos':'background-position',
+            'backdrop-filter':'backdrop-filter','drop':'backdrop-filter'
+        }
+        POSITION_PROPERTY_MAP = {
+            'position':'position','pos':'position',
+        }
+        ZINDEX_PROPERTY_MAP = {
+            'z-index':'z-index','z':'z-index'
+        }
+        OVERFLOW_PROPERTY_MAP = {
+            'overflow':'overflow','ov':'overflow',
+            'overflow-x':'overflow-x','ovx':'overflow-x',
+            'overflow-y':'overflow-y','ovy':'overflow-y'
+        }
+        ALIGN_PROPERTY_MAP = {
+            "align-items":"align-items", "align-it":"align-items", "alg-it":"align-items",
+            "align":"text-align", "alg":"text-align",
+            "justify-content":"justify-content", "just-cont":"justify-content",
+            "justify-text":"text-align", "just-text":"text-align", "jst-txt":"text-align",
+            "float":"float", "flt":"float"
+        }
+        PROPERTY_MAP = {}
+        for m in (
+            DISPLAY_PROPERTY_MAP,
+            BOX_PROPERTY_MAP,
+            SIZE_PROPERTY_MAP,
+            BORDER_PROPERTY_MAP,
+            BG_PROPERTY_MAP,
+            POSITION_PROPERTY_MAP,
+            ZINDEX_PROPERTY_MAP,
+            OVERFLOW_PROPERTY_MAP,
+            ALIGN_PROPERTY_MAP,
+        ):
+            PROPERTY_MAP.update(m)
+
+        DISPLAY_VALUE_MAP = {
+            'flex':'flex','flx':'flex',
+            'inline':'inline','inl':'inline',
+            'block':'block','blk':'block',
+            'table':'table','tab':'table',
+            'inline-block':'inline-block','inl-blk':'inline-block',
+            'inline-flex':'inline-flex','inl-flx':'inline-flex'
+        }
+
+        # -- REMAINDER: your media and pseudo/utility code.
         MEDIA_PREFIXES = {
-            "phone": "(min-width: 0px) and (max-width: 767px)",
+            "phone":  "(min-width: 0px) and (max-width: 767px)",
             "tablet": "(min-width: 768px) and (max-width: 1024px)",
             "mobile": "(min-width: 0px) and (max-width: 1024px)",
-            "desktop": "(min-width: 1025px) and (max-width: 10000px)",
+            "desktop":"(min-width: 1025px) and (max-width: 10000px)",
         }
         MEDIA_ALIASES = {
-            "p": "phone", "ph": "phone",
-            "t": "tablet", "tab": "tablet",
-            "m": "mobile", "mob": "mobile",
+            "p": "phone",   "ph": "phone",
+            "t": "tablet",  "tab": "tablet",
+            "m": "mobile",  "mob": "mobile",
             "d": "desktop", "desk": "desktop", "dsk": "desktop",
         }
 
         PSEUDO_PREFIXES = {
-            "hover": "hover", "h": "hover",
+            "hover":  "hover",  "h": "hover",
             "active": "active", "a": "active",
-            "focus": "focus", "f": "focus",
+            "focus":  "focus",  "f": "focus",
         }
         PSEUDO_ORDER = ["hover", "active", "focus"]
 
         IMPORTANT_PREFIXES = {"!", "i", "important", "imp"}
-        NOT_PREFIXES = {"not", "n"}
+        NOT_PREFIXES       = {"not", "n"}
 
-        MEDIA_ALL = set(MEDIA_PREFIXES.keys()) | set(MEDIA_ALIASES.keys())
-        PSEUDO_ALL = set(PSEUDO_PREFIXES.keys())
-        IMP_ALL = IMPORTANT_PREFIXES
-        NOT_ALL = NOT_PREFIXES
+        MEDIA_ALL   = set(MEDIA_PREFIXES) | set(MEDIA_ALIASES)
+        PSEUDO_ALL  = set(PSEUDO_PREFIXES)
+        IMP_ALL     = IMPORTANT_PREFIXES
+        NOT_ALL     = NOT_PREFIXES
 
-        patterns = {
-            'margin_padding': re.compile(r'(m[tblr]|p[tblr])-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)'),
-            'border':         re.compile(r'b(t|b|r|l)-(\d+(?:\.\d+)?)(px|em|rem|%)?-(\w+)'),
-            'font_size':      re.compile(r'f[sz]-(\d+(?:\.\d+)?)(px|em|rem|%)'),
-            'font_weight':    re.compile(r'fw-(extra-light|el|light|l|normal|n|bold|b|extra-bold|eb|black|B|\d{3})'),
-            'font_family':    re.compile(r'ff-\[(.+?)\]'),
-            'font_style':     re.compile(r'fs-(italic|it|normal|oblique)'),
-            'text_decoration':re.compile(r'td-(underline|u|overline|o|line-through|lt|none)'),
-            'letter_spacing': re.compile(r'ls-(\d+(?:\.\d+)?)(em|px|rem|%)'),
-            'color_hex_rgb':  re.compile(r'fc-(#([0-9a-fA-F]{3}){1,2}|rgb\((?:\d{1,3},\d{1,3},\d{1,3})\))'),
-            'color_var':      re.compile(r'fc-([a-zA-Z][a-zA-Z0-9_\-]+)'),
-            'fill_hex_rgb':   re.compile(r'fill-(#([0-9a-fA-F]{3}){1,2}|rgb\((?:\d{1,3},\d{1,3},\d{1,3})\))'),
-            'fill_var':       re.compile(r'fill-([a-zA-Z][a-zA-Z0-9_\-]+)'),
-            'text_transform': re.compile(r'tt-(cap|up|upper|lw|low|lower)'),
-            'width':          re.compile(r'w-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'),
-            'height':         re.compile(r'h-(full|auto|none|\d+(?:\.\d+)?(?:px|%|vw|vh|em|rem))'),
-            'min_width':      re.compile(r'mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
-            'max_width':      re.compile(r'Mw-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
-            'min_height':     re.compile(r'mh-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
-            'max_height':     re.compile(r'Mh-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
-            'gap':            re.compile(r'gap-(\d+(?:\.\d+)?)(px|%|vw|vh|em|rem)'),
-            'border_radius':  re.compile(r'(radius|bR)-(\d+(?:\.\d+)?)(px|%|em|rem)'),
-            'z_index':        re.compile(r'z-(full|none|\d+)'),
-            'background_color_hex_rgb':
-                              re.compile(r'bg-(#([0-9a-fA-F]{3}){1,2}|rgb\((?:\d{1,3},\s*\d{1,3},\d{1,3})\))'),
-            'background_size':re.compile(r'bg-sz-(\d+(?:\.\d+)?)(px|%|em|rem)'),
-            'background_blur':re.compile(r'(?:bg-blur|blur)-(\d+(?:\.\d+)?)(px|em|rem|%)'),
-            'display':        re.compile(r'^(?:flex|fl|inline|inl|block|blk|table|tab'
-                                         r'|inline-block|inl-blk|inline-flex|inl-fl)$'),
-            'position':       re.compile(r'pos-(fix|abs|rel|stk)'),
-            'text_justify':   re.compile(r'(?:just|jst)-(start|st|end|ed|left|lft|right|rgt|center|cnt)'),
-            'overflow_x':     re.compile(r'over-x'),
-            'overflow_y':     re.compile(r'over-y'),
-            'scroll_x':       re.compile(r'(?:scroll|scl)-x'),
-            'scroll_y':       re.compile(r'(?:scroll|scl)-y'),
-            'scroll_all':     re.compile(r'(?:scroll|scl)$'),
-            'padding_margin': re.compile(r'(p|m)-(\d+(?:\.\d+)?)(px|vh|vw|em|rem|%)'),
-        }
+        def style_for_base_class(cls: str) -> str:
+            lcls = cls.lower()
 
-        style_property_map = {
-            'p':'padding','m':'margin',
-            'mt':'margin-top','mb':'margin-bottom','ml':'margin-left','mr':'margin-right',
-            'pt':'padding-top','pb':'padding-bottom','pl':'padding-left','pr':'padding-right',
-            'bt':'border-top','bb':'border-bottom','br':'border-right','bl':'border-left',
-            'fz':'font-size','fw':'font-weight','ff':'font-family','fs':'font-style',
-            'td':'text-decoration','ls':'letter-spacing','fc':'color','tt':'text-transform',
-            'w':'width','h':'height','mw':'min-width','Mw':'max-width',
-            'mh':'min-height','Mh':'max-height','gap':'gap',
-            'radius':'border-radius','bR':'border-radius',
-            'z':'z-index','bg':'background-color','bg-sz':'background-size',
-            'bg-blur':'backdrop-filter','fl':'display','inl':'display','blk':'display','tab':'display',
-            'inl-blk':'display','inl-fl':'display',
-            'pos':'position','just':'text-align','over-x':'overflow-x','over-y':'overflow-y',
-            'scroll-x':'position','scroll-y':'position','scroll':'position',
-        }
+            # ------------- FONT FAMILY ---------------
+            for pat, base_family in FONT_FAMILY_PATTERNS:
+                m = pat.fullmatch(cls)
+                if m:
+                    val = m.group(1)
+                    ff = val.replace("_", " ").replace("-", " ")
+                    family = f'"{ff}"'
+                    if base_family:
+                        family += f', {base_family}'
+                    return f"font-family: {family};"
 
-        font_weight_map = {
-            'extra-light':200,'el':200,'light':300,'l':300,'normal':400,'n':400,
-            'bold':700,'b':700,'extra-bold':800,'eb':800,'black':900,'B':900,
-        }
-        font_style_map = {'italic':'italic','it':'italic','normal':'normal','oblique':'oblique'}
-        text_decoration_map = {'underline':'underline','u':'underline',
-                               'overline':'overline','o':'overline',
-                               'line-through':'line-through','lt':'line-through','none':'none'}
-        text_transform_map = {'cap':'capitalize','up':'uppercase','upper':'uppercase',
-                              'lw':'lowercase','low':'lowercase','lower':'lowercase'}
-        display_map = {'flex':'flex','fl':'flex','inline':'inline','inl':'inline',
-                       'block':'block','blk':'block','table':'table','tab':'table',
-                       'inline-block':'inline-block','inl-blk':'inline-block',
-                       'inline-flex':'inline-flex','inl-fl':'inline-flex'}
-        position_map = {'fix':'fixed','abs':'absolute','rel':'relative','stk':'sticky'}
-        text_justify_map = {'start':'start','st':'start','end':'end','ed':'end',
-                            'left':'left','lft':'left','right':'right','rgt':'right',
-                            'center':'center','cnt':'center'}
+            # ------------- FONT SIZE -----------------
+            if lcls in FONT_SIZE_KEYWORDS:
+                sz = FONT_SIZE_KEYWORDS[lcls]
+                return f"font-size: {sz};"
+            m = FONT_SIZE_VAL_PATTERN.fullmatch(cls)
+            if m:
+                num, unit = m.group(1), m.group(2)
+                return f"font-size: {num}{unit};"
 
-        def style_for_base_class(class_name):
-            if class_name == "row":
+            # ------------- FONT WEIGHT -----------------
+            if lcls in FONT_WEIGHT_KEYWORDS:
+                w = FONT_WEIGHT_KEYWORDS[lcls]
+                return f"font-weight: {w};"
+            m = FONT_WEIGHT_VAL_PATTERN.fullmatch(cls)
+            if m:
+                n = m.group(1)
+                return f"font-weight: {n};"
+
+            # ------------- FONT STYLE -----------------
+            if lcls in FONT_STYLE_ALIASES:
+                style = FONT_STYLE_ALIASES[lcls]
+                return f"font-style: {style};"
+
+            # ------------- FONT COLOR -----------------
+            for color_pat in COLOR_PATTERNS:
+                m = color_pat[0].fullmatch(cls)
+                if m:
+                    color = m.group(1)
+                    if color.startswith("#") or color.startswith("rgb"):
+                        return f"color: {color};"
+                    # If color is an atomic name, use CSS variable for theme safety
+                    var = color.replace("-", "_")
+                    return f"color: var(--{var});"
+            # ------------- TEXT ALIGN, JUSTIFY, WRAP, TRANSFORM -------------
+            if lcls in TEXT_ALIGN_ALIASES:
+                prop, val = TEXT_ALIGN_ALIASES[lcls]
+                return f"{prop}: {val};"
+            if lcls in TEXT_JUSTIFY_ALIASES:
+                prop, val = TEXT_JUSTIFY_ALIASES[lcls]
+                return f"{prop}: {val};"
+            if lcls in TEXT_WRAP_ALIASES:
+                prop, val = TEXT_WRAP_ALIASES[lcls]
+                return f"{prop}: {val};"
+            if lcls in TEXT_TRANSFORM_ALIASES:
+                val = TEXT_TRANSFORM_ALIASES[lcls]
+                return f"text-transform: {val};"
+
+            # ------------- TEXT DECORATION --------------------
+            m = re.fullmatch(DECORATION_PATTERN, cls)
+            if m:
+                variant = m.group("variant")
+                size = m.group("size")
+                unit = m.group("unit")
+                color = m.group("color")
+                line = m.group("line")
+                for cssval, aliases in DECORATION_TYPE_MAP.items():
+                    if variant in aliases:
+                        variant = cssval
+                        break
+                value = (f"{variant} {size}{unit} {color} {line}")
+                return f"text-decoration: {value};"
+
+            m = re.fullmatch(decopat, cls)
+            if m:
+                variant = [
+                    cssval
+                    for cssval, als in DECORATION_TYPE_MAP.items()
+                    if any(cls.startswith(a) for a in als)
+                ]
+                variant = variant[0] if variant else "underline"
+                size, unit, color, line = (
+                    m.group("size"),
+                    m.group("unit"),
+                    m.group("color"),
+                    m.group("line"),
+                )
+                value = f"{variant} {size}{unit} {color} {line}"
+                return f"text-decoration: {value};"
+
+            display_shortcut = DISPLAY_VALUE_MAP.get(cls)
+            if display_shortcut:
+                return f"display: {display_shortcut};"
+
+            if cls in (
+                'flex-center', 'flx-cnt', 'flx-center', 'flex-cnt',
+                'center', 'cnt', 'c'
+            ):
+                return "display: flex; justify-content: center; align-items: center;"
+
+            aliases = {
+                'left': r'(?:left|lft|l)',
+                'right': r'(?:right|rgt|r)',
+                'top': r'(?:top|t)',
+                'bottom': r'(?:bottom|bot|btm|b)',
+            }
+            for horiz, vert, hpad, vpad in [
+                ('left',   'top',    'padding-left',  'padding-top'),
+                ('left',   'bottom', 'padding-left',  'padding-bottom'),
+                ('right',  'top',    'padding-right', 'padding-top'),
+                ('right',  'bottom', 'padding-right', 'padding-bottom')
+            ]:
+                pattern = rf"(?:flex-|flx-)?(?:{aliases[horiz]}-{aliases[vert]}|{horiz[0]}{vert[0]})-(.+?)-(.+)"
+                m = re.fullmatch(pattern, cls)
+                if m:
+                    hval, vval = m.group(1), m.group(2)
+                    justify = "flex-start" if horiz == "left" else "flex-end"
+                    align   = "flex-start" if vert == "top"  else "flex-end"
+                    return (
+                        f"display: flex; align-items: {align}; justify-content: {justify}; "
+                        f"{vpad}: {vval}; {hpad}: {hval};"
+                    )
+            top_aliases = aliases['top']
+            bottom_aliases = aliases['bottom']
+            left_aliases = aliases['left']
+            right_aliases = aliases['right']
+
+            m = re.fullmatch(
+                rf"(?:flex-|flx-)?(?:{left_aliases}-{top_aliases}|lt)-(.+)", cls)
+            if m:
+                pad = m.group(1).strip()
+                return (
+                    "display: flex; align-items: flex-start; justify-content: flex-start;"
+                    f" padding-top: {pad}; padding-left: {pad};"
+                )
+            m = re.fullmatch(
+                rf"(?:flex-|flx-)?(?:{right_aliases}-{top_aliases}|rt)-(.+)", cls)
+            if m:
+                pad = m.group(1).strip()
+                return (
+                    "display: flex; align-items: flex-start; justify-content: flex-end;"
+                    f" padding-top: {pad}; padding-right: {pad};"
+                )
+            m = re.fullmatch(
+                rf"(?:flex-|flx-)?(?:{left_aliases}-{bottom_aliases}|lb)-(.+)", cls)
+            if m:
+                pad = m.group(1).strip()
+                return (
+                    "display: flex; align-items: flex-end; justify-content: flex-start;"
+                    f" padding-bottom: {pad}; padding-left: {pad};"
+                )
+            m = re.fullmatch(
+                rf"(?:flex-|flx-)?(?:{right_aliases}-{bottom_aliases}|rb)-(.+)", cls)
+            if m:
+                pad = m.group(1).strip()
+                return (
+                    "display: flex; align-items: flex-end; justify-content: flex-end;"
+                    f" padding-bottom: {pad}; padding-right: {pad};"
+                )
+            m = re.fullmatch(rf"(?:flex-|flx-)?{top_aliases}-(.+)", cls)
+            if m:
+                pad = m.group(1).strip()
+                return (
+                    "display: flex; align-items: flex-start; justify-content: center;"
+                    f" padding-top: {pad};"
+                )
+            m = re.fullmatch(rf"(?:flex-|flx-)?{bottom_aliases}-(.+)", cls)
+            if m:
+                pad = m.group(1).strip()
+                return (
+                    "display: flex; align-items: flex-end; justify-content: center;"
+                    f" padding-bottom: {pad};"
+                )
+
+            m = re.fullmatch(rf"(?:flex-)?{left_aliases}-(.+)", cls)
+            if m:
+                pad_value = m.group(1).strip()
+                return (
+                    "display: flex; align-items: center; justify-content: flex-start;"
+                    f" padding-left: {pad_value};"
+                )
+            m = re.fullmatch(rf"(?:flex-)?{right_aliases}-(.+)", cls)
+            if m:
+                pad_value = m.group(1).strip()
+                return (
+                    "display: flex; align-items: center; justify-content: flex-end;"
+                    f" padding-right: {pad_value};"
+                )
+
+            m = re.fullmatch(r'(align-items|align-it|alg-it)-(.+)', cls)
+            if m:
+                val = FLEX_JUSTIFY_ALIGN_VALUE_MAP.get(m.group(2), m.group(2))
+                return f"align-items: {val};"
+            m = re.fullmatch(r'(align|alg)-(.+)', cls)
+            if m:
+                val = FLEX_JUSTIFY_ALIGN_VALUE_MAP.get(m.group(2), m.group(2))
+                return f"text-align: {val};"
+            m = re.fullmatch(r'(justify-content|just-cont)-(.+)', cls)
+            if m:
+                val = FLEX_JUSTIFY_ALIGN_VALUE_MAP.get(m.group(2), m.group(2))
+                return f"justify-content: {val};"
+
+            m = re.fullmatch(r'(?:position|pos)-(top|bottom|left|right|lft|btm|rgt|t|b|l|r)-(.+)', cls)
+            if m:
+                prop, value = m.groups()
+                prop_map = {
+                    't': 'top',
+                    'lft': 'left', 'l': 'left',
+                    'btm': 'bottom', 'b': 'bottom',
+                    'rgt': 'right', 'r': 'right'
+                }
+                prop = prop_map.get(prop, prop)
+                return f"{prop}: {value.strip()};" 
+
+            if cls == "row":
                 return "display: flex; flex-wrap: wrap;"
-            if class_name == "col":
+            if cls == "col":
                 return "flex: 1 0 0%;"
-            m = re.fullmatch(r"col-(\d+)", class_name)
+            m = re.fullmatch(r"col-(\d+)", cls)
             if m:
                 n = int(m.group(1))
                 total = 5
                 if 1 <= n <= total:
                     pct = n * 100.0 / total
-                    return f"flex: 0 0 {pct:.6f}%; max-width: {pct:.6f}%;"
+                    return (f"flex: 0 0 {pct:.6f}%;"
+                            f" max-width: {pct:.6f}%;")
+            m2 = re.fullmatch(r"([-a-z0-9]+)-(.+)", cls, re.I)
+            if m2:
+                alias, raw = m2.groups()
+                prop = PROPERTY_MAP.get(alias)
+                if prop:
+                    val = raw
 
-            css_rule = None
-            match = patterns['padding_margin'].match(class_name)
-            if match:
-                prefix, value, unit = match.groups()
-                css_rule = f"{style_property_map[prefix]}: {value}{unit};"
-            if not css_rule:
-                match = patterns['margin_padding'].match(class_name)
-                if match:
-                    prefix, value, unit = match.groups()
-                    css_rule = f"{style_property_map[prefix]}: {value}{unit};"
-            if not css_rule:
-                match = patterns['border'].match(class_name)
-                if match:
-                    t, v, u, style = match.groups()
-                    u = u or 'px'
-                    css_rule = f"{style_property_map['b'+t]}: {v}{u} {style};"
-            if not css_rule:
-                match = patterns['font_size'].match(class_name)
-                if match:
-                    v, u = match.groups()
-                    css_rule = f"font-size: {v}{u};"
-            if not css_rule:
-                match = patterns['font_weight'].match(class_name)
-                if match:
-                    key = match.group(1)
-                    val = font_weight_map.get(key, None)
-                    if val is None:
-                        try: val = int(key)
-                        except: val = key
-                    css_rule = f"font-weight: {val};"
-            if not css_rule:
-                match = patterns['font_family'].match(class_name)
-                if match:
-                    fam = match.group(1).replace('_',' ')
-                    css_rule = f"font-family: {fam};"
-            if not css_rule:
-                match = patterns['font_style'].match(class_name)
-                if match:
-                    s = font_style_map.get(match.group(1), match.group(1))
-                    css_rule = f"font-style: {s};"
-            if not css_rule:
-                match = patterns['text_decoration'].match(class_name)
-                if match:
-                    td = text_decoration_map.get(match.group(1), match.group(1))
-                    css_rule = f"text-decoration: {td};"
-            if not css_rule:
-                match = patterns['letter_spacing'].match(class_name)
-                if match:
-                    v, u = match.groups()
-                    css_rule = f"letter-spacing: {v}{u};"
-            if not css_rule:
-                match = patterns['color_hex_rgb'].match(class_name)
-                if match:
-                    css_rule = f"color: {match.group(1)};"
-            if not css_rule:
-                match = patterns['color_var'].match(class_name)
-                if match:
-                    var = match.group(1).replace('-','_')
-                    css_rule = f"color: var(--{var});"
-            if not css_rule:
-                match = patterns['fill_hex_rgb'].match(class_name)
-                if match:
-                    css_rule = f"fill: {match.group(1)};"
-            if not css_rule:
-                match = patterns['fill_var'].match(class_name)
-                if match:
-                    var = match.group(1).replace('-','_')
-                    css_rule = f"fill: var(--{var});"
-            if not css_rule:
-                match = patterns['text_transform'].match(class_name)
-                if match:
-                    tr = text_transform_map.get(match.group(1))
-                    css_rule = f"text-transform: {tr};"
-            if not css_rule:
-                match = patterns['width'].match(class_name)
-                if match:
-                    w = match.group(1)
-                    css_rule = f"width: {'100%' if w=='full' else w+'%' if w.isdigit() else w};"
-            if not css_rule:
-                match = patterns['height'].match(class_name)
-                if match:
-                    h = match.group(1)
-                    css_rule = f"height: {'100%' if h=='full' else h+'%' if h.isdigit() else h};"
-            if not css_rule:
-                match = patterns['min_width'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"min-width: {v}{u};"
-            if not css_rule:
-                match = patterns['max_width'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"max-width: {v}{u};"
-            if not css_rule:
-                match = patterns['min_height'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"min-height: {v}{u};"
-            if not css_rule:
-                match = patterns['max_height'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"max-height: {v}{u};"
-            if not css_rule:
-                match = patterns['gap'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"gap: {v}{u};"
-            if not css_rule:
-                match = patterns['border_radius'].match(class_name)
-                if match:
-                    _,v,u = match.groups()
-                    css_rule = f"border-radius: {v}{u};"
-            if not css_rule:
-                match = patterns['z_index'].match(class_name)
-                if match:
-                    z = match.group(1)
-                    z_val = '100000' if z=='full' else '0' if z=='none' else z
-                    css_rule = f"z-index: {z_val};"
-            if not css_rule:
-                match = patterns['background_color_hex_rgb'].match(class_name)
-                if match:
-                    css_rule = f"background-color: {match.group(1)};"
-            if not css_rule:
-                match = patterns['background_size'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"background-size: {v}{u};"
-            if not css_rule:
-                match = patterns['background_blur'].match(class_name)
-                if match:
-                    v,u = match.groups()
-                    css_rule = f"backdrop-filter: blur({v}{u}); background: rgba(0,0,0,0.2);"
-            if not css_rule:
-                match = patterns['display'].match(class_name)
-                if match:
-                    dv = display_map.get(class_name)
-                    css_rule = f"display: {dv};"
-            if not css_rule:
-                match = patterns['position'].match(class_name)
-                if match:
-                    pk = match.group(1)
-                    css_rule = f"position: {position_map.get(pk)};"
-            if not css_rule:
-                match = patterns['text_justify'].match(class_name)
-                if match:
-                    jk = match.group(1)
-                    css_rule = f"text-align: {text_justify_map.get(jk)};"
-            if not css_rule:
-                if class_name in ['flex-center','fl-cnt','fl-center','flex-cnt']:
-                    css_rule = "display: flex; justify-content: center; align-items: center;"
-            if not css_rule:
-                match = patterns['overflow_x'].match(class_name)
-                if match:
-                    css_rule = "overflow-x: auto;"
-            if not css_rule:
-                match = patterns['overflow_y'].match(class_name)
-                if match:
-                    css_rule = "overflow-y: auto;"
-            if not css_rule:
-                match = patterns['scroll_x'].match(class_name)
-                if match:
-                    css_rule = "position: fixed; overflow-x: auto; max-height:100vh;"
-            if not css_rule:
-                match = patterns['scroll_y'].match(class_name)
-                if match:
-                    css_rule = "position: fixed; overflow-y: auto; max-height:100vh;"
-            if not css_rule:
-                match = patterns['scroll_all'].match(class_name)
-                if match:
-                    css_rule = "position: fixed; overflow-x:auto; overflow-y:auto; max-height:100vh;"
-            return css_rule
+                    if re.fullmatch(r"\d+(\.\d+)?", val):
+                        val += "px"
+
+                    if prop == "font-weight":
+                        val = str(FONT_WEIGHT_MAP.get(val, val))
+                    elif prop == "font-style":
+                        val = FONT_STYLE_MAP.get(val, val)
+                    elif prop == "text-decoration":
+                        val = TEXT_DECORATION_MAP.get(val, val)
+                    elif prop == "text-transform":
+                        val = TEXT_TRANSFORM_MAP.get(val, val)
+                    elif prop == "text-align":
+                        val = TEXT_ALIGN_VALUE_MAP.get(val, val)
+                    elif prop == "display":
+                        val = DISPLAY_VALUE_MAP.get(val, val)
+                    elif prop == "position":
+                        val = POSITION_VALUE_MAP.get(val, val)
+                    elif prop in ("color", "background-color", "fill") and not (
+                            val.startswith("#") or val.startswith("rgb") or val.startswith("var(")):
+                        var = val.replace("-", "_")
+                        val = f"var(--{var})"
+                    elif prop == "backdrop-filter":
+                        val = f"blur({val})"
+
+                    return f"{prop}: {val};"
+
+            return None
 
         def parse_prefixed_class(class_name: str):
             parts = class_name.split(':')
-            original = class_name
-            error = None
+            orig = class_name
             found_media = None
             found_pseudos = []
             found_important = False
             found_not = False
             i = 0
             while i < len(parts):
-                part = parts[i]
-                lpart = part.lower()
-                if lpart in NOT_ALL:
-                    if i != 0 or i+1>=len(parts) or parts[i+1].lower() not in MEDIA_ALL:
-                        return {'error': f"ERROR({original})"}
+                p = parts[i].lower()
+                if p in NOT_ALL:
+                    if i != 0 or i+1 >= len(parts) or parts[i+1].lower() not in MEDIA_ALL:
+                        return {'error': f"ERROR({orig})"}
                     found_not = True
                     i += 1
-                elif lpart in IMP_ALL:
+                elif p in IMP_ALL:
                     found_important = True
                     i += 1
-                elif lpart in MEDIA_ALL:
+                elif p in MEDIA_ALL:
                     if found_media is not None:
-                        return {'error': f"ERROR({original})"}
-                    found_media = MEDIA_ALIASES.get(lpart, lpart)
+                        return {'error': f"ERROR({orig})"}
+                    found_media = MEDIA_ALIASES.get(p, p)
                     i += 1
-                elif lpart in PSEUDO_ALL:
-                    p = PSEUDO_PREFIXES[lpart]
-                    if p in found_pseudos:
-                        return {'error': f"ERROR({original})"}
-                    found_pseudos.append(p)
+                elif p in PSEUDO_ALL:
+                    pseudo = PSEUDO_PREFIXES[p]
+                    if pseudo in found_pseudos:
+                        return {'error': f"ERROR({orig})"}
+                    found_pseudos.append(pseudo)
                     i += 1
                 else:
                     break
             base = ":".join(parts[i:])
             if not base:
-                return {'error': f"ERROR({original})"}
-            pseudos_sorted = sorted(found_pseudos, key=lambda p: PSEUDO_ORDER.index(p))
+                return {'error': f"ERROR({orig})"}
+            found_pseudos.sort(key=lambda x: PSEUDO_ORDER.index(x))
             return {
                 'error': None,
                 'important': found_important,
                 'media': found_media,
-                'pseudos': pseudos_sorted,
+                'pseudos': found_pseudos,
                 'not': found_not,
                 'base': base,
-                'original': original
+                'original': orig
             }
 
-        CANONICAL_MEDIA_NAMES = ["phone","tablet","mobile","desktop"]
-        css_rules_parsed = []
-        css_rules_errors = []
+        CANONICAL_MEDIA = ["phone","tablet","mobile","desktop"]
+        css_parsed = []
+        css_errors = []
 
         for tag in soup.find_all(True):
             if not tag.has_attr('class'):
                 continue
-            for class_name in tag['class']:
-                pref = parse_prefixed_class(class_name)
+            for cls in tag['class']:
+                pref = parse_prefixed_class(cls)
                 if pref['error']:
-                    css_rules_errors.append(
-                        f".{escape_class_selector(class_name)} {{ color: red; font-weight: bold; content: '{pref['error']}'; }}"
+                    css_errors.append(
+                        f".{escape_class_selector(cls)} {{"
+                        f" color: red; font-weight: bold;"
+                        f" content: '{pref['error']}'; }}"
                     )
                     continue
 
-                selector_base = '.' + escape_class_selector(pref['original'])
-                if pref['base'] in CANONICAL_MEDIA_NAMES and not pref['not']:
-                    css_rules_parsed.append({
-                        'selector': selector_base,
+                if pref['base'] in CANONICAL_MEDIA and not pref['not']:
+                    sel = '.' + escape_class_selector(pref['original'])
+                    css_parsed.append({
+                        'selector': sel,
                         'rule_content': 'display: none;',
                         'media_query': None,
-                        'pseudo_elements': [],
+                        'pseudos': [],
                         'important': False,
-                        'not_media': False,
-                        'original_class': class_name
+                        'not_media': False
                     })
-                    css_rules_parsed.append({
-                        'selector': selector_base,
+                    css_parsed.append({
+                        'selector': sel,
                         'rule_content': 'display: inline;',
                         'media_query': MEDIA_PREFIXES[pref['base']],
-                        'pseudo_elements': [],
+                        'pseudos': [],
                         'important': False,
-                        'not_media': False,
-                        'original_class': class_name
+                        'not_media': False
                     })
                     continue
 
-                if pref['base'].startswith("not:") and pref['base'][4:] in CANONICAL_MEDIA_NAMES and pref['not']:
-                    base_media = pref['base'][4:]
-                    css_rules_parsed.append({
-                        'selector': selector_base,
+                if pref['not'] and pref['base'] in CANONICAL_MEDIA:
+                    base = pref['base']
+                    sel = '.' + escape_class_selector(pref['original'])
+                    css_parsed.append({
+                        'selector': sel,
                         'rule_content': 'display: none;',
                         'media_query': None,
-                        'pseudo_elements': [],
+                        'pseudos': [],
                         'important': False,
-                        'not_media': True,
-                        'original_class': class_name
+                        'not_media': True
                     })
-                    if base_media == "phone":
+                    if base == "phone":
                         expr = "(min-width: 768px)"
-                    elif base_media == "tablet":
+                    elif base == "tablet":
                         expr = "(max-width: 767px), (min-width: 1025px)"
-                    elif base_media == "mobile":
+                    elif base == "mobile":
                         expr = "(min-width: 1025px)"
                     else:
                         expr = "(max-width: 1024px)"
-                    css_rules_parsed.append({
-                        'selector': selector_base,
+                    css_parsed.append({
+                        'selector': sel,
                         'rule_content': 'display: inline;',
                         'media_query': expr,
-                        'pseudo_elements': [],
+                        'pseudos': [],
                         'important': False,
-                        'not_media': True,
-                        'original_class': class_name
+                        'not_media': True
                     })
                     continue
 
@@ -458,42 +764,46 @@ def _style(html: str) -> str:
                     continue
 
                 selector = '.' + escape_class_selector(pref['original'])
-                for pseudo in pref['pseudos']:
-                    selector += f":{pseudo}"
+                for ps in pref['pseudos']:
+                    selector += f":{ps}"
+
                 rule = base_rule.strip()
                 if pref['important']:
-                    rule = re.sub(r'(?<!important)\s*;', ' !important;', rule)
-                mq = MEDIA_PREFIXES.get(pref['media'], None)
-                css_rules_parsed.append({
+                    rule = re.sub(r';\s*$', ' !important;', rule)
+
+                css_parsed.append({
                     'selector': selector,
                     'rule_content': rule,
-                    'media_query': mq,
-                    'pseudo_elements': pref['pseudos'],
+                    'media_query': MEDIA_PREFIXES.get(pref['media']),
+                    'pseudos': pref['pseudos'],
                     'important': pref['important'],
-                    'not_media': pref['not'],
-                    'original_class': class_name
+                    'not_media': pref['not']
                 })
 
-        final_css_buckets = {}
-        for info in css_rules_parsed:
-            key = (info['media_query'], info['important'], tuple(info['pseudo_elements']), info['not_media'])
-            final_css_buckets.setdefault(key, []).append(
+        buckets = {}
+        for info in css_parsed:
+            key = (info['media_query'],
+                   info['important'],
+                   tuple(info['pseudos']),
+                   info['not_media'])
+            buckets.setdefault(key, []).append(
                 f"{info['selector']} {{\n    {info['rule_content']}\n}}"
             )
 
-        sorted_keys = sorted(final_css_buckets.keys(), key=lambda k: (k[0] is not None, k[3], k[1]))
-        new_css_rules_list = []
-        for k in sorted_keys:
-            rules = final_css_buckets[k]
+        keys = sorted(buckets,
+                      key=lambda k: (k[0] is not None, k[3], k[1]))
+        final_rules = []
+        for k in keys:
+            rules = buckets[k]
             if k[0]:
-                new_css_rules_list.append(f"@media {k[0]} {{\n" + "\n".join(rules) + "\n}}")
+                final_rules.append(f"@media {k[0]} {{\n" + "\n".join(rules) + "\n}}")
             else:
-                new_css_rules_list.extend(rules)
+                final_rules.extend(rules)
 
-        if css_rules_errors:
-            new_css_rules_list.append("\n".join(css_rules_errors))
+        if css_errors:
+            final_rules.append("\n".join(css_errors))
 
-        new_css = "\n".join(new_css_rules_list)
+        new_css = "\n".join(final_rules)
 
         if new_css:
             head = soup.find('head')
@@ -506,7 +816,6 @@ def _style(html: str) -> str:
                     nt.string = new_css
                     head.append(nt)
                     nt.insert_after(NavigableString("\n"))
-                return str(soup)
             else:
                 nt = soup.new_tag("style")
                 nt.string = new_css
@@ -516,7 +825,7 @@ def _style(html: str) -> str:
                 else:
                     soup.append(nt)
                     soup.append(NavigableString("\n"))
-                return str(soup)
+            return str(soup)
         else:
             return str(soup)
 

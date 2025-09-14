@@ -32,25 +32,26 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
             return match.group(1)
         return ""
 
-    @property
-    def args(self):
-        return tuple(signature(self).parameters.keys())
+    def render(self, **context):
+        """
+        Renders the component into HTML, passing context as variable values.
+        """
+        from comp.mods.service import render
+        return render(self, **context)
 
-    @property
-    def jinja_vars(self):
-        env = _jinja_env()
-        jinja_content = self.jinja
-        if not jinja_content:
-            return ()
-        ast = env.parse(jinja_content)
-        return tuple(sorted(meta.find_undeclared_variables(ast)))
+    def mock(self, **context):
+        """
+        Returns a mock PAGE from this component (e.g. using the mock function).
+        """
+        from comp.mods.service import mock
+        return mock(self, **context)
 
-    @property
-    def jinja_free_vars(self):
-        """Returns the tuple of free Jinja variables (not corresponding to arguments)."""
-        all_vars = set(self.jinja_vars)
-        arg_vars = set(self.args)
-        return tuple(sorted(list(all_vars - arg_vars)))
+    def preview(self, **context):
+        """
+        Adds this component to preview stack for interactive viewing.
+        """
+        from comp.mods.service import preview
+        return preview.add(self, **context)
 
     def __add__(self, other):
         if not isinstance(other, COMPONENT):
