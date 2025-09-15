@@ -46,6 +46,7 @@ class Nav:
     aria:          Aria=Aria()
     nav_id:        Str="nav"
     nav_class:     Str
+    nav_style:     Str
     nav_direction: Enum(Str, "vertical", "horizontal")="horizontal"
     nav_items:     List(NavItem)
     ul_id:         Str="nav-ul"
