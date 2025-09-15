@@ -108,6 +108,21 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         from comp.mods.functions import copy
         return copy(self, **other)
 
+    @property
+    def __signature__(self):
+        func = getattr(self, 'func', None)
+        if func and hasattr(func, '__signature__'):
+            return func.__signature__
+        import inspect
+        return inspect.signature(self)
+
+    @property
+    def __annotations__(self):
+        func = getattr(self, 'func', None)
+        if func and hasattr(func, '__annotations__'):
+            return func.__annotations__
+        return {}
+
 Content = Union(Str, Extension('md'))
 
 @typed
