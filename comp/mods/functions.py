@@ -43,7 +43,7 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
         new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
         new_annotations['return'] = Jinja
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Tuple, **kwargs: Dict) -> Jinja:
             ba = new_sig.bind(*args, **kwargs)
             ba.apply_defaults()
             context = dict(merged_ctx)
@@ -130,7 +130,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
         new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
         new_annotations['return'] = Jinja
 
-        def wrapper(*args: Tuple, **kwargs: Dict):
+        def wrapper(*args: Tuple, **kwargs: Dict) -> Jinja:
             ba = new_sig.bind(*args, **kwargs)
             ba.apply_defaults()
             context = dict(merged_ctx)
@@ -185,7 +185,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
         ordered_params = _order_params(new_params)
         new_sig = Signature(ordered_params)
 
-        def wrapper(*args: Tuple, **kwargs: Dict):
+        def wrapper(*args: Tuple, **kwargs: Dict) -> Jinja:
             if not context_in_sig:
                 __context__ = dict(merged_ctx)
             ba = new_sig.bind_partial(*args, **kwargs)
