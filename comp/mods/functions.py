@@ -4,7 +4,7 @@ from typed import typed, Tuple, Dict, Any, Str
 from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, COMPONENT, Inner
 from comp.mods.err import ConcatErr, JoinErr, EvalErr
-from comp.mods.helper.functions import _merge_context, _get_context, _copy
+from comp.mods.helper.functions import _merge_context, _get_context, _copy, _order_params
 from comp.mods.helper.helper import _get_jinja
 
 @typed
@@ -38,8 +38,9 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
 
         merged_ctx = _merge_context(comp_1, comp_2)
         merged_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
-        new_sig = Signature(parameters=merged_params, return_annotation=Jinja)
-        new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in merged_params]}
+        ordered_params = _order_params(merged_params)
+        new_sig = Signature(parameters=ordered_params, return_annotation=Jinja)
+        new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
         new_annotations['return'] = Jinja
 
         def wrapper(*args, **kwargs):
@@ -118,13 +119,14 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
         keyword_only = [p for p in keyword_only if p.name != '__context__']
         keyword_only.append(context_param)
 
-        ordered_params = positional_only + positional_or_keyword
+        all_params = positional_only + positional_or_keyword
         if var_positional:
-            ordered_params.append(var_positional)
-        ordered_params += keyword_only
+            all_params.append(var_positional)
+        all_params += keyword_only
         if var_keyword:
-            ordered_params.append(var_keyword)
+            all_params.append(var_keyword)
 
+        ordered_params = _order_params(all_params)
         new_sig = Signature(parameters=ordered_params, return_annotation=Jinja)
         new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
         new_annotations['return'] = Jinja
@@ -180,7 +182,9 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
                 new_params.append(param)
         if not context_in_sig:
             new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
-        new_sig = Signature(new_params)
+
+        ordered_params = _order_params(new_params)
+        new_sig = Signature(ordered_params)
 
         def wrapper(*args, **kwargs):
             if not context_in_sig:

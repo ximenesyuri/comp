@@ -9,6 +9,31 @@ from comp.mods.types.base import Jinja
 from comp.mods.helper.types import COMPONENT
 from comp.mods.helper.helper import _VAR_DELIM_START, _VAR_DELIM_END, _extract_raw_jinja
 
+def _order_params(params):
+    po = []
+    pk = []
+    var_po = None
+    ko = []
+    var_ko = None
+    for p in params:
+        if p.kind == Parameter.POSITIONAL_ONLY:
+            po.append(p)
+        elif p.kind == Parameter.POSITIONAL_OR_KEYWORD:
+            pk.append(p)
+        elif p.kind == Parameter.VAR_POSITIONAL:
+            var_po = p
+        elif p.kind == Parameter.KEYWORD_ONLY:
+            ko.append(p)
+        elif p.kind == Parameter.VAR_KEYWORD:
+            var_ko = p
+    result = po + pk
+    if var_po:
+        result.append(var_po)
+    result += ko
+    if var_ko:
+        result.append(var_ko)
+    return result
+
 def _get_context(func):
     sig = signature(getattr(func, "func", func))
     if "__context__" in sig.parameters:
