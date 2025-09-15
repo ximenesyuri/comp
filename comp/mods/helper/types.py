@@ -1,7 +1,7 @@
 import re
 from inspect import signature, getsource
 from jinja2 import meta
-from typed import typed, Str, Dict, Json, Bool, Union, Extension, Path, Typed
+from typed import typed, TYPE, Str, Dict, Json, Bool, Union, Extension, Path, Typed, name
 from typed.models import model, Optional
 from comp.mods.types.meta import _COMPONENT
 from comp.mods.helper.helper import _jinja_env
@@ -13,7 +13,7 @@ def _has_vars_of_given_type(instance, BASE, typ, n):
     ann = getattr(instance, '__annotations__', {})
     for name, t in ann.items():
         try:
-            if isinstance(t, type) and (t is typ):
+            if isinstance(t, TYPE) and (t is typ):
                 count += 1
         except Exception:
             pass
@@ -31,23 +31,14 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         return inspect.getsource(func)
 
     def render(self, **context):
-        """
-        Renders the component into HTML, passing context as variable values.
-        """
         from comp.mods.service import render
         return render(self, **context)
 
     def mock(self, **context):
-        """
-        Returns a mock PAGE from this component (e.g. using the mock function).
-        """
         from comp.mods.service import mock
         return mock(self, **context)
 
     def preview(self, **context):
-        """
-        Adds this component to preview stack for interactive viewing.
-        """
         from comp.mods.service import preview
         return preview.add(self, **context)
 
@@ -55,9 +46,9 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         if not isinstance(other, COMPONENT):
             raise TypeError(
                     "Could not realize components 'join' operation:\n"
-                f" ==> '{other.__name__}') has wrong type.\n"
+                f" ==> '{name(other)}') has wrong type.\n"
                  "     [expected_type] COMPONENT\n"
-                f"     [received_type] {type(other).__name__}"
+                f"     [received_type] {name(TYPE(other))}"
             )
         from comp.mods.functions import join
         return join(self, other)
@@ -66,16 +57,16 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         if not isinstance(other, COMPONENT):
             raise TypeError(
                 "Could not realize components 'concat' operation:\n"
-                f" ==> '{other.__name__}' has wrong type.\n"
+                f" ==> '{name(other)}' has wrong type.\n"
                  "      [expected_type] COMPONENT\n"
-                f"      [received_type] {type(other).__name__}"
+                f"      [received_type] {name(TYPE(other))}"
             )
-        if not isinstance(self, COMPONENT(1)):
+        if not isinstance(self, COMPONENT):
             raise TypeError(
                 "Could not realize components 'concat' operation:\n"
-                f"' ==> {self.__name__}' has wrong type.\n"
-                 "      [expected_type] COMPONENT(1)\n"
-                f"      [received_type] {type(self).__name__}"
+                f"' ==> {name(self)}' has wrong type.\n"
+                 "      [expected_type] COMPONENT\n"
+                f"      [received_type] {name(TYPE(self))}"
             )
 
         from comp.mods.functions import concat
@@ -85,16 +76,16 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         if not isinstance(other, dict):
             raise TypeError(
                 "Could not realize component 'eval' operation:\n"
-                f" ==> '{other}' has wrong type.\n"
-                 "     [expected_type] Dict(Any)\n"
-                f"     [received_type] {type(other).__name__}"
+                f" ==> '{name(other)}' has wrong type.\n"
+                 "     [expected_type] Dict\n"
+                f"     [received_type] {name(TYPE(other))}"
             )
         if not isinstance(self, COMPONENT):
             raise TypeError(
                 "Could not realize component 'eval' operation:\n"
-                f" ==> '{self.__name__}' has wrong type.\n"
+                f" ==> '{name(self)}' has wrong type.\n"
                  "     [expected_type] COMPONENT\n"
-                f"     [received_type] {type(self).__name__}"
+                f"     [received_type] {name(TYPE(self))}"
             )
         from comp.mods.functions import eval
         return eval(self, **other)
@@ -103,16 +94,16 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         if not isinstance(other, Dict(Str)):
             raise TypeError(
                 "Could not realize component 'copy' operation:\n"
-                f" ==> '{other}' has wrong type.\n"
-                 "     [expected_type] Dict(Any)\n"
-                f"     [received_type] {type(other).__name__}"
+                f" ==> '{name(other)}' has wrong type.\n"
+                 "     [expected_type] Dict(Str)\n"
+                f"     [received_type] {name(TYPE(other))}"
             )
         if not isinstance(self, COMPONENT):
             raise TypeError(
                 "Could not realize component 'copy' operation:\n"
-                f" ==> '{self.__name__}' has wrong type.\n"
+                f" ==> '{name(self)}' has wrong type.\n"
                  "     [expected_type] COMPONENT\n"
-                f"     [received_type] {type(self).__name__}"
+                f"     [received_type] {name(TYPE(self))}"
             )
         from comp.mods.functions import copy
         return copy(self, **other)
@@ -161,7 +152,7 @@ def _check_page(page: COMPONENT) -> Bool:
             return False
     return True
 
-class _PAGE(type(COMPONENT)):
+class _PAGE(TYPE(COMPONENT)):
     def __instancecheck__(cls, instance):
         if not isinstance(instance, COMPONENT):
             return False
