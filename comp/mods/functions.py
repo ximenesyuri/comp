@@ -37,7 +37,7 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
                 param_names.add(p.name)
 
         merged_ctx = _merge_context(comp_1, comp_2)
-        merged_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+        merged_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict))
         ordered_params = _order_params(merged_params)
         new_sig = Signature(parameters=ordered_params, return_annotation=Jinja)
         new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
@@ -164,7 +164,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
         raise JoinErr(e)
 
 @typed
-def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
+def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
     try:
         sig = signature(func)
         old_params = list(sig.parameters.items())
@@ -177,11 +177,11 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
             if name in fixed_kwargs:
                 new_params.append(Parameter(name, kind=param.kind, default=fixed_kwargs[name], annotation=param.annotation))
             elif name == '__context__':
-                new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+                new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict))
             else:
                 new_params.append(param)
         if not context_in_sig:
-            new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict(Any)))
+            new_params.append(Parameter('__context__', kind=Parameter.KEYWORD_ONLY, default=merged_ctx, annotation=Dict))
 
         ordered_params = _order_params(new_params)
         new_sig = Signature(ordered_params)
@@ -210,7 +210,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict(Any)) -> COMPONENT:
         wrapper.__signature__ = new_sig
         if hasattr(func, '__annotations__'):
             wrapper.__annotations__ = dict(func.__annotations__)
-        wrapper.__annotations__["__context__"] = Dict(Any)
+        wrapper.__annotations__["__context__"] = Dict
         comp = component(wrapper)
 
         base_jinja = _get_jinja(func)
