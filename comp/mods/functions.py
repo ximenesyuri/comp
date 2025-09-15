@@ -5,7 +5,7 @@ from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, COMPONENT, Inner
 from comp.mods.err import ConcatErr, JoinErr, EvalErr
 from comp.mods.helper.functions import _merge_context, _get_context, _copy, _order_params
-from comp.mods.helper.helper import _get_jinja
+from comp.mods.helper.helper import _get_jinja, _jinja
 
 @typed
 def copy(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
@@ -50,7 +50,6 @@ def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
             user_ctx = ba.arguments.get('__context__', {})
             context.update(user_ctx)
 
-            # Call comp_2 first to supply "inner" result into comp_1 at the right param.
             c2_args = {p.name: ba.arguments[p.name] for p in sig2.parameters.values() if p.name in ba.arguments and p.name != '__context__'}
             if '__context__' in sig2.parameters:
                 c2_args['__context__'] = context
@@ -131,7 +130,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
         new_annotations = {k: v.annotation for k, v in [(p.name, p) for p in ordered_params]}
         new_annotations['return'] = Jinja
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Tuple, **kwargs: Dict):
             ba = new_sig.bind(*args, **kwargs)
             ba.apply_defaults()
             context = dict(merged_ctx)
@@ -147,7 +146,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
                 if '__context__' in sig.parameters:
                     local_args['__context__'] = context
                 results.append(comp(**local_args))
-            return Jinja(''.join(str(r) for r in results))
+            return _jinja(''.join(str(r) for r in results))
 
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
@@ -186,7 +185,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
         ordered_params = _order_params(new_params)
         new_sig = Signature(ordered_params)
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Tuple, **kwargs: Dict):
             if not context_in_sig:
                 __context__ = dict(merged_ctx)
             ba = new_sig.bind_partial(*args, **kwargs)
@@ -205,7 +204,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
                 template = env.from_string(template_str)
                 return template.render(**call_kwargs)
             else:
-                return Jinja(template_str)
+                return _jinja(template_str)
 
         wrapper.__signature__ = new_sig
         if hasattr(func, '__annotations__'):
