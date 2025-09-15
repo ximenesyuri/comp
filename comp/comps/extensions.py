@@ -3,15 +3,24 @@ from comp.mods.decorators import component
 from comp.models import Div, Button, Search, Alpine
 from comp.comps.buttons import button_search
 from comp.comps.form import input
-from comp.mods.helper.comps import if_div, if_class, if_id, if_alpine
+from comp.mods.helper.comps import (
+    if_div,
+    if_class,
+    if_id,
+    if_alpine,
+    _render_inner
+)
 
 @component
 def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
-    alpine_data = if_alpine(alpine)
+    if alpine.alpine_inner:
+        rendered_inner = _render_inner(alpine.alpine_inner)
+    elif inner:
+        rendered_inner = _render_inner(inner)
+    else:
+        rendered_inner = ""
     return f"""jinja
-<div{ alpine_data }>[% if inner is defined %]
-    { inner }
-</div>[% else %]</div>[% endif %]
+<div{ if_alpine(alpine) }>{ rendered_inner }</div>
 """
 
 @component
@@ -27,7 +36,7 @@ def search(search: Search=Search(), __context__={}) -> Jinja:
     return f"""jinja
 <div{ search_div }>
     <div{ input_div }>
-        { input(search.input) }
+        { input(search.search_input) }
     </div>
     [% if not search.button == null_button %]
     <div{ button_div }>

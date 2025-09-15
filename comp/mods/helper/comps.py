@@ -26,25 +26,25 @@ from comp.models import (
 )
 
 @typed
-def if_key(entry: Any = None, what: Str = "") -> Str:
+def if_key(entry: Any=None, what: Str="") -> Str:
     if entry is not None and entry != "":
         return f' {what}="{entry}"'
     return ""
 
 @typed
-def if_bool(entry: Any = None, what: Str = "") -> Str:
+def if_bool(entry: Any=None, what: Str="") -> Str:
     if entry:
         return f" {what}"
     return ""
 
 @typed
-def if_size(size: Any = None, key_w: Str = "width", key_h: Str = "height") -> Str:
+def if_size(size: Any=None, key_w: Str="width", key_h: Str="height") -> Str:
     if size is not None and size != "":
         return f' {key_w}="{size}" {key_h}="{size}"'
     return ""
 
 @typed
-def if_aria(aria: Any = None) -> Str:
+def if_aria(aria: Any=None) -> Str:
     if not aria:
         return ""
     result = ""
@@ -110,7 +110,7 @@ def if_style(entry: Any = None) -> Str:
     return if_key(entry, "style")
 
 @typed
-def if_div(div: Div = Div()) -> Str:
+def if_div(div: Maybe(Div)=Div()) -> Str:
     if not div:
         return ""
     return (
@@ -122,7 +122,7 @@ def if_div(div: Div = Div()) -> Str:
     )
 
 @typed
-def if_alpine(alpine: Alpine = Alpine()) -> Str:
+def if_alpine(alpine: Maybe(Alpine)=Alpine()) -> Str:
     if not alpine:
         return ""
     return (
@@ -134,7 +134,7 @@ def if_alpine(alpine: Alpine = Alpine()) -> Str:
     )
 
 @typed
-def if_header(header: Header = Header()) -> Str:
+def if_header(header: Maybe(Header)=Header()) -> Str:
     if not header:
         return ""
     return (
@@ -146,7 +146,7 @@ def if_header(header: Header = Header()) -> Str:
     )
 
 @typed
-def if_aside(aside: Aside = Aside()) -> Str:
+def if_aside(aside: Maybe(Aside)=Aside()) -> Str:
     if not aside:
         return ""
     return (
@@ -158,7 +158,7 @@ def if_aside(aside: Aside = Aside()) -> Str:
     )
 
 @typed
-def if_sidebar(sidebar: Sidebar = Sidebar()) -> Str:
+def if_sidebar(sidebar: Maybe(Sidebar)=Sidebar()) -> Str:
     if not sidebar:
         return ""
     return (
@@ -170,7 +170,7 @@ def if_sidebar(sidebar: Sidebar = Sidebar()) -> Str:
     )
 
 @typed
-def if_col(col: Column=Column()) -> Str:
+def if_col(col: Maybe(Column)=Column()) -> Str:
     if not col:
         return ""
     return (
@@ -182,7 +182,7 @@ def if_col(col: Column=Column()) -> Str:
     )
 
 @typed
-def if_row(row: Row = Row()) -> Str:
+def if_row(row: Maybe(Row)=Row()) -> Str:
     if not row:
         return ""
     return (
@@ -194,7 +194,7 @@ def if_row(row: Row = Row()) -> Str:
     )
 
 @typed
-def if_grid(grid: Grid = Grid()) -> Str:
+def if_grid(grid: Maybe(Grid)=Grid()) -> Str:
     if not grid:
         return ""
     return (
@@ -206,7 +206,7 @@ def if_grid(grid: Grid = Grid()) -> Str:
     )
 
 @typed
-def if_text(text: Text = Text()) -> Str:
+def if_text(text: Maybe(Text)=Text()) -> Str:
     if not text:
         return ""
     return (
@@ -218,7 +218,7 @@ def if_text(text: Text = Text()) -> Str:
     )
 
 @typed
-def if_title(title: Title = Title()) -> Str:
+def if_title(title: Maybe(Title)=Title()) -> Str:
     if not title:
         return ""
     return (
@@ -230,7 +230,7 @@ def if_title(title: Title = Title()) -> Str:
     )
 
 @typed
-def if_link(link: Link = Link()) -> Str:
+def if_link(link: Maybe(Link)=Link()) -> Str:
     if not link:
         return ""
     return (
@@ -246,7 +246,7 @@ def if_link(link: Link = Link()) -> Str:
     )
 
 @typed
-def if_button(button: Button = Button()) -> Str:
+def if_button(button: Maybe(Button)=Button()) -> Str:
     if not button:
         return ""
     return (
@@ -260,7 +260,7 @@ def if_button(button: Button = Button()) -> Str:
     )
 
 @typed
-def if_img(img: Image = Image()) -> Str:
+def if_img(img: Maybe(Image)=Image()) -> Str:
     if not img:
         return ""
     return (
@@ -275,7 +275,7 @@ def if_img(img: Image = Image()) -> Str:
     )
 
 @typed
-def if_figure(figure: Figure = Figure()) -> Str:
+def if_figure(figure: Maybe(Figure)=Figure()) -> Str:
     if not figure:
         return ""
     return (
@@ -284,7 +284,7 @@ def if_figure(figure: Figure = Figure()) -> Str:
     )
 
 @typed
-def if_script(script: Script = Script()) -> Str:
+def if_script(script: Maybe(Script)=Script()) -> Str:
     if not script:
         return ""
     return (
@@ -297,7 +297,7 @@ def if_script(script: Script = Script()) -> Str:
     )
 
 @typed
-def if_asset(asset: Asset = Asset()) -> Str:
+def if_asset(asset: Maybe(Asset)=Asset()) -> Str:
     if not asset:
         return ""
     return (
@@ -309,7 +309,7 @@ def if_asset(asset: Asset = Asset()) -> Str:
     )
 
 @typed
-def if_item(item: Item = Item()) -> Str:
+def if_item(item: Maybe(Item)=Item()) -> Str:
     if not item:
         return ""
     return (
@@ -321,7 +321,7 @@ def if_item(item: Item = Item()) -> Str:
     )
 
 @typed
-def if_ul(ul: Unordered = Unordered()) -> Str:
+def if_ul(ul: Maybe(Unordered)=Unordered()) -> Str:
     if not ul:
         return ""
     return (
@@ -333,7 +333,7 @@ def if_ul(ul: Unordered = Unordered()) -> Str:
     )
 
 @typed
-def if_ol(ol: Ordered = Ordered()) -> Str:
+def if_ol(ol: Maybe(Ordered)=Ordered()) -> Str:
     if not ol:
         return ""
     return (
@@ -345,7 +345,7 @@ def if_ol(ol: Ordered = Ordered()) -> Str:
     )
 
 @typed
-def if_nav(nav: Nav = Nav()) -> Str:
+def if_nav(nav: Maybe(Nav)=Nav()) -> Str:
     if not nav:
         return ""
     return (
@@ -357,7 +357,7 @@ def if_nav(nav: Nav = Nav()) -> Str:
     )
 
 @typed
-def if_icon(icon: Icon = Icon()) -> Str:
+def if_icon(icon: Maybe(Icon)=Icon()) -> Str:
     if not icon:
         return ""
     return (
@@ -373,7 +373,7 @@ def if_icon(icon: Icon = Icon()) -> Str:
     )
 
 @typed
-def if_input(input: Input = Input()) -> Str:
+def if_input(input: Maybe(Input)=Input()) -> Str:
     if not input:
         return ""
     return (
@@ -406,3 +406,47 @@ def if_input(input: Input = Input()) -> Str:
       + if_key(getattr(input, "input_for", None),    "for")
     )
 
+
+def _render_inner(obj):
+    if obj is None:
+        return ""
+    from comp.comps.content    import text, title, link, img, figure, button, logo
+    from comp.comps.lists      import item, unordered, ordered, nav
+    from comp.comps.includes   import asset, script
+    from comp.comps.buttons    import button_close, button_menu, button_search, button_home, button_theme_switcher
+    from comp.comps.extensions import alpine, search, search_script
+    from comp.comps.form       import input as form_input
+    from comp.comps.responsive import desktop, tablet, phone, mobile, not_desktop, not_tablet, not_phone, not_mobile
+    from comp.comps.structure  import div, header, aside, col, col_1, col_2, col_3, col_4, col_5, row, grid
+
+    from comp.models.content    import Text, Title, Link, Image, Figure, Button, Logo, Icon
+    from comp.models.lists      import Item, Unordered, Ordered, Nav
+    from comp.models.includes   import Script, Asset
+    from comp.models.extensions import Alpine, Search
+    from comp.models.form       import Input
+    from comp.models.structure  import Div, Header, Aside, Column, Row, Grid
+
+    if isinstance(obj, Text):       return text(obj)
+    if isinstance(obj, Title):      return title(obj)
+    if isinstance(obj, Link):       return link(obj)
+    if isinstance(obj, Image):      return img(obj)
+    if isinstance(obj, Figure):     return figure(obj)
+    if isinstance(obj, Button):     return button(obj)
+    if isinstance(obj, Logo):       return logo(obj)
+    if isinstance(obj, Item):       return item(obj)
+    if isinstance(obj, Unordered):  return unordered(obj)
+    if isinstance(obj, Ordered):    return ordered(obj)
+    if isinstance(obj, Nav):        return nav(obj)
+    if isinstance(obj, Script):     return script(obj)
+    if isinstance(obj, Asset):      return asset(obj)
+    if isinstance(obj, Alpine):     return alpine(obj)
+    if isinstance(obj, Search):     return search(obj)
+    if isinstance(obj, Input):      return form_input(obj)
+    if isinstance(obj, Div):        return div(obj)
+    if isinstance(obj, Header):     return header(obj)
+    if isinstance(obj, Aside):      return aside(obj)
+    if isinstance(obj, Column):     return col(obj)
+    if isinstance(obj, Row):        return row(obj)
+    if isinstance(obj, Grid):       return grid(obj)
+    if isinstance(obj, str):        return obj
+    return str(obj)

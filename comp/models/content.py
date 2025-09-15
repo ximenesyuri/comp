@@ -19,6 +19,7 @@ class Icon:
     globals:      Globals=Globals()
     icon_id:      Str="icon"
     icon_class:   Str
+    icon_style:   Str
     icon_size:    Str="24px"
     icon_fill:    HEX="#000000"
     icon_viewbox: Str="0 -960 960 960"

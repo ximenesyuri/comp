@@ -5,7 +5,6 @@ from comp.mods.helper.comps import if_input
 
 @component
 def input(input: Input=Input()) -> Jinja:
-    input_data = if_input(input)
     return f"""jinja
-<input{input_data}>
+<input{ if_input(input) }>
 """

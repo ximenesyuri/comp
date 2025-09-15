@@ -8,40 +8,44 @@ from comp.mods.helper.comps import (
     if_link,
     if_img,
     if_figure,
-    if_button
+    if_button,
+    _render_inner
 )
 
 @component
 def text(text: Text=Text(), inner: Inner="") -> Jinja:
-    text_data = if_text(text)
+    if text.text_inner:
+        rendered_inner = _render_inner(text.text_inner)
+    elif inner:
+        rendered_inner = _render_inner(inner)
+    else:
+        rendered_inner = ""
     return f"""jinja
-<p{ text_data }>[% if text.text_inner %]
-    { text.text_inner }
-</p>[% elif inner is defined %]
-    { inner }
-</p>[% else %]</p>[% endif %]
+<p{ if_text(text) }>{ rendered_inner }</p>
 """
 
 @component
 def title(title: Title=Title(), inner: Inner="") -> Jinja:
-    title_data = if_title(title)
+    if title.title_inner:
+        rendered_inner = _render_inner(title.title_inner)
+    elif inner:
+        rendered_inner = _render_inner(inner)
+    else:
+        rendered_inner = ""
     return f"""jinja
-<{ title.title_tag }{ title_data }>[% if title.title_inner %]
-    { title.title_inner }
-</{ title.title_tag }>[% elif inner is defined %]
-    { inner }
-</{ title.title_tag }>[% else %]</{ title.title_tag }>[% endif %]
+<{ title.title_tag }{ if_title(title) }>{ rendered_inner }</{ title.title_tag }>
 """
 
 @component
 def link(link: Link=Link(), inner: Inner="") -> Jinja:
-    link_data = if_link(link)
+    if link.link_inner:
+        rendered_inner = _render_inner(link.link_inner)
+    elif inner:
+        rendered_inner = _render_inner(inner)
+    else:
+        rendered_inner = ""
     return f"""jinja
-<a{ link_data }>[% if link.link_inner %]
-    { link.link_inner }
-</a>[% elif inner is defined %]
-    { inner }
-</a>[% else %]</a>[% endif %] 
+<a{ if_link(link) }>{ rendered_inner }</a>
 """
 
 @component
@@ -52,30 +56,27 @@ def img(img: Img=Img()) -> Tag('img'):
 
 @component
 def figure(figure: Figure=Figure()) -> Tag('figure'):
-    figure_data = if_figure(figure)
-    img_data = if_img(figure.figure_img)
     return f"""jinja
-<figure{ figure_data }>
-    <img{ img_data }>
-    [% if figure.figure_caption %]<figcaption>{ figure_caption }</figcaption>[% endif %]
+<figure{ if_figure(figure) }>
+    <img{ if_img(figure.figure_img) }>
+    [% if figure.figure_caption is defined %]<figcaption>{ figure.figure_caption }</figcaption>[% endif %]
 </figure>
 """
 
 @component
 def button(button: Button=Button(), inner: Inner="") -> Jinja:
-    button_data = if_button(button)
-    return f"""jinja 
-<button{ button_data }>[% if button.button_inner %]
-    { button.button_inner }
-</button>[% elif inner is defined %]
-    { inner }
-</button>[% else %]</button>[% endif %]
+    if button.button_inner:
+        rendered_inner = _render_inner(button.button_inner)
+    elif inner:
+        rendered_inner = _render_inner(inner)
+    else:
+        rendered_inner = ""
+    return f"""jinja
+<button{ if_button(button) }>{ rendered_inner }</button>
 """
 
 @component
 def logo(logo: Logo=Logo()) -> Jinja:
-    img_data = if_img(logo.logo_img)
-    link_data = if_link(logo.logo_link)
     return f"""jinja
-<a{link_data}><img{img_data}></a>
+<a{ if_img(logo.logo_img) }><img{ if_link(logo.logo_link) }></a>
 """
