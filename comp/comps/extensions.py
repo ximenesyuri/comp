@@ -75,12 +75,14 @@ def search_script(search: Search=Search(), __context__={}) -> Jinja:
     results_limit       = if_defined(search.search_results.results_limit, 10)
     index_types         = if_defined(search.search_index.index_types, {})
     index_store_types   = if_defined(search.search_index.index_store_types, {})
+    index_json          = if_defined(search.search_index.index_json, {})
     display_cover       = if_defined(search.search_results.results_cover.display, False)
     display_title       = if_defined(search.search_results.results_title.display, False)
     display_kind        = if_defined(search.search_results.results_kind.display, False)
     display_desc        = if_defined(search.search_results.results_desc.display, False)
     __context__.update({'index_types': index_types})
     __context__.update({'index_store_types': index_store_types})
+    __context__.update({'index_json': index_json})
     __context__.update({'display_cover': display_cover})
     __context__.update({'display_title': display_title})
     __context__.update({'display_kind': display_kind})
@@ -103,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {{
     function getAlpineScope() {{
         return document.body.__x && document.body.__x.$data ? document.body.__x.$data : null;
     }}
-    fetch("[[ search.search_index.index_json_file ]]")
+    fetch("[[ index_json ]]")
         .then(response => {{
             if (!response.ok) throw new Error("Missing searchindex.json");
             return response.json();

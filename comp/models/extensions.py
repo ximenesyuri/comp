@@ -1,4 +1,4 @@
-from typed import Str, Bool, Dict, Json, Int, List, Extension
+from typed import Str, Bool, Dict, Json, Int, List, Extension, Union
 from typed.models import optional
 from comp.models.structure import Div
 from comp.models.content import Button
@@ -89,7 +89,7 @@ class _SearchResults:
 class _SearchIndex:
     index_types:       List(Str)=["title", "content", "tags", "category", "kind"]
     index_store_types: List(Str)=["id", "title", "content", "href", "tags", "category", "kind"]
-    index_json_file:   Extension('json')="jsonindex.json"
+    index_json:        Union(Json, Extension('json'))={}
 
 @optional
 class Search:
