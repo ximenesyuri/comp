@@ -44,6 +44,12 @@ def if_size(size: Any=None, key_w: Str="width", key_h: Str="height") -> Str:
     return ""
 
 @typed
+def if_defined(entry: Any=None, default: Any="") -> Str:
+    if entry:
+        return entry
+    return default
+
+@typed
 def if_aria(aria: Any=None) -> Str:
     if not aria:
         return ""
