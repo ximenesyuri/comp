@@ -41,7 +41,7 @@ def search(search: Search=Search(), __context__={}) -> Jinja:
     <div{ input_div }>
         { search_input }
     </div>
-    [% if not search.button == null_button %]
+    [% if not search.search_button == null_button %]
     <div{ button_div }>
         { button_search }
     </div>
