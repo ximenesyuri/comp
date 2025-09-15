@@ -47,7 +47,7 @@ def search(search: Search=Search(), __context__={}) -> Jinja:
     </div>
     [% endif %]
 </div>
-<div{ results_div }x-show="hasSearchResults" x-cloak style="{ results_div_style }">
+<div{ results_div } x-show="hasSearchResults" x-cloak style="{ results_div_style }">
 </div>
 """
 
