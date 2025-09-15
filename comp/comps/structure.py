@@ -2,6 +2,7 @@ from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, Inner
 from comp.models.structure import Div, Header, Column, Row, Grid, Aside
 from comp.mods.helper.comps import if_div, if_header, if_col, if_row, if_grid
+from comp.comps.helper import _render_inner
 
 @component
 def header(header: Header=Header(), inner: Inner="") -> Jinja:
