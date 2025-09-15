@@ -12,7 +12,7 @@ def copy(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
     return component(_copy(comp, **renamed_args))
 
 @typed
-def concat(comp_1: COMPONENT(1), comp_2: COMPONENT) -> COMPONENT:
+def concat(comp_1: COMPONENT, comp_2: COMPONENT) -> COMPONENT:
     try:
         sig1 = signature(comp_1)
         sig2 = signature(comp_2)
