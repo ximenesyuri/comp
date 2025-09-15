@@ -40,12 +40,9 @@ def col(col: Column=Column(), inner: Inner="") -> Jinja:
     if "col" not in existing.split():
         col.col_class = (existing + " col").strip()
     col_data = if_col(col)
+    rendered_inner = _render_inner(col.col_inner) if col.col_inner else inner
     return f"""jinja
-<div{ col_data }>[% if col.col_inner %]
-    { col.col_inner }
-</div>[% elif inner is defined %]
-    { inner }
-</div>[% else %]</div>[% endif %]
+<div{ col_data }>{ col.col_inner }</div>
 """
 
 @component
