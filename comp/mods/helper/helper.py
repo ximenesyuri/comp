@@ -138,7 +138,7 @@ def _find_jinja_inner_vars(jinja_src, block_start="[%", block_end="%]"):
         inner_vars[var] = val2
     return inner_vars
 
-
+@typed
 def _render_jinja(jinja_string: Str, **context: Dict) -> Str:
     jinja_src = _extract_raw_jinja(jinja_string)
     env = _jinja_env()
