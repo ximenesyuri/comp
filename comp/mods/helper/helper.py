@@ -16,6 +16,7 @@ from typed import (
     Path,
     List,
     null,
+    Dict
 )
 from jinja2 import Environment, meta, StrictUndefined
 from utils import md, file, json
