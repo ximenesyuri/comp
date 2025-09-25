@@ -1,11 +1,11 @@
 from typed import Str, Union, Extension
-from comp.mods.types.meta import _Jinja, _Inner
+from comp.mods.types.meta import JINJA, INNER
 from comp.mods.helper.types import (
     COMPONENT,
     _PAGE
 )
 
-class Jinja(Str, metaclass=_Jinja):
+class Jinja(Str, metaclass=JINJA):
     @property
     def vars(self):
         from comp.mods.service import jinja_vars
@@ -28,7 +28,7 @@ class Jinja(Str, metaclass=_Jinja):
     __display__ = "Jinja"
     __null__    = "jinja"
 
-Inner   = _Inner('Inner', (Str,), {})
+Inner   = INNER('Inner', (Str,), {})
 PAGE    = _PAGE('PAGE', (COMPONENT, ), {})
 Content = Union(Str, Extension('md'))
 
