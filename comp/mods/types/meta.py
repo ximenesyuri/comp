@@ -1,17 +1,29 @@
 import re
 from inspect import signature, Parameter, getsource
-from typed import TYPE, Union, Str, Int, Bool, Any, Typed, Json, Prod, Dict
 from jinja2 import Environment
+from typed import (
+    TYPE,
+    Union,
+    Str,
+    Int,
+    Bool,
+    Any,
+    Typed,
+    Json,
+    Prod,
+    Dict,
+    names,
+    MODEL
+)
 
-class _Jinja(TYPE(Str)):
+class JINJA(TYPE(Str)):
     def __instancecheck__(cls, instance):
-        if not isinstance(instance, Str):
+        if not instance in Str:
             return False
 
         from comp.mods.helper.helper import _jinja_regex
         regex_str = re.compile(_jinja_regex(), re.DOTALL)
-        if isinstance(instance, Str):
-            match = regex_str.match(instance)
+        match = regex_str.match(instance)
         if not match:
             return False
         jinja_content = match.group(1)
@@ -23,34 +35,116 @@ class _Jinja(TYPE(Str)):
             print(f"{e}")
             return False
 
-class _Inner(TYPE(Str)):
+class INNER(TYPE(Str), TYPE(MODEL)):
     def __instancecheck__(cls, instance):
-        if not isinstance(instance, Str):
+        if not instance in Str or not instance in MODEL:
             return False
         return True
 
 class _COMPONENT(TYPE(Typed)):
-    _numbered = {}
-    def __call__(cls, *args, **kwargs):
-        if not args:
-            return super().__call__(cls)
-        n = args[0]
-        if n not in cls._numbered:
-            name = f"COMPONENT({n})"
-            from comp.mods.helper.types import COMPONENT
-            class _COMPONENT_CALL(COMPONENT):
-                _inner_vars = n
-                __display__ = name
-            cls._numbered[n] = _COMPONENT_CALL
-        return cls._numbered[n]
+    _param_store = {}
+
+    def __call__(cls, *types, cod=None, inner=None, content=None):
+        key = (types, cod, inner, content)
+        if key in cls._param_store:
+            return cls._param_store[key]
+        from comp.mods.helper.types import COMPONENT
+        type_names = names(*types)
+        name_parts = []
+        if type_names:
+            name_parts.append(type_names)
+        if cod:
+            name_parts.append(f"cod={getattr(cod, '__name__', str(cod))}")
+        if inner is not None:
+            name_parts.append(f"inner={inner}")
+        if content is not None:
+            name_parts.append(f"content={content}")
+        clsname = f"COMPONENT[{', '.join(name_parts)}]"
+        class _ParamComponent(COMPONENT):
+            __display__ = clsname
+            _param_types = types
+            _param_cod = cod
+            _param_inner = inner
+            _param_content = content
+
+            def __instancecheck__(self, instance):
+                from comp.mods.helper.types import COMPONENT
+                if not instance in COMPONENT:
+                    return False
+                if not TYPE(instance.codomain) <= JINJA:
+                    return False
+                if types:
+                    if not getattr(instance, 'domain', None):
+                        return False
+                    if not all(isinstance(x, types) for x in domain):
+                        for d, t in zip(domain, types):
+                            if not isinstance(d, t):
+                                return False
+                if cod is not None:
+                    if not cod <= _Jinja:
+                        return False
+                    if not instance.codomain <= cod:
+                        return False
+                if inner is not None:
+                    n_inner = len(getattr(inst, 'inner_vars', []))
+                    if n_inner != inner:
+                        return False
+                if content is not None:
+                    n_content = len(getattr(inst, 'content_vars', []))
+                    if n_content != content:
+                        return False
+                return True
+
+        _ParamComponent.__name__ = clsname
+        cls._param_store[key] = _ParamComponent
+        return _ParamComponent
 
     def __instancecheck__(cls, instance):
-        if hasattr(cls, '_inner_vars'):
-            from comp.mods.helper.types import COMPONENT, _has_vars_of_given_type
-            from comp.mods.types.base import Inner
-            return _has_vars_of_given_type(instance, COMPONENT, Inner, cls._inner_vars)
-        else:
-            return super().__instancecheck__(instance)
+        params = {k: getattr(cls, k, None) for k in ["_param_types", "_param_cod", "_param_inner", "_param_content"]}
+        from comp.mods.helper.types import COMPONENT
+        if not instance in COMPONENT:
+            return False
+
+        _types = params.get("_param_types", ())
+        if _types:
+            domain = getattr(instance, 'domain', None)
+            if not domain:
+                return False
+            if not all(isinstance(x, _types) for x in domain):
+                return False
+
+        _cod = params.get("_param_cod")
+        if _cod is not None:
+            codom = getattr(instance, 'codomain', None)
+            if codom:
+                from comp.mods.types.meta import _Jinja
+                try:
+                    if not issubclass(_cod, _Jinja):
+                        return False
+                    if not issubclass(codom, _cod):
+                        return False
+                except Exception:
+                    return False
+
+        _inner = params.get("_param_inner")
+        if _inner is not None:
+            n_inner = len(getattr(instance, 'inner_vars', []))
+            if n_inner != _inner:
+                return False
+        _content = params.get("_param_content")
+        if _content is not None:
+            n_content = len(getattr(instance, 'content_vars', []))
+            if n_content != _content:
+                return False
+        return True
+
+class _GRID_COMPONENT(_COMPONENT):
+    def __instancecheck__(cls, instance):
+        from comp.mods.helper.types import COMPONENT
+        if not instance in COMPONENT:
+            return False
+
+
 
 def _check_page(page):
     from comp.service import render

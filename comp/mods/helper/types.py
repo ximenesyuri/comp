@@ -8,18 +8,18 @@ from comp.mods.helper.helper import _jinja_env
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
     if n < 0:
-        return isinstance(instance, BASE)
+        return instance in BASE
     count = 0
     ann = getattr(instance, '__annotations__', {})
     for name, t in ann.items():
         try:
-            if isinstance(t, TYPE) and (t is typ):
+            if (t in TYPE) and (t is typ):
                 count += 1
         except Exception:
             pass
-    return isinstance(instance, BASE) and count == n
+    return (instance in BASE) and count == n
 
-class COMPONENT(_COMPONENT('Component', (Typed,), {})):
+class COMPONENT(Typed, metaclass=_COMPONENT):
     @property
     def jinja(self):
         if hasattr(self, '_jinja'):
@@ -43,7 +43,7 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         return preview.add(self, **context)
 
     def __add__(self, other):
-        if not isinstance(other, COMPONENT):
+        if not other in COMPONENT:
             raise TypeError(
                     "Could not realize components 'join' operation:\n"
                 f" ==> '{name(other)}') has wrong type.\n"
@@ -54,14 +54,14 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         return join(self, other)
 
     def __mul__(self, other):
-        if not isinstance(other, COMPONENT):
+        if not other in COMPONENT:
             raise TypeError(
                 "Could not realize components 'concat' operation:\n"
                 f" ==> '{name(other)}' has wrong type.\n"
                  "      [expected_type] COMPONENT\n"
                 f"      [received_type] {name(TYPE(other))}"
             )
-        if not isinstance(self, COMPONENT):
+        if not self in COMPONENT:
             raise TypeError(
                 "Could not realize components 'concat' operation:\n"
                 f"' ==> {name(self)}' has wrong type.\n"
@@ -73,14 +73,14 @@ class COMPONENT(_COMPONENT('Component', (Typed,), {})):
         return concat(self, other)
 
     def __truediv__(self, other):
-        if not isinstance(other, dict):
+        if other in Dict:
             raise TypeError(
                 "Could not realize component 'eval' operation:\n"
                 f" ==> '{name(other)}' has wrong type.\n"
                  "     [expected_type] Dict\n"
                 f"     [received_type] {name(TYPE(other))}"
             )
-        if not isinstance(self, COMPONENT):
+        if not self in COMPONENT:
             raise TypeError(
                 "Could not realize component 'eval' operation:\n"
                 f" ==> '{name(self)}' has wrong type.\n"

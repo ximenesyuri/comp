@@ -4,7 +4,14 @@ from typed import typed, Bool, List, Str, Nill, Dict, Any, Extension, Url, Union
 from markdown import markdown
 from jinja2 import DictLoader, StrictUndefined, meta
 from comp.mods.types.base import Content
-from comp.mods.helper.helper import _jinja_env, _extract_raw_jinja, _render_jinja, _find_jinja_inner_vars, _find_jinja_vars
+from comp.mods.helper.helper import (
+    _jinja,
+    _jinja_env,
+    _extract_raw_jinja,
+    _render_jinja,
+    _find_jinja_inner_vars,
+    _find_jinja_vars
+)
 from comp.mods.helper.service import _style, _minify, _Preview
 from comp.mods.err import RenderErr, MockErr
 from comp.mods.types.base import COMPONENT, Jinja, PAGE
@@ -13,13 +20,13 @@ from comp.models import Script, Asset
 
 @typed
 def jinja_vars(entity: Union(Jinja, COMPONENT)) -> Dict(Any):
-    if isinstance(entity, Jinja):
+    if entity in Jinja:
         inner = _find_jinja_inner_vars(_extract_raw_jinja(entity))
         all_vars = set(_find_jinja_vars(entity))
         free_vars = tuple(sorted(all_vars - set(inner.keys())))
         return {"inner": inner, "free": free_vars}
-    if isinstance(entity, COMPONENT):
-        return jinja_vars("jinja" + entity.jinja)
+    if entity in COMPONENT:
+        return jinja_vars(_jinja(entity.jinja))
 
 @typed
 def jinja_inner_vars(entity: Union(Jinja, COMPONENT)) -> Dict(Any):
@@ -39,7 +46,7 @@ def render(
     ) -> Str:
 
     try:
-        if isinstance(entity, Jinja):
+        if entity in Jinja:
             return _render_jinja(entity, **kwargs)
 
         definer = getattr(entity, "func", entity)
@@ -89,7 +96,7 @@ def render(
         script_tags = []
         for scr in __scripts__:
             script_src = scr.script_src
-            if isinstance(script_src, Extension('js')) and not isinstance(script_src, Url('http', 'https')):
+            if script_src in Extension('js') and not script_src in Url('http', 'https'):
                 try:
                     with open(script_src, "r", encoding="utf-8") as f:
                         code = f.read()
@@ -105,7 +112,7 @@ def render(
         asset_tags = []
         for ast in __assets__:
             href = getattr(ast, "asset_href", "")
-            if href and isinstance(href, Extension('css')) and not isinstance(href, Url('http', 'https')):
+            if href and href in Extension('css') and not href in Url('http', 'https'):
                 try:
                     with open(href, "r", encoding="utf-8") as f:
                         code = f.read()
@@ -113,7 +120,7 @@ def render(
                 except Exception as e:
                     tag = f"<!-- [Could not read {href}: {e}] -->"
                 asset_tags.append(tag)
-            elif href and isinstance(href, Url('http', 'https')):
+            elif href and href in Url('http', 'https'):
                 tag = render(asset_entity, asset=ast, __styled__=False)
                 asset_tags.append(tag)
             else:

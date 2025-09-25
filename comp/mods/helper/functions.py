@@ -65,7 +65,7 @@ def _extract_recursive_globals(func):
             referenced.add(default.__name__)
     if sig.return_annotation is not _empty:
         ra = sig.return_annotation
-        if isinstance(ra, str):
+        if ra in Str:
             referenced.add(ra.split('.')[-1])
         elif hasattr(ra, '__name__'):
             referenced.add(ra.__name__)

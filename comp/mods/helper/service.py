@@ -14,11 +14,10 @@ from comp.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
 from comp.mods.err import StyleErr, MinifyErr, PreviewErr
 
-def _style(html: str) -> str:
+@typed
+def _style(html: Str) -> Str:
     try:
         soup = BeautifulSoup(html, "html.parser")
-
-        # 1. (Not changed) Handle .row/.col calculation
         for row in soup.find_all(class_="row"):
             cols = [
                 c
@@ -61,71 +60,48 @@ def _style(html: str) -> str:
                 .replace(".", "\\.")
             )
 
-        # ------------------------------
-        # Font-family (table 15)
         FONT_FAMILY_PATTERNS = [
-            (re.compile(r"^(?:font-family-|ff-)(.+)$", re.I), ""),  # font-family-<x>, ff-<x>
-            (re.compile(r"^(?:font-family-sans-|ff-sans-|ff-ss-|sans-)(.+)$", re.I), 'sans-serif'),  # font-family-sans-<x>, sans-<x>
-            (re.compile(r"^(?:font-family-serif-|ff-serif-|ff-s-|serif-)(.+)$", re.I), 'serif'),    # font-family-serif-<x>, serif-<x>
-            (re.compile(r"^(?:font-family-mono-|ff-mono-|ff-m-|mono-)(.+)$", re.I), 'monospace'),  # font-family-mono-<x>, mono-<x>
+            (re.compile(r"^(?:font-family-|ff-)(.+)$", re.I), ""),
+            (re.compile(r"^(?:font-family-sans-|ff-sans-|ff-ss-|sans-)(.+)$", re.I), 'sans-serif'),
+            (re.compile(r"^(?:font-family-serif-|ff-serif-|ff-s-|serif-)(.+)$", re.I), 'serif'),
+            (re.compile(r"^(?:font-family-mono-|ff-mono-|ff-m-|mono-)(.+)$", re.I), 'monospace'),
         ]
 
-        # Font-size (table 16)
         FONT_SIZE_KEYWORDS = {
-            # xx-small
             "font-size-xx-small": "xx-small", "xx-small": "xx-small", "fz-xx-small": "xx-small",
             "fz-xx-s": "xx-small", "fz-xxs": "xx-small",
-            # x-small
             "font-size-x-small": "x-small", "x-small": "x-small", "fz-x-small": "x-small",
             "fz-x-s": "x-small", "fz-xs": "x-small",
-            # small
             "font-size-small": "small", "small": "small", "fz-small": "small", "fz-s": "small",
-            # medium
             "font-size-medium": "medium", "medium": "medium", "fz-medium": "medium", "fz-m": "medium",
-            # large
             "font-size-large": "large", "large": "large", "fz-large": "large", "fz-l": "large",
-            # x-large
             "font-size-x-large": "x-large", "x-large": "x-large", "fz-x-large": "x-large", "fz-x-l": "x-large",
             "fz-xl": "x-large",
-            # xx-large
             "font-size-xx-large": "xx-large", "xx-large": "xx-large", "fz-xx-large": "xx-large",
             "fz-xx-l": "xx-large", "fz-xxl": "xx-large",
-            # huge
             "font-size-huge": "xxx-large", "huge": "xxx-large", "fz-huge": "xxx-large", "fz-h": "xxx-large",
             "fz-xxx-l": "xxx-large", "fz-xxxl": "xxx-large",
         }
-        # Regex for font-size-<num><unit>
         FONT_SIZE_VAL_PATTERN = re.compile(r"^(?:font-size-?|fz-)(\d+(?:\.\d+)?)(px|em|rem|%)$", re.I)
 
-        # Font-weight (table 17)
         FONT_WEIGHT_KEYWORDS = {
-            # XX-Light
             "font-weight-xx-light": 100,
             "xx-light": 100, "fw-xx-l": 100, "fw-xxl": 100,
-            # X-Light
             "font-weight-x-light": 200,
             "x-light": 200, "fw-extra-light": 200, "fw-x-l": 200, "fw-xl": 200,
-            # Light
             "font-weight-light": 300, "light": 300, "fw-light": 300, "fw-l": 300,
-            # Normal
             "font-weight-normal": 400, "normal": 400, "fw-normal": 400, "fw-n": 400,
-            # X-Normal / Semi-bold
             "font-weight-x-normal": 600,
             "x-normal": 600, "semi-bold": 600, "fw-x-normal": 600, "fw-semi-bold": 600,
             "fw-sb": 600, "fw-x-n": 600, "fw-xn": 600,
-            # Bold
             "font-weight-bold": 700, "bold": 700, "fw-bold": 700, "fw-b": 700,
-            # X-Bold
             "font-weight-x-bold": 800, "x-bold": 800, "fw-x-bold": 800,
             "fw-x-b": 800, "fw-xb": 800,
-            # XX-Bold/Black
             "font-weight-xx-bold": 900, "Bold": 900, "xx-bold": 900, "fw-xx-bold": 900,
             "fw-black": 900, "fw-xxb": 900, "fw-B": 900,
         }
-        # Regex for font-weight-<num>
         FONT_WEIGHT_VAL_PATTERN = re.compile(r"^(?:font-weight-?|fw-)(\d{3})$", re.I)
 
-        # Font-style & font-color (table 18)
         FONT_STYLE_ALIASES = {
             "font-style-italic": "italic", "italic": "italic", "it": "italic",
             "fs-italic": "italic", "fs-it": "italic", "fs-i": "italic",
@@ -134,38 +110,31 @@ def _style(html: str) -> str:
             (re.compile(r"^(?:font-color-|color-|fc-)(.+)$", re.I),),
         )
 
-        # -- Text property tables (see prior answers)
         TEXT_ALIGN_ALIASES = {
-            # center
             "text-align-center": ("text-align", "center"),
             "txt-alg-center": ("text-align", "center"),
             "txt-alg-cnt": ("text-align", "center"),
             "txt-alg-c": ("text-align", "center"),
             "ta-c": ("text-align", "center"),
-            # left
             "text-align-left": ("text-align", "left"),
             "txt-alg-left": ("text-align", "left"),
             "txt-alg-lft": ("text-align", "left"),
             "txt-alg-l": ("text-align", "left"),
             "ta-l": ("text-align", "left"),
-            # right
             "text-align-right": ("text-align", "right"),
             "txt-alg-right": ("text-align", "right"),
             "txt-alg-rgt": ("text-align", "right"),
             "txt-alg-r": ("text-align", "right"),
             "ta-r": ("text-align", "right"),
-            # start
             "text-align-start": ("text-align", "start"),
             "txt-alg-start": ("text-align", "start"),
             "txt-alg-st": ("text-align", "start"),
             "txt-alg-s": ("text-align", "start"),
             "ta-s": ("text-align", "start"),
-            # end
             "text-align-end": ("text-align", "end"),
             "txt-alg-end": ("text-align", "end"),
             "txt-alg-e": ("text-align", "end"),
             "ta-e": ("text-align", "end"),
-            # justify
             "text-align-justify": ("text-align", "justify"),
             "txt-alg-justify": ("text-align", "justify"),
             "txt-alg-just": ("text-align", "justify"),
@@ -249,7 +218,6 @@ def _style(html: str) -> str:
                 for variant in DECORATION_TYPE_MAP
             ]
         )
-        # text-decoration-underline-2px-red-dashed
         DECORATION_PATTERN = (
             rf"(?:text-decoration-)?(?P<variant>{DECORATION_TYPE_RE})-(?P<size>[\d\.]+)(?P<unit>px|em|rem|%)"
             rf"-(?P<color>#[\da-fA-F]+|rgb\(.*?\)|[a-zA-Z\-]+)"
@@ -261,7 +229,6 @@ def _style(html: str) -> str:
             rf"-(?P<line>(solid|double|dotted|dashed|wavy|underline|overline|line-through))"
         )
 
-        # Remap all class keys to lower-case for easy lookup
         def cls_lookup(d):
             return {k.lower(): v for k, v in d.items()}
 
@@ -273,7 +240,6 @@ def _style(html: str) -> str:
         FONT_WEIGHT_KEYWORDS = cls_lookup(FONT_WEIGHT_KEYWORDS)
         FONT_STYLE_ALIASES = cls_lookup(FONT_STYLE_ALIASES)
 
-        # --- The main property/shortcut map for everything except font/text etc. ---
         DISPLAY_PROPERTY_MAP = {
             'display': 'display', 'd': 'display'
         }
@@ -355,7 +321,6 @@ def _style(html: str) -> str:
             'inline-flex':'inline-flex','inl-flx':'inline-flex'
         }
 
-        # -- REMAINDER: your media and pseudo/utility code.
         MEDIA_PREFIXES = {
             "phone":  "(min-width: 0px) and (max-width: 767px)",
             "tablet": "(min-width: 768px) and (max-width: 1024px)",
@@ -387,7 +352,6 @@ def _style(html: str) -> str:
         def style_for_base_class(cls: str) -> str:
             lcls = cls.lower()
 
-            # ------------- FONT FAMILY ---------------
             for pat, base_family in FONT_FAMILY_PATTERNS:
                 m = pat.fullmatch(cls)
                 if m:
@@ -398,7 +362,6 @@ def _style(html: str) -> str:
                         family += f', {base_family}'
                     return f"font-family: {family};"
 
-            # ------------- FONT SIZE -----------------
             if lcls in FONT_SIZE_KEYWORDS:
                 sz = FONT_SIZE_KEYWORDS[lcls]
                 return f"font-size: {sz};"
@@ -407,7 +370,6 @@ def _style(html: str) -> str:
                 num, unit = m.group(1), m.group(2)
                 return f"font-size: {num}{unit};"
 
-            # ------------- FONT WEIGHT -----------------
             if lcls in FONT_WEIGHT_KEYWORDS:
                 w = FONT_WEIGHT_KEYWORDS[lcls]
                 return f"font-weight: {w};"
@@ -416,22 +378,18 @@ def _style(html: str) -> str:
                 n = m.group(1)
                 return f"font-weight: {n};"
 
-            # ------------- FONT STYLE -----------------
             if lcls in FONT_STYLE_ALIASES:
                 style = FONT_STYLE_ALIASES[lcls]
                 return f"font-style: {style};"
 
-            # ------------- FONT COLOR -----------------
             for color_pat in COLOR_PATTERNS:
                 m = color_pat[0].fullmatch(cls)
                 if m:
                     color = m.group(1)
                     if color.startswith("#") or color.startswith("rgb"):
                         return f"color: {color};"
-                    # If color is an atomic name, use CSS variable for theme safety
                     var = color.replace("-", "_")
                     return f"color: var(--{var});"
-            # ------------- TEXT ALIGN, JUSTIFY, WRAP, TRANSFORM -------------
             if lcls in TEXT_ALIGN_ALIASES:
                 prop, val = TEXT_ALIGN_ALIASES[lcls]
                 return f"{prop}: {val};"
@@ -445,7 +403,6 @@ def _style(html: str) -> str:
                 val = TEXT_TRANSFORM_ALIASES[lcls]
                 return f"text-transform: {val};"
 
-            # ------------- TEXT DECORATION --------------------
             m = re.fullmatch(DECORATION_PATTERN, cls)
             if m:
                 variant = m.group("variant")
@@ -599,7 +556,7 @@ def _style(html: str) -> str:
                     'rgt': 'right', 'r': 'right'
                 }
                 prop = prop_map.get(prop, prop)
-                return f"{prop}: {value.strip()};" 
+                return f"{prop}: {value.strip()};"
 
             if cls == "row":
                 return "display: flex; flex-wrap: wrap;"
@@ -832,10 +789,8 @@ def _style(html: str) -> str:
     except Exception as e:
         raise StyleErr(e)
 
-def _minify(html: str) -> str:
-    """
-    Minifies HTML string including inline CSS and JavaScript.
-    """
+@typed
+def _minify(html: Str) -> Str:
     def minify_js(match):
         open_tag = match.group(1)
         js_code = match.group(2)

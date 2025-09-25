@@ -13,17 +13,16 @@ from comp.mods.types.base import Jinja
 
 @typed
 def jinja(arg: Union(Typed(Any, cod=Str), Str)) -> Jinja:
-    if isinstance(arg, Str):
+    if arg in Str:
         return _jinja(arg)
     else:
         if arg.codomain <= Jinja:
             return arg
 
-
 @typed
 def component(arg: Function) -> COMPONENT:
     from comp.mods.helper.types import COMPONENT
-    if callable(arg):
+    if arg in Function:
         original_sig = signature(arg)
         arg.__signature__ = original_sig
 
@@ -33,7 +32,7 @@ def component(arg: Function) -> COMPONENT:
             if param.annotation is Parameter.empty:
                 arg.__annotations__["__context__"] = expected_type_hint
             else:
-                if issubclass(param.annotation, Dict):
+                if param.annotation <= Dict:
                     pass
                 else:
                     raise TypeError(
@@ -87,8 +86,8 @@ def component(arg: Function) -> COMPONENT:
 
     raise TypeError(
         "Component decorator can only be applied to function objects:\n"
-        f" ==> '{arg.__name__}': is of type Function\n"
-        f"     [received_type] '{type(arg).__name__}'"
+        f" ==> '{name(arg)}': is of type Function\n"
+        f"     [received_type] '{name(TYPE(arg))}'"
     )
 
 @typed
