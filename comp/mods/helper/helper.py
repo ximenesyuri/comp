@@ -17,9 +17,8 @@ from typed import (
     List,
     null,
 )
-from typed.models import model, Optional, Validate, MODEL
 from jinja2 import Environment, meta, StrictUndefined
-from utils import md, file, json, to
+from utils import md, file, json
 
 _VAR_DELIM = {
     ("[[", "]]"),
@@ -79,19 +78,23 @@ def _jinja_env(undefined=StrictUndefined, **kwargs):
     }
     return Environment(**params)
 
+@typed
 def _jinja_regex(tag_name: Str = "") -> Pattern:
     if tag_name:
         return rf"^jinja\s*\n?\s*<{tag_name}\b[^>]*>(.*?)</{tag_name}>\s*$"
     return r"^jinja\s*\n?\s*(.*?)\s*$"
 
-def _is_jinja(jinja_string: str, tag_name: str = "") -> bool:
+@typed
+def _is_jinja(jinja_string: Str, tag_name: Str="") -> Bool:
     pattern = _jinja_regex(tag_name)
     regex = re.compile(pattern, re.DOTALL)
     return regex.match(jinja_string) is not None
 
+@typed
 def _extract_raw_jinja(jinja_string: Str) -> Str:
     return re.sub(r"jinja\n?", "", jinja_string)
 
+@typed
 def _jinja(string: Str) -> Str:
     if _is_jinja(string):
         return string
@@ -134,7 +137,8 @@ def _find_jinja_inner_vars(jinja_src, block_start="[%", block_end="%]"):
         inner_vars[var] = val2
     return inner_vars
 
-def _render_jinja(jinja_string, **context):
+@typed
+def _render_jinja(jinja_string: Str, **context: Dict) -> Str:
     jinja_src = _extract_raw_jinja(jinja_string)
     env = _jinja_env()
     template = env.from_string(jinja_src)
