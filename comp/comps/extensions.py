@@ -3,6 +3,7 @@ from comp.mods.decorators import component
 from comp.models import Div, Button, Search, Alpine
 from comp.comps.buttons import button_search
 from comp.comps.form import input
+from comp.mods.err import ComponentErr
 from comp.mods.helper.comps import (
     if_div,
     if_class,
@@ -14,29 +15,33 @@ from comp.mods.helper.comps import (
 
 @component
 def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
-    if alpine.alpine_inner:
-        rendered_inner = _render_inner(alpine.alpine_inner)
-    elif inner:
-        rendered_inner = _render_inner(inner)
-    else:
-        rendered_inner = ""
-    return f"""jinja
+    try:
+        if alpine.alpine_inner:
+            rendered_inner = _render_inner(alpine.alpine_inner)
+        elif inner:
+            rendered_inner = _render_inner(inner)
+        else:
+            rendered_inner = ""
+        return f"""jinja
 <div{ if_alpine(alpine) }>{ rendered_inner }</div>
 """
+    except Exception as e:
+        raise ComponentErr(e)
 
 @component
 def search(search: Search=Search(), __context__={}) -> Jinja:
-    search_div    = if_div(search.search_div)
-    button_div    = if_div(search.search_button_div)
-    input_div     = if_div(search.search_input_div)
-    results_div   = if_div(search.search_results_div)
-    search_input  = input(search.search_input) if search.search_input else ""
-    button_search = button_search(search.search_button) if search.search_button else ""
-    null_button = Button()
-    __context__['null_button'] = null_button
-    results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
+    try:
+        search_div    = if_div(search.search_div)
+        button_div    = if_div(search.search_button_div)
+        input_div     = if_div(search.search_input_div)
+        results_div   = if_div(search.search_results_div)
+        search_input  = input(search.search_input) if search.search_input else ""
+        button_search = button_search(search.search_button) if search.search_button else ""
+        null_button = Button()
+        __context__['null_button'] = null_button
+        results_div_style = "position: absolute; top: 101%; left: 0; width: 100%; z-index: 10;"
 
-    return f"""jinja
+        return f"""jinja
 <div{ search_div }>
     <div{ input_div }>
         { search_input }
@@ -50,45 +55,48 @@ def search(search: Search=Search(), __context__={}) -> Jinja:
 <div{ results_div } x-show="hasSearchResults" x-cloak style="{ results_div_style }">
 </div>
 """
+    except Exception as e:
+        raise ComponentErr(e)
 
 @component
 def search_script(search: Search=Search(), __context__={}) -> Jinja:
-    results_div         = if_div(search.search_results_div)
-    results_cover_div   = if_div(search.search_results.results_cover.cover_div)
-    results_cover_id    = if_id(search.search_results.results_cover.cover_id)
-    results_cover_class = if_class(search.search_results.results_cover.cover_class)
-    results_title_div   = if_div(search.search_results.results_title.title_div)
-    results_title_id    = if_id(search.search_results.results_title.title_id)
-    results_title_class = if_class(search.search_results.results_title.title_class)
-    results_kind_div    = if_div(search.search_results.results_kind.kind_div)
-    results_kind_id     = if_id(search.search_results.results_kind.kind_id)
-    results_kind_class  = if_class(search.search_results.results_kind.kind_class)
-    results_desc_div    = if_div(search.search_results.results_desc.desc_div)
-    results_desc_id     = if_id(search.search_results.results_desc.desc_id)
-    results_desc_class  = if_class(search.search_results.results_desc.desc_class)
-    results_div_id      = if_id(search.search_results_div.div_id)
-    no_results_div      = if_div(search.search_no_results_div)
-    no_results          = if_defined(search.search_no_results)
-    search_script       = if_defined(search.search_script)
-    index_types         = if_defined(search.search_index.index_types)
-    input_id            = if_defined(search.search_input.input_id)
-    results_limit       = if_defined(search.search_results.results_limit, 10)
-    index_types         = if_defined(search.search_index.index_types, {})
-    index_store_types   = if_defined(search.search_index.index_store_types, {})
-    index_json          = if_defined(search.search_index.index_json, {})
-    display_cover       = if_defined(search.search_results.results_cover.display, False)
-    display_title       = if_defined(search.search_results.results_title.display, False)
-    display_kind        = if_defined(search.search_results.results_kind.display, False)
-    display_desc        = if_defined(search.search_results.results_desc.display, False)
-    __context__.update({'index_types': index_types})
-    __context__.update({'index_store_types': index_store_types})
-    __context__.update({'index_json': index_json})
-    __context__.update({'display_cover': display_cover})
-    __context__.update({'display_title': display_title})
-    __context__.update({'display_kind': display_kind})
-    __context__.update({'display_desc': display_desc})
+    try:
+        results_div         = if_div(search.search_results_div)
+        results_cover_div   = if_div(search.search_results.results_cover.cover_div)
+        results_cover_id    = if_id(search.search_results.results_cover.cover_id)
+        results_cover_class = if_class(search.search_results.results_cover.cover_class)
+        results_title_div   = if_div(search.search_results.results_title.title_div)
+        results_title_id    = if_id(search.search_results.results_title.title_id)
+        results_title_class = if_class(search.search_results.results_title.title_class)
+        results_kind_div    = if_div(search.search_results.results_kind.kind_div)
+        results_kind_id     = if_id(search.search_results.results_kind.kind_id)
+        results_kind_class  = if_class(search.search_results.results_kind.kind_class)
+        results_desc_div    = if_div(search.search_results.results_desc.desc_div)
+        results_desc_id     = if_id(search.search_results.results_desc.desc_id)
+        results_desc_class  = if_class(search.search_results.results_desc.desc_class)
+        results_div_id      = if_id(search.search_results_div.div_id)
+        no_results_div      = if_div(search.search_no_results_div)
+        no_results          = if_defined(search.search_no_results)
+        search_script       = if_defined(search.search_script)
+        index_types         = if_defined(search.search_index.index_types)
+        input_id            = if_defined(search.search_input.input_id)
+        results_limit       = if_defined(search.search_results.results_limit, 10)
+        index_types         = if_defined(search.search_index.index_types, {})
+        index_store_types   = if_defined(search.search_index.index_store_types, {})
+        index_json          = if_defined(search.search_index.index_json, {})
+        display_cover       = if_defined(search.search_results.results_cover.display, False)
+        display_title       = if_defined(search.search_results.results_title.display, False)
+        display_kind        = if_defined(search.search_results.results_kind.display, False)
+        display_desc        = if_defined(search.search_results.results_desc.display, False)
+        __context__.update({'index_types': index_types})
+        __context__.update({'index_store_types': index_store_types})
+        __context__.update({'index_json': index_json})
+        __context__.update({'display_cover': display_cover})
+        __context__.update({'display_title': display_title})
+        __context__.update({'display_kind': display_kind})
+        __context__.update({'display_desc': display_desc})
 
-    return f"""jinja
+        return f"""jinja
 <script src="{ search_script }"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {{
@@ -222,3 +230,5 @@ document.addEventListener("DOMContentLoaded", function() {{
 }});
 </script>    
 """
+    except Exception as e:
+        raise ComponentErr(e)
