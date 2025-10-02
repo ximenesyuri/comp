@@ -37,7 +37,7 @@ class JINJA(TYPE(Str)):
 
 class INNER(TYPE(Str), TYPE(MODEL)):
     def __instancecheck__(cls, instance):
-        if not instance in Str or not instance in MODEL:
+        if not instance in Str and not instance in MODEL:
             return False
         return True
 
