@@ -50,7 +50,7 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
                  "     [expected_type] COMPONENT\n"
                 f"     [received_type] {name(TYPE(other))}"
             )
-        from comp.mods.functions import join
+        from comp.mods.operations import join
         return join(self, other)
 
     def __mul__(self, other):
@@ -69,7 +69,7 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
                 f"      [received_type] {name(TYPE(self))}"
             )
 
-        from comp.mods.functions import concat
+        from comp.mods.operations import concat
         return concat(self, other)
 
     def __truediv__(self, other):
@@ -87,7 +87,7 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
                  "     [expected_type] COMPONENT\n"
                 f"     [received_type] {name(TYPE(self))}"
             )
-        from comp.mods.functions import eval
+        from comp.mods.operations import eval
         return eval(self, **other)
 
     def __xor__(self, other):
@@ -105,7 +105,7 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
                  "     [expected_type] COMPONENT\n"
                 f"     [received_type] {name(TYPE(self))}"
             )
-        from comp.mods.functions import copy
+        from comp.mods.operations import copy
         return copy(self, **other)
 
     @property
