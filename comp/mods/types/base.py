@@ -50,4 +50,3 @@ RESPONSIVE = _RESPONSIVE_('RESPONSIVE', (COMPONENT,), {
     "__display__": "RESPONSIVE",
     "__null__": None
 })
-

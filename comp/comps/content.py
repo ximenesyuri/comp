@@ -59,13 +59,14 @@ def link(link: Link=Link(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def img(img: Img=Img()) -> Tag('img'):
+def image(img: Img=Img()) -> Tag('img'):
     try:
         return f"""jinja
 <img{ if_img(img) }/>
 """
     except Exception as e:
         raise ComponentErr(e)
+img = image
 
 @component
 def figure(figure: Figure=Figure()) -> Tag('figure'):
@@ -78,6 +79,7 @@ def figure(figure: Figure=Figure()) -> Tag('figure'):
 """
     except Exception as e:
         raise ComponentErr(e)
+fig = figure
 
 @component
 def button(button: Button=Button(), inner: Inner="") -> Jinja:

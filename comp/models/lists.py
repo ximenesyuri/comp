@@ -20,6 +20,7 @@ class Unordered:
     ul_class: Str
     ul_style: Str
     ul_items: List(Item)
+Ul = Unordered
 
 @optional
 class Ordered:
@@ -29,6 +30,7 @@ class Ordered:
     ol_class: Str
     ol_style: Str
     ol_items: List(Item)
+Ol = Ordered
 
 @optional
 class NavItem:

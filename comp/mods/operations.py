@@ -4,7 +4,7 @@ from typed import typed, Tuple, Dict, Any, Str
 from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, COMPONENT, Inner
 from comp.mods.err import ConcatErr, JoinErr, EvalErr
-from comp.mods.helper.functions import _merge_context, _get_context, _copy, _order_params
+from comp.mods.helper.operations import _merge_context, _get_context, _copy, _order_params
 from comp.mods.helper.helper import _get_jinja, _jinja
 
 @typed

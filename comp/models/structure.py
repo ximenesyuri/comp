@@ -46,6 +46,15 @@ class Header:
     header_inner: Any
 
 @optional
+class Footer:
+    globals:      Globals=Globals()
+    aria:         Aria=Aria()
+    footer_id:    Str="footer"
+    footer_class: Str
+    footer_style: Str
+    footer_inner: Any
+
+@optional
 class Aside:
     globals:     Globals=Globals()
     aria:        Aria=Aria()
