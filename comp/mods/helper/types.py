@@ -1,9 +1,9 @@
 import re
 from inspect import signature, getsource
 from jinja2 import meta
-from typed import typed, TYPE, Str, Dict, Json, Bool, Union, Extension, Path, Typed, name
+from typed import typed, Any, optional, TYPE, Str, Dict, Json, Bool, Union, Extension, Path, Typed, name
 from typed.models import model, Optional
-from comp.mods.types.meta import _COMPONENT
+from comp.mods.types.meta import _COMPONENT, _RESPONSIVE
 from comp.mods.helper.helper import _jinja_env
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
@@ -172,6 +172,3 @@ class _PAGE(TYPE(COMPONENT)):
         if not isinstance(instance, COMPONENT):
             return False
         return _check_page(instance)
-
-class _STATIC_PAGE:
-    pass

@@ -1,9 +1,10 @@
-from typed import Str, Union, Extension
-from comp.mods.types.meta import JINJA, INNER
+from typed import Typed, Str, Union, Extension
+from comp.mods.types.meta import JINJA, INNER, _RESPONSIVE, _RESPONSIVE_
 from comp.mods.helper.types import (
     COMPONENT,
     _PAGE
 )
+from comp.models.structure import Grid
 
 class Jinja(Str, metaclass=JINJA):
     @property
@@ -28,10 +29,25 @@ class Jinja(Str, metaclass=JINJA):
     __display__ = "Jinja"
     __null__    = "jinja"
 
-Inner   = INNER('Inner', (Str,), {})
-PAGE    = _PAGE('PAGE', (COMPONENT, ), {})
+Inner = INNER('Inner', (Str,), {
+    "__display__": 'Inner',
+    "__null__": ''
+})
+PAGE = _PAGE('PAGE', (COMPONENT, ), {
+    "__display__": 'PAGE',
+    "__null__": None
+})
+
+GRID = COMPONENT(Grid)
 Content = Union(Str, Extension('md'))
 
-Inner.__display__       = "Inner"
-COMPONENT.__display__   = "COMPONENT"
-PAGE.__display__        = "PAGE"
+Responsive = _RESPONSIVE('Responsive', (Typed,), {
+    "__display__": "Responsive",
+    "__null__": None
+})
+
+RESPONSIVE = _RESPONSIVE_('RESPONSIVE', (COMPONENT,), {
+    "__display__": "RESPONSIVE",
+    "__null__": None
+})
+
