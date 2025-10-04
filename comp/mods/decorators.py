@@ -46,6 +46,8 @@ def component(arg: Function) -> COMPONENT:
         typed_arg.__class__ = COMPONENT
         from comp.mods.types.base import Jinja
         if not typed_arg.codomain <= Jinja:
+            print(typed_arg.codomain)
+            print(Jinja)
             raise TypeError(
                 "A component should create a Jinja string:\n"
                 f" ==> '{name(arg)}' codomain is not a subclass of Jinja\n"

@@ -50,3 +50,11 @@ RESPONSIVE = _RESPONSIVE_('RESPONSIVE', (COMPONENT,), {
     "__display__": "RESPONSIVE",
     "__null__": None
 })
+
+from comp.mods.decorators import component
+from comp.mods.types.base import Jinja
+def _nill_comp() -> Jinja:
+    return """jinja """
+
+COMPONENT.__display__ = "COMPONENT"
+COMPONENT.__null__ = component(_nill_comp)
