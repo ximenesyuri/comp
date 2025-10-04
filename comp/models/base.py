@@ -32,3 +32,6 @@ class Globals:
     title:     Str
     tabindex:  Nat
     hidden:    Bool
+
+Aria.__display__ = "Aria"
+Globals.__display__ = "Globals"

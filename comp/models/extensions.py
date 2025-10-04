@@ -21,6 +21,8 @@ class Alpine:
     x_on:         Dict(Str)
     x_attrs:      Dict(Str)
 
+Alpine.__display__ = "Alpine"
+
 @optional
 class HTMX:
     hx_get:         Str
@@ -45,6 +47,8 @@ class HTMX:
     hx_preserve:    Bool
     hx_disable:     Bool
     hx_attrs:       Dict(Str, Json)
+
+HTMX.__display__ = "HTMX"
 
 @optional
 class _SearchTitle:
@@ -104,3 +108,5 @@ class Search:
     search_no_results:     Str="no results..."
     search_index:          _SearchIndex=_SearchIndex()
     search_script:         Str="https://cdn.jsdelivr.net/gh/nextapps-de/searchsearch@0.8.2/dist/searchsearch.bundle.min.js"
+
+Search.__display__ = "Search"

@@ -14,6 +14,8 @@ class Button:
     click_away:   Str
     button_inner: Any
 
+Button.__display__ = "Button"
+
 @optional
 class Icon:
     globals:      Globals=Globals()
@@ -24,6 +26,8 @@ class Icon:
     icon_fill:    HEX="#000000"
     icon_viewbox: Str="0 -960 960 960"
     icon_stroke:  Float=0.5
+
+Icon.__display__ = "Icon"
 
 @optional
 class Image:
@@ -37,6 +41,8 @@ class Image:
     img_lazy:  Bool=True
 Img = Image
 
+Image.__display__ = "Image"
+
 @optional
 class Text:
     globals:    Globals=Globals()
@@ -45,6 +51,8 @@ class Text:
     text_class: Str
     text_style: Str
     text_inner: Any
+
+Text.__display__ = "Text"
 
 @optional
 class Title:
@@ -55,6 +63,8 @@ class Title:
     title_style: Str
     title_tag:   Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6")="h1"
     title_inner: Any
+
+Title.__display__ = "Title"
 
 @optional
 class Link:
@@ -69,6 +79,8 @@ class Link:
     link_download: PathUrl=""
     link_inner:    Any
 
+Link.__display__ = "Link"
+
 @optional
 class Figure:
     globals:        Globals=Globals()
@@ -76,9 +88,13 @@ class Figure:
     figure_img:     Image=Image()
     figure_caption: Str
 
+Figure.__display__ = "Figure"
+
 @optional
 class Logo:
     globals:   Globals=Globals()
     aria:      Aria=Aria()
     logo_img:  Image=Image()
     logo_link: Link=Link(link_href="/")
+
+Logo.__display__ = "Logo"

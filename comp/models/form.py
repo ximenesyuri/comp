@@ -34,6 +34,8 @@ class Input:
     input_checked:      Bool
     input_value:        Str
 
+Input.__display__ = "Input"
+
 @optional
 class Form:
     globals:               Globals=Globals()
@@ -51,3 +53,5 @@ class Form:
     form_autofocus:        Bool
     form_charset:          Str="UTF-8"
     form_rel:              Str
+
+Form.__display__ = "Form"

@@ -1,7 +1,7 @@
 from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, Inner
 from comp.mods.err import ComponentErr
-from comp.models.lists import Item, Unordered, Ordered, Nav
+from comp.models.lists import Item, Unordered, Ordered, NavItem, Nav
 from comp.comps.content import link
 from comp.mods.helper.comps import (
     if_item,

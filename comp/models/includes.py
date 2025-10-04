@@ -12,6 +12,8 @@ class Script:
     script_async: Bool
     script_inner: Any
 
+Script.__display__ = "Script"
+
 @optional
 class Asset:
     globals:    Globals=Globals()
@@ -19,3 +21,5 @@ class Asset:
     asset_href: Str
     asset_mime: Str
     asset_rel:  Str="stylesheet"
+
+Asset.__display__ = "Asset"

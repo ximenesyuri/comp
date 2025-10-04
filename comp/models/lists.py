@@ -12,6 +12,8 @@ class Item:
     item_style: Str
     item_inner: Any
 
+Item.__display__ = "Item"
+
 @optional
 class Unordered:
     globals:  Globals=Globals()
@@ -21,6 +23,8 @@ class Unordered:
     ul_style: Str
     ul_items: List(Item)
 Ul = Unordered
+
+Unordered.__display__ = "Unordered"
 
 @optional
 class Ordered:
@@ -32,9 +36,13 @@ class Ordered:
     ol_items: List(Item)
 Ol = Ordered
 
+Ordered.__display__ = "Ordered"
+
 @optional
 class NavItem(Item):
     item_link:  Link
+
+NavItem.__display__ = "NavItem"
 
 @optional
 class Nav:
@@ -48,3 +56,5 @@ class Nav:
     ul_id:         Str="nav-ul"
     ul_class:      Str
     ul_style:      Str="list-style: none;"
+
+Nav.__display__ = "Nav"

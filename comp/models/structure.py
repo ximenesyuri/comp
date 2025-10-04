@@ -11,6 +11,8 @@ class Div:
     div_style: Str
     div_inner: Any
 
+Div.__display__ = "Div"
+
 @optional
 class Flex:
     globals:        Globals=Globals()
@@ -20,6 +22,8 @@ class Flex:
     flex_style:     Str
     flex_direction: Enum(Str, 'row', 'column')
 
+Flex.__display__ = "Flex"
+
 @optional
 class Inline:
     globals:      Globals=Globals()
@@ -28,6 +32,8 @@ class Inline:
     inline_class: Str="display: inline"
     inline_style: Str
 
+Inline.__display__ = "Inline"
+
 @optional
 class Block:
     globals:      Globals=Globals()
@@ -35,6 +41,8 @@ class Block:
     inline_id:    Str
     inline_class: Str="display: block"
     inline_style: Str
+
+Block.__display__ = "Block"
 
 @optional
 class Header:
@@ -45,6 +53,8 @@ class Header:
     header_style: Str
     header_inner: Any
 
+Header.__display__ = "Header"
+
 @optional
 class Footer:
     globals:      Globals=Globals()
@@ -53,6 +63,8 @@ class Footer:
     footer_class: Str
     footer_style: Str
     footer_inner: Any
+
+Footer.__display__ = "Footer"
 
 @optional
 class Aside:
@@ -63,6 +75,8 @@ class Aside:
     aside_style: Str
     aside_inner: Any
 
+Aside.__display__ = "Aside"
+
 @optional
 class Sidebar:
     globals:       Globals=Globals()
@@ -71,6 +85,8 @@ class Sidebar:
     sidebar_class: Str
     sidebar_style: Str
     sidebar_inner: Any
+
+Sidebar.__display__ = "Sidebar"
 
 @optional
 class Column:
@@ -82,6 +98,8 @@ class Column:
     col_inner: Any
 Col = Column
 
+Column.__display__ = "Column"
+
 @optional
 class Row:
     globals:   Globals=Globals()
@@ -91,6 +109,8 @@ class Row:
     row_style: Str
     row_cols:  List(Column)
 
+Row.__display__ = "Row"
+
 @optional
 class Grid:
     globals:    Globals=Globals()
@@ -99,3 +119,5 @@ class Grid:
     grid_class: Str
     grid_style: Str
     grid_rows:  List(Row)
+
+Grid.__display__ = "Grid"
