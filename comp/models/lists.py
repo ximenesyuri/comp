@@ -33,13 +33,7 @@ class Ordered:
 Ol = Ordered
 
 @optional
-class NavItem:
-    globals:    Globals=Globals()
-    aria:       Aria=Aria()
-    item_id:    Str="item"
-    item_class: Str
-    item_style: Str
-    item_inner: Any
+class NavItem(Item):
     item_link:  Link
 
 @optional
