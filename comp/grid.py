@@ -1,1 +1,4 @@
-from comp.mods.grid import build_grid, GridEntity, GridFactory
+from comp.mods.grid import (
+    build_grid, GridEntity, GridFactory,
+    build_row
+)
