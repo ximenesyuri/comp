@@ -412,7 +412,7 @@ def build_factory(model: MODEL, grids_module: Str='') -> Typed:
                         f"      [received_name]: {attr_param_name}"
                     )
                 attr_type = domain[0]
-                if attr_type is not getattr(model, attr_name):
+                if attr_type.__name__ != getattr(model, attr_name).__name__:
                     raise GridErr(
                         f"Could not instantiate GridFactory for model '{model_name}':\n"
                         f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
@@ -471,8 +471,6 @@ def build_factory(model: MODEL, grids_module: Str='') -> Typed:
                 )
             attr_type = domain[0]
             if attr_type.__name__ != getattr(model, attr_name).__name__:
-                print(attr_type.__name__)
-                print(getattr(model, attr_name).__name__)
                 raise GridErr(
                     f"Could not instantiate GridFactory for model '{model_name}':\n"
                     f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
