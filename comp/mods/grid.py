@@ -1,6 +1,6 @@
 import inspect
 from utils import text, mod, func
-from typed import typed, optional, null, Str, Typed, MODEL, Any, TYPE, name
+from typed import typed, optional, null, Str, Typed, MODEL, Any, TYPE, name, Maybe
 from typed.mods.helper.helper import _check_codomain
 from comp.models.structure import Grid, Row, Col
 from comp.comps.structure import grid
@@ -266,6 +266,12 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Row:
         model_name: model,
         'getattr': getattr,
     })
+
+    if cols_module and available_attr_names:
+        mod_obj = mod.get(cols_module)
+        for name in available_attr_names:
+            global_ns[name] = getattr(mod_obj, name)
+
     exec(func_code, global_ns, local_ns)
     return local_ns[model_snake]
 
@@ -336,14 +342,6 @@ def build_grid(model: MODEL, rows_module: Str='') -> Typed:
                         f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
                         f"      [received_type]: {name(attr_type)}"
                     )
-                try:
-                    from typed import null
-                    _check_codomain(obj, Row, codomain, obj(null(attr_type)))
-                except:
-                    raise GridErr(
-                        f"Could not create a grid factory for model '{model_name}':\n"
-                        f"  ==> '{name(attr_name)}': is not returning an instance of Row"
-                    )
 
                 available_attr_names.append(attr_name)
 
@@ -393,14 +391,6 @@ def build_grid(model: MODEL, rows_module: Str='') -> Typed:
                     f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
                     f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
                     f"      [received_type]: {name(attr_type)}"
-                )
-            try:
-                from typed import null
-                _check_codomain(obj, Row, codomain, obj(null(attr_type)))
-            except:
-                raise GridErr(
-                    f"Could not create a grid factory for model '{model_name}':\n"
-                    f"  ==> '{name(attr_name)}': is not returning an instance of Row"
                 )
             available_attr_names.append(attr_name)
 
@@ -550,24 +540,16 @@ def build_factory(model: MODEL, grids_module: Str='') -> Typed:
                     f"      [received_name]: {attr_param_name}"
                 )
             attr_type = domain[0]
-            if attr_type.__name__ != getattr(model, attr_name).__name__:
+            if not attr_type is getattr(model, attr_name) and not Maybe(attr_type) is getattr(model, attr_name):
                 raise GridErr(
                     f"Could not instantiate GridFactory for model '{model_name}':\n"
                     f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
                     f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
                     f"      [received_type]: {attr_type.__name__}"
                 )
-            try:
-                from typed import null
-                _check_codomain(obj, Grid, codomain, obj(null(attr_type)))
-            except:
-                raise GridErr(
-                    f"Could not instantiate GridFactory for model '{model_name}':\n"
-                    f"  ==> '{name(attr_name)}': is not returning an instance of Grid."
-                )
             available_attr_names.append(attr_name)
 
-    attr_code_line = ", ".join([f"{attr}={model_name}.{attr}" for attr in tuple(attrs.keys())])
+    attr_code_line = ", ".join([f"{attr.split('_')[-1]}={attr}" for attr in tuple(attrs.keys())])
 
     func_code = f"""
 from comp import GridFactory
@@ -591,6 +573,7 @@ from comp import GridFactory
 @typed
 def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMPONENT:
     if grid_entity.desktop:
+        print(grid_entity.desktop)
         if not grid_factory.desktop:
             raise GridErr(
                 "Could no build the responsive grid.\n"
