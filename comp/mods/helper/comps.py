@@ -149,8 +149,8 @@ def if_div(div: Maybe(Div)=Div()) -> Str:
         if not div:
             return ""
         return (
-            if_globals(div.globals)
-          + if_aria(div.aria)
+            if_globals(div.div_globals)
+          + if_aria(div.div_aria)
           + if_id(div.div_id)
           + if_class(div.div_class)
           + if_style(div.div_style)
@@ -179,8 +179,8 @@ def if_header(header: Maybe(Header)=Header()) -> Str:
         if not header:
             return ""
         return (
-            if_globals(header.globals)
-          + if_aria(header.aria)
+            if_globals(header.header_globals)
+          + if_aria(header.header_aria)
           + if_id(header.header_id)
           + if_class(header.header_class)
           + if_style(header.header_style)
@@ -194,8 +194,8 @@ def if_aside(aside: Maybe(Aside)=Aside()) -> Str:
         if not aside:
             return ""
         return (
-            if_globals(aside.globals)
-          + if_aria(aside.aria)
+            if_globals(aside.aside_globals)
+          + if_aria(aside.aside_aria)
           + if_id(aside.aside_id)
           + if_class(aside.aside_class)
           + if_style(aside.aside_style)
@@ -209,8 +209,8 @@ def if_sidebar(sidebar: Maybe(Sidebar)=Sidebar()) -> Str:
         if not sidebar:
             return ""
         return (
-            if_globals(sidebar.globals)
-          + if_aria(sidebar.aria)
+            if_globals(sidebar.sidebar_globals)
+          + if_aria(sidebar.sidebar_aria)
           + if_id(sidebar.sidebar_id)
           + if_class(sidebar.sidebar_class)
           + if_style(sidebar.sidebar_style)
@@ -224,8 +224,8 @@ def if_col(col: Maybe(Column)=Column()) -> Str:
         if not col:
             return ""
         return (
-            if_globals(col.globals)
-          + if_aria(col.aria)
+            if_globals(col.col_globals)
+          + if_aria(col.col_aria)
           + if_key(col.col_id,    "id")
           + if_key(col.col_class, "class")
           + if_key(col.col_style, "style")
@@ -239,8 +239,8 @@ def if_row(row: Maybe(Row)=Row()) -> Str:
         if not row:
             return ""
         return (
-            if_globals(row.globals)
-          + if_aria(row.aria)
+            if_globals(row.row_globals)
+          + if_aria(row.row_aria)
           + if_key(row.row_id,    "id")
           + if_key(row.row_class, "class")
           + if_key(row.row_style, "style")
@@ -254,8 +254,8 @@ def if_grid(grid: Maybe(Grid)=Grid()) -> Str:
         if not grid:
             return ""
         return (
-            if_globals(grid.globals)
-          + if_aria(grid.aria)
+            if_globals(grid.grid_globals)
+          + if_aria(grid.grid_aria)
           + if_key(grid.grid_id,    "id")
           + if_key(grid.grid_class, "class")
           + if_key(grid.grid_style, "style")
@@ -269,8 +269,8 @@ def if_text(text: Maybe(Text)=Text()) -> Str:
         if not text:
             return ""
         return (
-            if_globals(text.globals)
-          + if_aria(text.aria)
+            if_globals(text.text_globals)
+          + if_aria(text.text_aria)
           + if_id(text.text_id)
           + if_class(text.text_class)
           + if_style(text.text_style)
@@ -284,8 +284,8 @@ def if_title(title: Maybe(Title)=Title()) -> Str:
         if not title:
             return ""
         return (
-            if_globals(title.globals)
-          + if_aria(title.aria)
+            if_globals(title.title_globals)
+          + if_aria(title.title_aria)
           + if_id(title.title_id)
           + if_class(title.title_class)
           + if_style(title.title_style)
@@ -299,8 +299,8 @@ def if_link(link: Maybe(Link)=Link()) -> Str:
         if not link:
             return ""
         return (
-            if_globals(link.globals)
-          + if_aria(link.aria)
+            if_globals(link.link_globals)
+          + if_aria(link.link_aria)
           + if_id(link.link_id)
           + if_class(link.link_class)
           + if_style(link.link_style)
@@ -318,8 +318,8 @@ def if_button(button: Maybe(Button)=Button()) -> Str:
         if not button:
             return ""
         return (
-            if_globals(button.globals)
-          + if_aria(button.aria)
+            if_globals(button.button_globals)
+          + if_aria(button.button_aria)
           + if_id(button.button_id)
           + if_class(button.button_class)
           + if_style(button.button_style)
@@ -335,8 +335,8 @@ def if_img(img: Maybe(Image)=Image()) -> Str:
         if not img:
             return ""
         return (
-            if_globals(img.globals)
-          + if_aria(img.aria)
+            if_globals(img.img_globals)
+          + if_aria(img.img_aria)
           + if_id(img.img_id)
           + if_class(img.img_class)
           + if_style(img.img_style)
@@ -353,8 +353,8 @@ def if_figure(figure: Maybe(Figure)=Figure()) -> Str:
         if not figure:
             return ""
         return (
-            if_globals(figure.globals)
-          + if_aria(figure.aria)
+            if_globals(figure.figure_globals)
+          + if_aria(figure.figure_aria)
         )
     except Exception as e:
         raise HelperErr(e)
@@ -365,8 +365,8 @@ def if_script(script: Maybe(Script)=Script()) -> Str:
         if not script:
             return ""
         return (
-            if_globals(script.globals)
-          + if_aria(script.aria)
+            if_globals(script.script_globals)
+          + if_aria(script.script_aria)
           + if_key(script.script_src,  "src")
           + if_key(script.script_type, "type")
           + if_bool(script.script_defer, "defer")
@@ -381,8 +381,8 @@ def if_asset(asset: Maybe(Asset)=Asset()) -> Str:
         if not asset:
             return ""
         return (
-            if_globals(asset.globals)
-          + if_aria(asset.aria)
+            if_globals(asset.asset_globals)
+          + if_aria(asset.asset_aria)
           + if_key(asset.asset_href, "href")
           + if_key(asset.asset_mime, "type")
           + if_key(asset.asset_rel,  "rel")
@@ -396,8 +396,8 @@ def if_item(item: Maybe(Item)=Item()) -> Str:
         if not item:
             return ""
         return (
-            if_globals(item.globals)
-          + if_aria(item.aria)
+            if_globals(item.item_globals)
+          + if_aria(item.item_aria)
           + if_id(item.item_id)
           + if_class(item.item_class)
           + if_style(item.item_style)
@@ -411,8 +411,8 @@ def if_ul(ul: Maybe(Unordered)=Unordered()) -> Str:
         if not ul:
             return ""
         return (
-            if_globals(ul.globals)
-          + if_aria(ul.aria)
+            if_globals(ul.ul_globals)
+          + if_aria(ul.ul_aria)
           + if_id(ul.ul_id)
           + if_class(ul.ul_class)
           + if_style(ul.ul_style)
@@ -426,8 +426,8 @@ def if_ol(ol: Maybe(Ordered)=Ordered()) -> Str:
         if not ol:
             return ""
         return (
-            if_globals(ol.globals)
-          + if_aria(ol.aria)
+            if_globals(ol.ol_globals)
+          + if_aria(ol.ol_aria)
           + if_id(ol.ol_id)
           + if_class(ol.ol_class)
           + if_style(ol.ol_style)
@@ -441,8 +441,8 @@ def if_nav(nav: Maybe(Nav)=Nav()) -> Str:
         if not nav:
             return ""
         return (
-            if_globals(nav.globals)
-          + if_aria(nav.aria)
+            if_globals(nav.nav_globals)
+          + if_aria(nav.nav_aria)
           + if_id(nav.nav_id)
           + if_class(nav.nav_class)
           + if_style(nav.nav_style)
@@ -456,7 +456,8 @@ def if_icon(icon: Maybe(Icon)=Icon()) -> Str:
         if not icon:
             return ""
         return (
-            if_globals(icon.globals)
+            if_globals(icon.icon_globals)
+          + if_alpine(icon.icon_aria)
           + if_id(icon.icon_id)
           + if_class(icon.icon_class)
           + if_style(icon.icon_style)
@@ -475,8 +476,8 @@ def if_input(input: Maybe(Input)=Input()) -> Str:
         if not input:
             return ""
         return (
-            if_globals(input.globals)
-          + if_aria(input.aria)
+            if_globals(input.input_globals)
+          + if_aria(input.input_aria)
           + if_id(input.input_id)
           + if_class(input.input_class)
           + if_style(input.input_style)
