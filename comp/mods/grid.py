@@ -22,6 +22,86 @@ class GridFactory:
     phone: Typed(Any, cod=Grid)
 
 @typed
+def build_col(model: MODEL) -> Typed:
+    model_name = model.__name__
+    model_snake = text.camel_to_snake(model_name)
+    frame_info = inspect.stack()[2]
+    frame = frame_info.frame
+    caller_globals = frame.f_globals
+
+    if len(model.__bases__) != 5:
+        raise GridErr(
+            f"Could not create a col factory for model '{model_name}':\n"
+            f"  ==> '{model_name}': model extends an unexpected number of types.\n"
+             "      [expected_number] 2+3\n"
+            f"      [received_number] {len(model.__bases__)}"
+        )
+
+    if Col not in model.__bases__:
+        raise GridErr(
+            f"Could not create a col factory for model '{model_name}':\n"
+            f"  ==> '{model_name}': model does not extends 'Col'."
+        )
+
+    base_model = [b for b in model.__bases__ if b is not Col][0]
+    base_model_name = base_model.__name__
+
+    attrs = {}
+    col_attrs = tuple(Col.__dict__.get('optional_attrs', {}).keys())
+    base_model_attrs = tuple(base_model.__dict__.get('optional_attrs', {}).keys())
+    for k, v in model.__dict__.get('optional_attrs', {}).items():
+        if k not in col_attrs:
+            if k not in base_model_attrs:
+                raise GridErr(
+                    f"Could not create a col factory for model '{model_name}':\n"
+                    f"  ==> '{model_name}': model has an unexpected attribute.\n"
+                    f"      [received_attr] '{name(k)}'"
+                )
+            attrs.update({k: v['type']})
+    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+        if k not in col_attrs:
+            if k not in base_model_attrs:
+                raise GridErr(
+                    f"Could not create a col factory for model '{model_name}':\n"
+                    f"  ==> '{model_name}': model has an unexpected attribute.\n"
+                    f"      [received_attr] '{name(k)}'"
+                )
+            attrs.update({k: v['type']})
+
+    base_model_calls = [
+        f"{field}={model_snake}.{field}" for field in attrs
+    ]
+    base_model_line = ',\n            '.join(base_model_calls)
+
+    func_code = f"""
+from typed import typed
+from comp import Col, {base_model_name}
+
+@typed
+def {model_snake}({model_snake}: {model_name}={model_name}()) -> Col:
+    return Col(
+        col_id={model_snake}.col_id,
+        col_class={model_snake}.col_class,
+        col_style={model_snake}.col_style,
+        col_inner={base_model_name}(
+            {base_model_line}
+        )
+    )
+"""
+    local_ns = {}
+    global_ns = caller_globals
+
+    global_ns.update({
+        'typed': typed,
+        'Col': Col,
+        model_name: model,
+        base_model_name: base_model,
+        'getattr': getattr,
+    })
+    exec(func_code, global_ns, local_ns)
+    return local_ns[model_snake]
+
+@typed
 def build_row(model: MODEL, cols_module: Str = '') -> Typed:
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
