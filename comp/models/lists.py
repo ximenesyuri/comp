@@ -45,16 +45,21 @@ class NavItem(Item):
 NavItem.__display__ = "NavItem"
 
 @optional
-class Nav:
+class CustomNav:
     globals:       Globals=Globals()
     aria:          Aria=Aria()
     nav_id:        Str="nav"
     nav_class:     Str
     nav_style:     Str
     nav_direction: Enum(Str, "vertical", "horizontal")="horizontal"
-    nav_items:     List(NavItem)
     ul_id:         Str="nav-ul"
     ul_class:      Str
     ul_style:      Str="list-style: none;"
+
+CustomNav.__display__ = "CustomNav"
+
+@optional
+class Nav(CustomNav):
+    nav_items:     List(NavItem)
 
 Nav.__display__ = "Nav"
