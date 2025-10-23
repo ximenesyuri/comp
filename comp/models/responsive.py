@@ -1,4 +1,4 @@
-from typed import model, MODEL
+from typed import model
 
 @model
 class Desktop:

@@ -1,5 +1,6 @@
+import inspect
 from utils import text, mod, func
-from typed import typed, optional, null, Str, Typed, MODEL, Any, TYPE, name, null
+from typed import typed, optional, null, Str, Typed, MODEL, Any, TYPE, name
 from typed.mods.helper.helper import _check_codomain
 from comp.models.structure import Grid, Row, Col
 from comp.comps.structure import grid
@@ -20,21 +21,21 @@ class GridFactory:
     tablet: Typed(Any, cod=Grid)
     phone: Typed(Any, cod=Grid)
 
-import inspect
 @typed
 def build_row(model: MODEL, cols_module: Str = '') -> Typed:
+    model_name = model.__name__
+    model_snake = text.camel_to_snake(model_name)
+
     if Row not in model.__bases__:
         raise GridErr(
-            f"Could not create a row factory for model '{name(model)}':\n"
-            f"  ==> '{name(model)}': model does not extends 'Row'."
+            f"Could not create a row factory for model '{model_name}':\n"
+            f"  ==> '{model_name}': model does not extends 'Row'."
         )
 
     frame_info = inspect.stack()[2]
     frame = frame_info.frame
     caller_globals = frame.f_globals
     caller_module_name = caller_globals.get('__name__', None)
-    model_name = name(model)
-    model_snake = text.camel_to_snake(model_name)
     attrs = {}
     row_attrs = tuple(Row.__dict__.get('optional_attrs', {}).keys())
     for k, v in model.__dict__.get('optional_attrs', {}).items():
@@ -49,17 +50,18 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
 
     if cols_module:
         if mod.exists(cols_module):
-            for attr_name in attrs:
-                obj = mod.get_object(cols_module, attr_name)
-                if obj is None:
+            for attr_name in tuple(attrs.keys()):
+                try:
+                    obj = mod.get_global(cols_module, attr_name)
+                except:
                     raise GridErr(
-                        f"Could not create a row factory for model '{name(model)}':\n"
+                        f"Could not create a row factory for model '{model_name}':\n"
                         f"  ==> '{attr_name}': object does not exist in module '{cols_module}'."
-                    )
+                    ) from None
                 codomain = getattr(obj, 'codomain', None)
                 if codomain is not Col:
                     raise GridErr(
-                        f"Could not create a row factory for model '{name(model)}':\n"
+                        f"Could not create a row factory for model '{model_name}':\n"
                         f"  ==> '{name(obj)}': is not a Col factory."
                     )
                 domain = getattr(obj, 'domain', None)
@@ -70,7 +72,30 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
                          "      [expected_args]: 1\n"
                         f"      [received_args]: {len(domain)}"
                     )
-
+                attr_param_name = func.params.name(func.unwrap(obj))[0]
+                if attr_param_name != attr_name:
+                    raise GridErr(
+                        f"Could not create a row factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected parameter name\n"
+                        f"      [expected_name]: {attr_name}\n"
+                        f"      [received_name]: {attr_param_name}"
+                    )
+                attr_type = domain[0]
+                if attr_type.__name__ != text.snake_to_camel(attr_name):
+                    raise GridErr(
+                        f"Could not create a row factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
+                        f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
+                        f"      [received_type]: {attr_type.__name__}"
+                    )
+                try:
+                    from typed import null
+                    _check_codomain(obj, Col, codomain, obj(null(attr_type)))
+                except:
+                    raise GridErr(
+                        f"Could not create a row factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': is not returning an instance of Col"
+                    )
                 available_attr_names.append(attr_name)
 
             if available_attr_names:
@@ -78,27 +103,28 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
                 import_line = f"from {cols_module} import {imports}"
         else:
             raise GridErr(
-                f"Could not create a row factory for model '{name(model)}':\n"
+                f"Could not create a row factory for model '{model_name}':\n"
                 f"  ==> '{cols_module}': module does not exist."
             )
     else:
-        for attr_name in attrs:
-            obj = mod.get_object(caller_module_name, attr_name)
-            if obj is None:
+        for attr_name in tuple(attrs.keys()):
+            try:
+                obj = mod.get_global(caller_module_name, attr_name)
+            except:
                 raise GridErr(
-                    f"Could not create a row factory for model '{name(model)}':\n"
+                    f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
-                )
+                ) from None
             codomain= getattr(obj, 'codomain', None)
             if codomain is not Col:
                 raise GridErr(
-                    f"Could not create a row factory for model '{name(model)}':\n"
+                    f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{name(obj)}': attribute is not a Col factory."
                 )
             domain = getattr(obj, 'domain', None)
             if len(domain) != 1:
                 raise GridErr(
-                    f"Could not create a row factory for model '{name(model)}':\n"
+                    f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{name(attr_name)}': attribute has an unexpected number of arguments\n"
                      "      [expected_args]: 1\n"
                     f"      [received_args]: {len(domain)}"
@@ -106,24 +132,25 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
             attr_param_name = func.params.name(func.unwrap(obj))[0]
             if attr_param_name != attr_name:
                 raise GridErr(
-                    f"Could not create a row factory for model '{name(model)}':\n"
+                    f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{name(attr_name)}': attribute has an unexpected parameter name\n"
                     f"      [expected_name]: {attr_name}\n"
                     f"      [received_name]: {attr_param_name}"
                 )
             attr_type = domain[0]
-            if name(attr_type) != text.snake_to_camel(attr_name):
+            if attr_type.__name__ != text.snake_to_camel(attr_name):
                 raise GridErr(
-                    f"Could not create a row factory for model '{name(model)}':\n"
+                    f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
                     f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
                     f"      [received_type]: {name(attr_type)}"
                 )
             try:
+                from typed import null
                 _check_codomain(obj, Col, codomain, obj(null(attr_type)))
             except:
                 raise GridErr(
-                    f"Could not create a row factory for model '{name(model)}':\n"
+                    f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{name(attr_name)}': is not returning an instance of Col"
                 )
             available_attr_names.append(attr_name)
@@ -151,19 +178,340 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Row:
     )
 """
     local_ns = {}
-    global_ns = caller_globals.copy() # Start with all of the caller's globals
+    global_ns = caller_globals.copy()
 
     global_ns.update({
         'typed': typed,
         'Row': Row,
-        model_name: model, # The actual model class itself
-        'getattr': getattr, # Ensure getattr is available for model_snake.field access
+        model_name: model,
+        'getattr': getattr,
     })
     exec(func_code, global_ns, local_ns)
     return local_ns[model_snake]
 
 @typed
-def build_grid(grid_entity: GridEntity, grid_factory: GridFactory) -> COMPONENT:
+def build_grid(model: MODEL, rows_module: Str='') -> Typed:
+    model_name = model.__name__
+    model_snake = text.camel_to_snake(model_name)
+
+    if Grid not in model.__bases__:
+        raise GridErr(
+            f"Could not create a grid factory for model '{model_name}':\n"
+            f"  ==> '{model_name}': model does not extends 'Grid'."
+        )
+
+    frame_info = inspect.stack()[2]
+    frame = frame_info.frame
+    caller_globals = frame.f_globals
+    caller_module_name = caller_globals.get('__name__', None)
+    attrs = {}
+    grid_attrs = tuple(Grid.__dict__.get('optional_attrs', {}).keys())
+    for k, v in model.__dict__.get('optional_attrs', {}).items():
+        if k not in grid_attrs:
+            attrs.update({k: v['type']})
+    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+        if k not in grid_attrs:
+            attrs.update({k: v['type']})
+
+    available_attr_names = []
+    import_line = ''
+
+    if rows_module:
+        if mod.exists(rows_module):
+            for attr_name in tuple(attrs.keys()):
+                try:
+                    obj = mod.get_global(rows_module, attr_name)
+                except:
+                    raise GridErr(
+                        f"Could not create a row factory for model '{model_name}':\n"
+                        f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                    ) from None
+                codomain = getattr(obj, 'codomain', None)
+                if codomain and codomain is not Row:
+                    raise GridErr(
+                        f"Could not create a grid factory for model '{model_name}':\n"
+                        f"  ==> '{name(obj)}': is not a Row factory."
+                    )
+                domain = getattr(obj, 'domain', None)
+                if domain and len(domain) != 1:
+                    raise GridErr(
+                        f"Could not create a row factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected number of arguments\n"
+                         "      [expected_args]: 1\n"
+                        f"      [received_args]: {len(domain)}"
+                    )
+                attr_param_name = func.params.name(func.unwrap(obj))[0]
+                if attr_param_name != attr_name:
+                    raise GridErr(
+                        f"Could not create a grid factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected parameter name\n"
+                        f"      [expected_name]: {attr_name}\n"
+                        f"      [received_name]: {attr_param_name}"
+                    )
+                attr_type = domain[0]
+                if attr_type.__name__ != text.snake_to_camel(attr_name):
+                    raise GridErr(
+                        f"Could not create a grid factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
+                        f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
+                        f"      [received_type]: {name(attr_type)}"
+                    )
+                try:
+                    from typed import null
+                    _check_codomain(obj, Row, codomain, obj(null(attr_type)))
+                except:
+                    raise GridErr(
+                        f"Could not create a grid factory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': is not returning an instance of Row"
+                    )
+
+                available_attr_names.append(attr_name)
+
+            if available_attr_names:
+                imports = ', '.join(available_attr_names)
+                import_line = f"from {rows_module} import {imports}"
+        else:
+            raise GridErr(
+                f"Could not create a grid factory for model '{model_name}':\n"
+                f"  ==> '{rows_module}': module does not exist."
+            )
+    else:
+        for attr_name in tuple(attrs.keys()):
+            try:
+                obj = mod.get_global(caller_module_name, attr_name)
+            except:
+                raise GridErr(
+                    f"Could not create a row factory for model '{model_name}':\n"
+                    f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                ) from None
+            codomain= getattr(obj, 'codomain', None)
+            if codomain and codomain is not Row:
+                raise GridErr(
+                    f"Could not create a grid factory for model '{model_name}':\n"
+                    f"  ==> '{name(obj)}': attribute is not a Row factory."
+                )
+            domain = getattr(obj, 'domain', None)
+            if domain and len(domain) != 1:
+                raise GridErr(
+                    f"Could not create a grid factory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': attribute has an unexpected number of arguments\n"
+                     "      [expected_args]: 1\n"
+                    f"      [received_args]: {len(domain)}"
+                )
+            attr_param_name = func.params.name(func.unwrap(obj))[0]
+            if attr_param_name != attr_name:
+                raise GridErr(
+                    f"Could not create a grid factory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': attribute has an unexpected parameter name\n"
+                    f"      [expected_name]: {attr_name}\n"
+                    f"      [received_name]: {attr_param_name}"
+                )
+            attr_type = domain[0]
+            if attr_type.__name__ != text.snake_to_camel(attr_name):
+                raise GridErr(
+                    f"Could not create a grid factory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
+                    f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
+                    f"      [received_type]: {name(attr_type)}"
+                )
+            try:
+                from typed import null
+                _check_codomain(obj, Row, codomain, obj(null(attr_type)))
+            except:
+                raise GridErr(
+                    f"Could not create a grid factory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': is not returning an instance of Row"
+                )
+            available_attr_names.append(attr_name)
+
+    row_calls = [
+        f"{field}({model_snake}.{field})" for field in available_attr_names
+    ]
+    grid_rows = ',\n            '.join(row_calls)
+
+    func_code = f"""
+from typed import typed
+from comp import Grid
+
+{import_line}
+
+@typed
+def {model_snake}({model_snake}: {model_name}={model_name}()) -> Grid:
+    return Grid(
+        grid_id={model_snake}.grid_id,
+        grid_class={model_snake}.grid_class,
+        grid_style={model_snake}.grid_style,
+        grid_rows=[
+            {grid_rows}
+        ]
+    )
+"""
+    local_ns = {}
+    global_ns = caller_globals.copy()
+
+    global_ns.update({
+        'typed': typed,
+        'Grid': Grid,
+        model_name: model,
+        'getattr': getattr,
+    })
+    exec(func_code, global_ns, local_ns)
+    return local_ns[model_snake]
+
+
+@typed
+def build_factory(model: MODEL, grids_module: Str='') -> Typed:
+    frame_info = inspect.stack()[2]
+    frame = frame_info.frame
+    caller_globals = frame.f_globals
+    caller_module_name = caller_globals.get('__name__', None)
+    model_name = model.__name__
+    model_snake = text.camel_to_snake(model_name)
+    responsive_attrs = ('desktop', 'tablet', 'phone')
+    attrs = {}
+    for k, v in model.__dict__.get('optional_attrs', {}).items():
+        if k.split('_')[-1] in responsive_attrs:
+            attrs.update({k: v['type']})
+    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+        if k.split('_')[-1] in responsive_attrs:
+            attrs.update({k: v['type']})
+
+    available_attr_names = []
+    import_line = ''
+
+    if grids_module:
+        if mod.exists(grids_module):
+            for attr_name in tuple(attrs.keys()):
+                try:
+                    obj = mod.get_global(grids_module, attr_name)
+                except:
+                    raise GridErr(
+                        f"Could not create a row factory for model '{model_name}':\n"
+                        f"  ==> '{attr_name}': object does not exist in module '{grids_module}'."
+                    ) from None
+                codomain = getattr(obj, 'codomain', None)
+                if codomain and codomain is not Grid:
+                    raise GridErr(
+                        f"Could not instantiate GridFactory for model '{model_name}':\n"
+                        f"  ==> '{name(obj)}': is not a grid factory."
+                    )
+                domain = getattr(obj, 'domain', None)
+                if domain and len(domain) != 1:
+                    raise GridErr(
+                        f"Could not instantiate GridFactory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected number of arguments\n"
+                         "      [expected_args]: 1\n"
+                        f"      [received_args]: {len(domain)}"
+                    )
+                attr_param_name = func.params.name(func.unwrap(obj))[0]
+                if attr_param_name != attr_name:
+                    raise GridErr(
+                        f"Could not instantiate GridFactory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected parameter name\n"
+                        f"      [expected_name]: {attr_name}\n"
+                        f"      [received_name]: {attr_param_name}"
+                    )
+                attr_type = domain[0]
+                if attr_type is not getattr(model, attr_name):
+                    raise GridErr(
+                        f"Could not instantiate GridFactory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
+                        f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
+                        f"      [received_type]: {attr_type.__name__}"
+                    )
+                try:
+                    from typed import null
+                    _check_codomain(obj, Grid, codomain, obj(null(attr_type)))
+                except:
+                    raise GridErr(
+                        f"Could not instantiate GridFactory for model '{model_name}':\n"
+                        f"  ==> '{name(attr_name)}': is not returning an instance of Grid."
+                    )
+
+                available_attr_names.append(attr_name)
+
+            if available_attr_names:
+                imports = ', '.join(available_attr_names)
+                import_line = f"from {grids_module} import {imports}"
+        else:
+            raise GridErr(
+                f"Could not instantiate GridFactory for model '{model_name}':\n"
+                f"  ==> '{grids_module}': module does not exist."
+            )
+    else:
+        for attr_name in tuple(attrs.keys()):
+            try:
+                obj = mod.get_global(caller_module_name, attr_name)
+            except:
+                raise GridErr(
+                    f"Could not create a row factory for model '{model_name}':\n"
+                    f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                ) from None
+            codomain= getattr(obj, 'codomain', None)
+            if codomain and codomain is not Grid:
+                raise GridErr(
+                    f"Could not instantiate GridFactory for model '{model_name}':\n"
+                    f"  ==> '{name(obj)}': attribute is not a grid factory."
+                )
+            domain = getattr(obj, 'domain', None)
+            if domain and len(domain) != 1:
+                raise GridErr(
+                    f"Could not instantiate GridFactory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': attribute has an unexpected number of arguments\n"
+                     "      [expected_args]: 1\n"
+                    f"      [received_args]: {len(domain)}"
+                )
+            attr_param_name = func.params.name(func.unwrap(obj))[0]
+            if attr_param_name != attr_name:
+                raise GridErr(
+                    f"Could not instantiate GridFactory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': attribute has an unexpected parameter name\n"
+                    f"      [expected_name]: {attr_name}\n"
+                    f"      [received_name]: {attr_param_name}"
+                )
+            attr_type = domain[0]
+            if attr_type.__name__ != getattr(model, attr_name).__name__:
+                print(attr_type.__name__)
+                print(getattr(model, attr_name).__name__)
+                raise GridErr(
+                    f"Could not instantiate GridFactory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
+                    f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
+                    f"      [received_type]: {attr_type.__name__}"
+                )
+            try:
+                from typed import null
+                _check_codomain(obj, Grid, codomain, obj(null(attr_type)))
+            except:
+                raise GridErr(
+                    f"Could not instantiate GridFactory for model '{model_name}':\n"
+                    f"  ==> '{name(attr_name)}': is not returning an instance of Grid."
+                )
+            available_attr_names.append(attr_name)
+
+    attr_code_line = ", ".join([f"{attr}={model_name}.{attr}" for attr in tuple(attrs.keys())])
+
+    func_code = f"""
+from comp import GridFactory
+
+{import_line}
+{model_snake} = GridFactory({attr_code_line})
+"""
+    local_ns = {}
+    global_ns = caller_globals.copy()
+
+    global_ns.update({
+        'typed': typed,
+        'Grid': Grid,
+        model_name: model,
+        'getattr': getattr,
+    })
+    exec(func_code, global_ns, local_ns)
+    return local_ns[model_snake]
+
+
+@typed
+def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMPONENT:
     if grid_entity.desktop:
         if not grid_factory.desktop:
             raise GridErr(
