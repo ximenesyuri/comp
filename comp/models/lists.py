@@ -5,49 +5,49 @@ from comp.models.content import Link
 
 @optional
 class Item:
-    globals:    Globals=Globals()
-    aria:       Aria=Aria()
-    item_id:    Str="item"
-    item_class: Str
-    item_style: Str
-    item_inner: Any
+    item_globals: Globals=Globals()
+    item_aria:    Aria=Aria()
+    item_id:      Str="item"
+    item_class:   Str
+    item_style:   Str
+    item_inner:   Any
 
 Item.__display__ = "Item"
 
 @optional
 class Unordered:
-    globals:  Globals=Globals()
-    aria:     Aria=Aria()
-    ul_id:    Str="ul"
-    ul_class: Str
-    ul_style: Str
-    ul_items: List(Item)
+    ul_globals: Globals=Globals()
+    ul_aria:    Aria=Aria()
+    ul_id:      Str="ul"
+    ul_class:   Str
+    ul_style:   Str
+    ul_items:   List(Item)
 Ul = Unordered
 
 Unordered.__display__ = "Unordered"
 
 @optional
 class Ordered:
-    globals:  Globals=Globals()
-    aria:     Aria=Aria()
-    ol_id:    Str
-    ol_class: Str
-    ol_style: Str
-    ol_items: List(Item)
+    ol_globals: Globals=Globals()
+    ol_aria:    Aria=Aria()
+    ol_id:      Str
+    ol_class:   Str
+    ol_style:   Str
+    ol_items:   List(Item)
 Ol = Ordered
 
 Ordered.__display__ = "Ordered"
 
 @optional
 class NavItem(Item):
-    item_link:  Link
+    item_link: Link
 
 NavItem.__display__ = "NavItem"
 
 @optional
 class CustomNav:
-    globals:       Globals=Globals()
-    aria:          Aria=Aria()
+    nav_globals:   Globals=Globals()
+    nav_aria:      Aria=Aria()
     nav_id:        Str="nav"
     nav_class:     Str
     nav_style:     Str

@@ -1,5 +1,6 @@
 from typed import Str, Bool, Dict, Json, Int, List, Extension, Union
 from typed.models import optional
+from comp.models.base import Globals, Aria
 from comp.models.structure import Div
 from comp.models.content import Button
 from comp.models.form import Input
@@ -97,6 +98,8 @@ class _SearchIndex:
 
 @optional
 class Search:
+    search_globals:        Globals=Globals()
+    search_aria:           Aria=Aria()
     search_div:            Div=Div(div_id="search-div")
     search_input_div:      Div=Div(div_id="search-input-div")
     search_input:          Input=Input(input_type="search", input_id="search-input")

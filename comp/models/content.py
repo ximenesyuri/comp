@@ -4,21 +4,22 @@ from comp.models.base import Globals, Aria
 
 @optional
 class Button:
-    globals:      Globals=Globals()
-    aria:         Aria=Aria()
-    button_id:    Str="button"
-    button_class: Str
-    button_style: Str
-    button_type:  Enum(Str, "button", "reset", "submmit")="button"
-    on_click:     Str
-    click_away:   Str
-    button_inner: Any
+    button_globals:    Globals=Globals()
+    button_aria:       Aria=Aria()
+    button_id:         Str="button"
+    button_class:      Str
+    button_style:      Str
+    button_type:       Enum(Str, "button", "reset", "submmit")="button"
+    button_on_click:   Str
+    button_click_away: Str
+    button_inner:      Any
 
 Button.__display__ = "Button"
 
 @optional
 class Icon:
-    globals:      Globals=Globals()
+    icon_globals: Globals=Globals()
+    icon_aria:    Aria=Aria()
     icon_id:      Str="icon"
     icon_class:   Str
     icon_style:   Str
@@ -31,45 +32,45 @@ Icon.__display__ = "Icon"
 
 @optional
 class Image:
-    globals:   Globals=Globals()
-    aria:      Aria=Aria()
-    img_id:    Str="img"
-    img_class: Str
-    img_style: Str
-    img_alt:   Str
-    img_src:   PathUrl=""
-    img_lazy:  Bool=True
+    img_globals: Globals=Globals()
+    img_aria:    Aria=Aria()
+    img_id:      Str="img"
+    img_class:   Str
+    img_style:   Str
+    img_alt:     Str
+    img_src:     PathUrl=""
+    img_lazy:    Bool=True
 Img = Image
 
 Image.__display__ = "Image"
 
 @optional
 class Text:
-    globals:    Globals=Globals()
-    aria:       Aria=Aria()
-    text_id:    Str="text"
-    text_class: Str
-    text_style: Str
-    text_inner: Any
+    text_globals: Globals=Globals()
+    text_aria:    Aria=Aria()
+    text_id:      Str="text"
+    text_class:   Str
+    text_style:   Str
+    text_inner:   Any
 
 Text.__display__ = "Text"
 
 @optional
 class Title:
-    globals:     Globals=Globals()
-    aria:        Aria=Aria()
-    title_id:    Str="title"
-    title_class: Str
-    title_style: Str
-    title_tag:   Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6")="h1"
-    title_inner: Any
+    title_globals: Globals=Globals()
+    title_aria:    Aria=Aria()
+    title_id:      Str="title"
+    title_class:   Str
+    title_style:   Str
+    title_tag:     Enum(Str, "h1", "h2", "h3", "h4", "h5", "h6")="h1"
+    title_inner:   Any
 
 Title.__display__ = "Title"
 
 @optional
 class Link:
-    globals:       Globals=Globals()
-    aria:          Aria=Aria()
+    link_globals:  Globals=Globals()
+    link_aria:     Aria=Aria()
     link_id:       Str="link"
     link_class:    Str
     link_style:    Str
@@ -83,8 +84,8 @@ Link.__display__ = "Link"
 
 @optional
 class Figure:
-    globals:        Globals=Globals()
-    aria:           Aria=Aria()
+    figure_globals: Globals=Globals()
+    figure_aria:    Aria=Aria()
     figure_img:     Image=Image()
     figure_caption: Str
 
@@ -92,9 +93,9 @@ Figure.__display__ = "Figure"
 
 @optional
 class Logo:
-    globals:   Globals=Globals()
-    aria:      Aria=Aria()
-    logo_img:  Image=Image()
-    logo_link: Link=Link(link_href="/")
+    logo_globals: Globals=Globals()
+    logo_aria:    Aria=Aria()
+    logo_img:     Image=Image()
+    logo_link:    Link=Link(link_href="/")
 
 Logo.__display__ = "Logo"
