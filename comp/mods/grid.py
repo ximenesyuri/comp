@@ -402,7 +402,6 @@ def build_grid(model: MODEL, rows_module: Str='') -> Typed:
     func_code = f"""
 from typed import typed
 from comp import Grid
-
 {import_line}
 
 @typed
@@ -427,7 +426,6 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Grid:
     })
     exec(func_code, global_ns, local_ns)
     return local_ns[model_snake]
-
 
 @typed
 def build_factory(model: MODEL, grids_module: Str='') -> Typed:
@@ -569,11 +567,9 @@ from comp import GridFactory
     exec(func_code, global_ns, local_ns)
     return local_ns[model_snake]
 
-
 @typed
 def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMPONENT:
     if grid_entity.desktop:
-        print(grid_entity.desktop)
         if not grid_factory.desktop:
             raise GridErr(
                 "Could no build the responsive grid.\n"
