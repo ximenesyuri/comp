@@ -1,6 +1,6 @@
 [project]
 name = "comp"
-version = "0.4.1"
+version = "0.5.0"
 description = "A functional typed component system for python"
 readme = "README.md"
 requires-python = ">=3.9"
