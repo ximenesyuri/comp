@@ -638,7 +638,10 @@ def _style(html: Str) -> Str:
                     break
             base = ":".join(parts[i:])
             if not base:
-                return {'error': f"ERROR({orig})"}
+                if found_media:
+                    base = orig
+                else:
+                    return {'error': f"ERROR({orig})"}
             found_pseudos.sort(key=lambda x: PSEUDO_ORDER.index(x))
             return {
                 'error': None,
