@@ -80,9 +80,9 @@ def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "scrip
     [% if head.head_meta.meta_description %]<meta name="description" content="[[ head.head_meta.meta_description ]]"/>[% endif %]
     [% if head.head_meta.meta_keywords %]<meta name="keywords" content="[[ head.head_meta.meta_keywords ]]"/>[% endif %]
     [% if head.head_meta.meta_author %]<meta name="author" content="[[ head.head_meta.meta_author ]]"/>[% endif %]
-    [% if head.head_assets is defined %][% for a in head.head_assets %]
+    [% if head.head_assets %][% for a in head.head_assets %]
     [[ asset(asset=a) ]][% endfor %][% endif %]
-    [% if head.head_scripts is defined %][% for s in head.head_scripts %]
+    [% if head.head_scripts %][% for s in head.head_scripts %]
     [[ script(script=s) ]][% endfor %][% endif %]
     { rendered_inner }
 </head>
@@ -118,7 +118,7 @@ def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "asi
         return f"""jinja
 <body{ if_body(body) }>
     [% if body.body_header %][[ header(header=body.body_header) ]][% endif %]
-    [% if body.body_asides is defined %][% for a in body.body_asides %]
+    [% if body.body_asides %][% for a in body.body_asides %]
     [[ aside(aside=a) ]][% endfor %][% endif %]
     [% if body.body_main %][[ main(main=body.body_main) ]][% endif %]
     { rendered_inner }

@@ -49,8 +49,8 @@ class Head:
     head_globals: Globals=Globals()
     head_aria:    Aria=Aria()
     head_meta:    Metadata=Metadata()
-    head_assets:  List(Asset)
-    head_scripts: List(Script)
+    head_assets:  List(Asset)=[]
+    head_scripts: List(Script)=[]
     head_inner:   Any
 
 Head.__display__ = "Head"
@@ -116,7 +116,7 @@ class Body:
     body_aria:    Aria=Aria()
     body_header:  Header
     body_footer:  Footer
-    body_asides:  List(Aside)
+    body_asides:  List(Aside)=[]
     body_main:    Main
     body_inner:   Any
 
@@ -124,8 +124,8 @@ Body.__display__ = "Body"
 
 @optional
 class Page:
-    page_head:  Head=Head()
-    page_body:  Body=Body()
+    page_head:  Head
+    page_body:  Body
     page_inner: Any
 
 Page.__display__ = "Page"
