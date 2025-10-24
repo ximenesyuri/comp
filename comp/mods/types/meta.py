@@ -1,17 +1,8 @@
 import re
-from inspect import signature, Parameter, getsource
-from jinja2 import Environment
 from typed import (
     TYPE,
-    Union,
     Str,
-    Int,
-    Bool,
-    Any,
     Typed,
-    Json,
-    Prod,
-    Dict,
     names,
     MODEL,
     name
@@ -86,7 +77,7 @@ class _COMPONENT(TYPE(Typed)):
     def __instancecheck__(self, instance):
         from comp.mods.helper.types import COMPONENT as BASE
 
-        if not isinstance(instance, BASE):
+        if not TYPE(instance) <= BASE:
             return False
 
         if self is BASE:
@@ -220,7 +211,7 @@ class _RESPONSIVE_(_COMPONENT):
            and isinstance(args[0], str) \
            and isinstance(args[1], tuple) \
            and isinstance(args[2], dict):
-            return type.__call__(self, *args, **kwargs)
+            return type.__call__(cls, *args, **kwargs)
 
         from comp.mods.types.base import RESPONSIVE, COMPONENT, Responsive
         class _CALL_RESPONSIVE_(_COMPONENT):
