@@ -743,15 +743,19 @@ def _style(html: Str) -> Str:
                    info['important'],
                    tuple(info['pseudos']),
                    info['not_media'])
-            buckets.setdefault(key, []).append(
-                f"{info['selector']} {{\n    {info['rule_content']}\n}}"
-            )
+            rule = f"{info['selector']} {{\n    {info['rule_content']}\n}}"
+            buckets.setdefault(key, []).append(rule)
 
         keys = sorted(buckets,
                       key=lambda k: (k[0] is not None, k[3], k[1]))
         final_rules = []
         for k in keys:
-            rules = buckets[k]
+            seen = set()
+            rules = []
+            for r in buckets[k]:
+                if r not in seen:
+                    seen.add(r)
+                    rules.append(r)
             if k[0]:
                 final_rules.append(f"@media {k[0]} {{\n" + "\n".join(rules) + "\n}}")
             else:
