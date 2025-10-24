@@ -17,13 +17,18 @@ from comp.models import (
     Ordered,
     Nav,
     Header,
+    Footer,
     Aside,
     Sidebar,
     Icon,
     Input,
     Column,
     Row,
-    Grid
+    Grid,
+    Head,
+    Main,
+    Body,
+    Page
 )
 
 @typed
@@ -170,6 +175,7 @@ def if_alpine(alpine: Maybe(Alpine)=Alpine()) -> Str:
           + if_key(alpine.x_data, "x-data")
           + if_bool(alpine.x_cloak, "x-cloak")
         )
+    
     except Exception as e:
         raise HelperErr(e)
 
@@ -215,6 +221,67 @@ def if_sidebar(sidebar: Maybe(Sidebar)=Sidebar()) -> Str:
           + if_class(sidebar.sidebar_class)
           + if_style(sidebar.sidebar_style)
         )
+    except Exception as e:
+        raise HelperErr(e)
+
+@typed
+def if_footer(footer: Maybe(Footer)=Footer()) -> Str:
+    try:
+        if not footer:
+            return ""
+        return (
+            if_globals(footer.footer_globals)
+          + if_aria(footer.footer_aria)
+          + if_key(footer.footer_id, "id")
+          + if_key(footer.footer_class, "class")
+          + if_key(footer.footer_style, "style")
+        )
+    except Exception as e:
+        raise HelperErr(e)
+
+@typed
+def if_head(head: Maybe(Head)=Head()) -> Str:
+    try:
+        if not head:
+            return ""
+        return (
+            if_globals(head.head_globals)
+          + if_aria(head.head_aria)
+        )
+    except Exception as e:
+        raise HelperErr(e)
+
+@typed
+def if_main(main: Maybe(Main)=Main()) -> Str:
+    try:
+        if not main:
+            return ""
+        return (
+            if_globals(main.main_globals)
+          + if_aria(main.main_aria)
+          + if_key(main.main_id, "id")
+          + if_key(main.main_class, "class")
+          + if_key(main.main_style, "style")
+        )
+    except Exception as e:
+        raise HelperErr(e)
+
+@typed
+def if_body(body: Maybe(Body)=Body()) -> Str:
+    try:
+        if not body:
+            return ""
+        return (
+            if_globals(body.body_globals)
+          + if_aria(body.body_aria)
+        )
+    except Exception as e:
+        raise HelperErr(e)
+
+@typed
+def if_page(page: Maybe(Page)=Page()) -> Str:
+    try:
+        return ""
     except Exception as e:
         raise HelperErr(e)
 

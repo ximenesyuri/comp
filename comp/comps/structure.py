@@ -1,15 +1,21 @@
 from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, Inner
 from comp.mods.err import ComponentErr
-from comp.models.structure import Div, Header, Column, Row, Grid, Aside
+from comp.models.structure import Div, Header, Column, Row, Grid, Aside, Footer, Head, Main, Body, Page
 from comp.mods.helper.comps import (
     if_div,
     if_header,
     if_col,
     if_row,
     if_grid,
+    if_footer,
+    if_head,
+    if_main,
+    if_body,
+    if_page,
     _render_inner
 )
+from comp.comps.includes import asset, script
 
 @component
 def header(header: Header=Header(), inner: Inner="") -> Jinja:
@@ -37,6 +43,105 @@ def aside(aside: Aside=Aside(), inner: Inner="") -> Jinja:
             rendered_inner = ""
         return f"""jinja
 <aside{ if_aside(aside) }>{ rendered_inner }</aside>
+"""
+    except Exception as e:
+        raise ComponentErr(e)
+
+@component
+def footer(footer: Footer=Footer(), inner: Inner="") -> Jinja:
+    try:
+        if footer.footer_inner:
+            rendered_inner = _render_inner(footer.footer_inner)
+        elif inner:
+            rendered_inner = _render_inner(inner)
+        else:
+            rendered_inner = ""
+        return f"""jinja
+<footer{ if_footer(footer) }>{ rendered_inner }</footer>
+"""
+    except Exception as e:
+        raise ComponentErr(e)
+
+@component
+def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "script": script}) -> Jinja:
+    try:
+        if head.head_inner:
+            rendered_inner = _render_inner(head.head_inner)
+        elif inner:
+            rendered_inner = _render_inner(inner)
+        else:
+            rendered_inner = ""
+        return f"""jinja
+<head{ if_head(head) }>
+    [% if head.head_meta.meta_charset %]<meta charset="[[ head.head_meta.meta_charset ]]"/>[% endif %]
+    [% if head.head_meta.meta_viewport %]<meta name="viewport" content="[[ head.head_meta.meta_viewport ]]"/>[% endif %]
+    [% if head.head_meta.meta_title %]<title>[[ head.head_meta.meta_title ]]</title>[% endif %]
+    [% if head.head_meta.meta_description %]<meta name="description" content="[[ head.head_meta.meta_description ]]"/>[% endif %]
+    [% if head.head_meta.meta_keywords %]<meta name="keywords" content="[[ head.head_meta.meta_keywords ]]"/>[% endif %]
+    [% if head.head_meta.meta_author %]<meta name="author" content="[[ head.head_meta.meta_author ]]"/>[% endif %]
+    [% if head.head_assets is defined %][% for a in head.head_assets %]
+    [[ asset(asset=a) ]][% endfor %][% endif %]
+    [% if head.head_scripts is defined %][% for s in head.head_scripts %]
+    [[ script(script=s) ]][% endfor %][% endif %]
+    { rendered_inner }
+</head>
+"""
+    except Exception as e:
+        raise ComponentErr(e)
+
+@component
+def main(main: Main=Main(), inner: Inner="") -> Jinja:
+    try:
+        if main.main_inner:
+            rendered_inner = _render_inner(main.main_inner)
+        elif inner:
+            rendered_inner = _render_inner(inner)
+        else:
+            rendered_inner = ""
+        return f"""jinja
+<main{ if_main(main) }>{ rendered_inner }</main>
+"""
+    except Exception as e:
+        raise ComponentErr(e)
+
+@component
+def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "aside": aside, "main": main, "footer": footer}) -> Jinja:
+    try:
+        if body.body_inner:
+            rendered_inner = _render_inner(body.body_inner)
+        elif inner:
+            rendered_inner = _render_inner(inner)
+        else:
+            rendered_inner = ""
+        return f"""jinja
+<body{ if_body(body) }>
+    [[ header(header=body.body_header) ]]
+    [% if body.body_asides is defined %][% for a in body.body_asides %]
+    [[ aside(aside=a) ]][% endfor %][% endif %]
+    [[ main(main=body.body_main) ]]
+    { rendered_inner }
+    [[ footer(footer=body.body_footer) ]]
+</body>
+"""
+    except Exception as e:
+        raise ComponentErr(e)
+
+@component
+def page(page: Page=Page(), inner: Inner="", __context__={"head": head, "body": body}) -> Jinja:
+    try:
+        if page.page_inner:
+            rendered_inner = _render_inner(page.page_inner)
+        elif inner:
+            rendered_inner = _render_inner(inner)
+        else:
+            rendered_inner = ""
+        return f"""jinja
+<!DOCTYPE html>
+<html{ if_page(page) }>
+    [[ head(head=page.page_head) ]]
+    [[ body(body=page.page_body) ]]
+    { rendered_inner }
+</html>
 """
     except Exception as e:
         raise ComponentErr(e)

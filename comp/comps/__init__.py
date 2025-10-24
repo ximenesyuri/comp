@@ -26,7 +26,7 @@ from comp.comps.responsive import (
     mobile, not_mobile
 )
 from comp.comps.structure import (
-    header, aside,
+    header, aside, footer, head, body, main, page,
     div,
     col, col_1, col_2, col_3, col_4, col_5,
     row, grid
