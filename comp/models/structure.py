@@ -1,6 +1,7 @@
 from typed import Str, Any, Enum, List
 from typed.models import optional
 from comp.models.base import Globals, Aria
+from comp.models.includes import Script, Asset
 
 @optional
 class Div:
@@ -31,6 +32,28 @@ class Block(Div):
     div_class: Str="display: block"
 
 Block.__display__ = "Block"
+
+@optional
+class Metadata:
+    meta_title: Str
+    meta_description: Str
+    meta_keywords: Str
+    meta_author: Str
+    meta_charset: Str = "utf-8"
+    meta_viewport: Str = "width=device-width, initial-scale=1"
+
+Metadata.__display__ = "Metadata"
+
+@optional
+class Head:
+    head_globals: Globals=Globals()
+    head_aria:    Aria=Aria()
+    head_meta:    Metadata=Metadata()
+    head_assets:  List(Asset)
+    head_scripts: List(Script)
+    head_inner:   Any
+
+Head.__display__ = "Head"
 
 @optional
 class Header:
@@ -75,6 +98,37 @@ class Sidebar:
     sidebar_inner:   Any
 
 Sidebar.__display__ = "Sidebar"
+
+@optional
+class Main:
+    main_globals: Globals=Globals()
+    main_aria:    Aria=Aria()
+    main_id:      Str="main"
+    main_class:   Str
+    main_style:   Str
+    main_inner:   Any
+
+Main.__display__ = "Main"
+
+@optional
+class Body:
+    body_globals: Globals=Globals()
+    body_aria:    Aria=Aria()
+    body_header:  Header=Header()
+    body_footer:  Footer=Footer()
+    body_asides:  List(Aside)
+    body_main:    Main=Main()
+    body_inner:   Any
+
+Body.__display__ = "Body"
+
+@optional
+class Page:
+    page_head:  Head=Head()
+    page_body:  Body=Body()
+    page_inner: Any
+
+Page.__display__ = "Page"
 
 @optional
 class Column:
