@@ -27,7 +27,7 @@ def concat(comp_1: COMPONENT, comp_2: COMPONENT) -> COMPONENT:
         merged_params = []
         param_names = set()
         for p in sig1.parameters.values():
-            if p.name == inner_param_name:
+            if p.name == inner_param_name or p.name == '__context__':
                 continue
             merged_params.append(p)
             param_names.add(p.name)
