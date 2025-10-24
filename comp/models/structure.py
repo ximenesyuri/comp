@@ -114,10 +114,10 @@ Main.__display__ = "Main"
 class Body:
     body_globals: Globals=Globals()
     body_aria:    Aria=Aria()
-    body_header:  Header=Header()
-    body_footer:  Footer=Footer()
+    body_header:  Header
+    body_footer:  Footer
     body_asides:  List(Aside)
-    body_main:    Main=Main()
+    body_main:    Main
     body_inner:   Any
 
 Body.__display__ = "Body"

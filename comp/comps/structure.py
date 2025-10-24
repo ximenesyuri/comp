@@ -9,6 +9,7 @@ from comp.mods.helper.comps import (
     if_row,
     if_grid,
     if_footer,
+    if_aside,
     if_head,
     if_main,
     if_body,
@@ -113,14 +114,15 @@ def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "asi
             rendered_inner = _render_inner(inner)
         else:
             rendered_inner = ""
+
         return f"""jinja
 <body{ if_body(body) }>
-    [[ header(header=body.body_header) ]]
+    [% if body.body_header %][[ header(header=body.body_header) ]][% endif %]
     [% if body.body_asides is defined %][% for a in body.body_asides %]
     [[ aside(aside=a) ]][% endfor %][% endif %]
-    [[ main(main=body.body_main) ]]
+    [% if body.body_main %][[ main(main=body.body_main) ]][% endif %]
     { rendered_inner }
-    [[ footer(footer=body.body_footer) ]]
+    [% if body.body_footer %][[ footer(footer=body.body_footer) ]][% endif %]
 </body>
 """
     except Exception as e:
@@ -138,8 +140,8 @@ def page(page: Page=Page(), inner: Inner="", __context__={"head": head, "body": 
         return f"""jinja
 <!DOCTYPE html>
 <html{ if_page(page) }>
-    [[ head(head=page.page_head) ]]
-    [[ body(body=page.page_body) ]]
+    [% if page.page_head %][[ head(head=page.page_head) ]][% endif %]
+    [% if page.page_body %][[ body(body=page.page_body) ]][% endif %]
     { rendered_inner }
 </html>
 """
