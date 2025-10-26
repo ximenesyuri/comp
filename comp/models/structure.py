@@ -1,4 +1,4 @@
-from typed import Str, Any, Enum, List
+from typed import Str, Any, Enum, List, Dict, Url, PathUrl, Bool, HEX, Extension
 from typed.models import optional
 from comp.models.base import Globals, Aria
 from comp.models.includes import Script, Asset
@@ -35,12 +35,49 @@ Block.__display__ = "Block"
 
 @optional
 class Metadata:
-    meta_title: Str
+    meta_charset:     Str = "utf-8"
+    meta_viewport:    Str = "width=device-width, initial-scale=1"
+    meta_title:       Str
     meta_description: Str
-    meta_keywords: Str
-    meta_author: Str
-    meta_charset: Str = "utf-8"
-    meta_viewport: Str = "width=device-width, initial-scale=1"
+    meta_keywords:    List(Str)
+    meta_author:      Str
+    meta_publisher:   Str
+    meta_copyright:   Str
+    meta_robots:      List(Enum(Str, 'index', 'follow', 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'max-snippet:50'))=['index', 'follow']
+    meta_generator:   Str
+    canonical:        Url('http', 'https')
+    favicon:          Extension('png', 'jpg', 'jpeg', 'webp')='/assets/favicon.png'
+    theme_color:      HEX
+    manifest:         Extension('json')='/assets/manifest.json'
+    alternate_hreflang: Dict(Url('http', 'https'))
+    prefetch:         List(PathUrl)
+    preload:          List(PathUrl)
+    dns_prefetch:     List(PathUrl)
+    preconnect:       List(PathUrl)
+    og_title:         Str
+    og_description:   Str
+    og_type:          Enum(Str, 'website', 'article', 'video.movie', 'music.song', 'profile', 'book')='website'
+    og_url:           Url('http', 'https')
+    og_image:         PathUrl
+    og_image_alt:     Str
+    og_locale:        Str
+    og_site_name:     Str
+    twitter_card:        Enum(Str, 'summary', 'summary_large_image', 'app', 'player')='summary'
+    twitter_site:        Str
+    twitter_creator:     Str
+    twitter_title:       Str
+    twitter_description: Str
+    twitter_image:       PathUrl
+    twitter_image_alt:   Str
+    apple_pwa_capable:          Bool
+    apple_pwa_status_bar_style: Enum(Str, 'default', 'black', 'black-translucent')='default'
+    apple_pwa_title:            Str
+    apple_touch_icon:           Extension('png', 'jpg', 'jpeg', 'webp')='/assets/apple-touch-icon.png'
+    apple_mask_icon:            Extension('svg')='assets/apple-mask-icon.svg'
+    apple_mark_icon_color:      HEX
+    ms_tile_color: HEX='#0072C6'
+    ms_tile_image: Extension('png', 'jpg', 'jpeg', 'webp')='/assets/ms-icon.png'
+    custom_meta: Dict(Str)
 
 Metadata.__display__ = "Metadata"
 

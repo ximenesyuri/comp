@@ -28,7 +28,8 @@ from comp.models import (
     Head,
     Main,
     Body,
-    Page
+    Page,
+    Metadata
 )
 
 @typed
@@ -574,7 +575,6 @@ def if_input(input: Maybe(Input)=Input()) -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-
 def _render_inner(obj):
     try:
         if obj is None:
@@ -584,16 +584,12 @@ def _render_inner(obj):
         from comp.comps.includes   import asset, script
         from comp.comps.buttons    import button_close, button_menu, button_search, button_home, button_theme_switcher
         from comp.comps.extensions import alpine, search, search_script
-        from comp.comps.form       import input as form_input
+        from comp.comps.form       import input
         from comp.comps.responsive import desktop, tablet, phone, mobile, not_desktop, not_tablet, not_phone, not_mobile
-        from comp.comps.structure  import div, header, aside, col, col_1, col_2, col_3, col_4, col_5, row, grid
-
-        from comp.models.content    import Text, Title, Link, Image, Figure, Button, Logo, Icon
-        from comp.models.lists      import Item, Unordered, Ordered, Nav
-        from comp.models.includes   import Script, Asset
-        from comp.models.extensions import Alpine, Search
-        from comp.models.form       import Input
-        from comp.models.structure  import Div, Header, Aside, Column, Row, Grid
+        from comp.comps.structure  import (
+            div, header, footer, aside, body, head, page,
+            col, col_1, col_2, col_3, col_4, col_5, row, grid
+        )
 
         if isinstance(obj, Text):       return text(obj)
         if isinstance(obj, Title):      return title(obj)
@@ -610,14 +606,120 @@ def _render_inner(obj):
         if isinstance(obj, Asset):      return asset(obj)
         if isinstance(obj, Alpine):     return alpine(obj)
         if isinstance(obj, Search):     return search(obj)
-        if isinstance(obj, Input):      return form_input(obj)
+        if isinstance(obj, Input):      return input(obj)
         if isinstance(obj, Div):        return div(obj)
         if isinstance(obj, Header):     return header(obj)
+        if isinstance(obj, Footer):     return footer(obj)
+        if isinstance(obj, Main):       return main(obj)
+        if isinstance(obj, Body):       return body(obj)
+        if isinstance(obj, Head):       return head(obj)
+        if isinstance(obj, Page):       return page(obj)
         if isinstance(obj, Aside):      return aside(obj)
         if isinstance(obj, Column):     return col(obj)
         if isinstance(obj, Row):        return row(obj)
         if isinstance(obj, Grid):       return grid(obj)
         if isinstance(obj, str):        return obj
         return str(obj)
+    except Exception as e:
+        raise HelperErr(e)
+
+@typed
+def _generate_meta_tags(meta: Maybe(Metadata)=Metadata()) -> Str:
+    try:
+        tags = []
+        # Essential
+        if meta.meta_charset:
+            tags.append(f'<meta charset="{meta.meta_charset}"/>')
+        if meta.meta_viewport:
+            tags.append(f'<meta name="viewport" content="{meta.meta_viewport}"/>')
+        if meta.meta_title:
+            tags.append(f'<title>{meta.meta_title}</title>')
+        # Standard SEO
+        if meta.meta_description:
+            tags.append(f'<meta name="description" content="{meta.meta_description}"/>')
+        if head_meta.meta_keywords:
+            tags.append(f'<meta name="keywords" content="{", ".join(meta.meta_keywords)}"/>')
+        if meta.meta_author:
+            tags.append(f'<meta name="author" content="{meta.meta_author}"/>')
+        if meta.meta_publisher:
+            tags.append(f'<meta name="publisher" content="{meta.meta_publisher}"/>')
+        if meta.meta_copyright:
+            tags.append(f'<meta name="copyright" content="{meta.meta_copyright}"/>')
+        if meta.meta_robots:
+            tags.append(f'<meta name="robots" content="{", ".join(meta.meta_robots)}"/>')
+        if meta.meta_generator:
+            tags.append(f'<meta name="generator" content="{meta.meta_generator}"/>')
+        # Open Graph
+        if meta.og_title:
+            tags.append(f'<meta property="og:title" content="{meta.og_title}"/>')
+        if meta.og_description:
+            tags.append(f'<meta property="og:description" content="{meta.og_description}"/>')
+        if meta.og_type:
+            tags.append(f'<meta property="og:type" content="{meta.og_type}"/>')
+        if meta.og_url:
+            tags.append(f'<meta property="og:url" content="{meta.og_url}"/>')
+        if meta.og_image:
+            tags.append(f'<meta property="og:image" content="{meta.og_image}"/>')
+        if meta.og_image_alt:
+            tags.append(f'<meta property="og:image:alt" content="{meta.og_image_alt}"/>')
+        if meta.og_locale:
+            tags.append(f'<meta property="og:locale" content="{meta.og_locale}"/>')
+        if meta.og_site_name:
+            tags.append(f'<meta property="og:site_name" content="{meta.og_site_name}"/>')
+        # Twitter Cards
+        if meta.twitter_card:
+            tags.append(f'<meta name="twitter:card" content="{meta.twitter_card}"/>')
+        if meta.twitter_site:
+            tags.append(f'<meta name="twitter:site" content="{meta.twitter_site}"/>')
+        if meta.twitter_creator:
+            tags.append(f'<meta name="twitter:creator" content="{meta.twitter_creator}"/>')
+        if meta.twitter_title:
+            tags.append(f'<meta name="twitter:title" content="{meta.twitter_title}"/>')
+        if meta.twitter_description:
+            tags.append(f'<meta name="twitter:description" content="{meta.twitter_description}"/>')
+        if meta.twitter_image:
+            tags.append(f'<meta name="twitter:image" content="{meta.twitter_image}"/>')
+        if meta.twitter_image_alt:
+            tags.append(f'<meta name="twitter:image:alt" content="{meta.twitter_image_alt}"/>')
+        # Apple Specific
+        if meta.apple_pwa_capable is True:
+            tags.append(f'<meta name="apple-mobile-web-app-capable" content="true"/>')
+        if meta.apple_pwa_status_bar_style:
+            tags.append(f'<meta name="apple-mobile-web-app-status-bar-style" content="{meta.apple_pwa_status_bar_style}"/>')
+        if meta.apple_pwa_title:
+            tags.append(f'<meta name="apple-mobile-web-app-title" content="{meta.apple_pwa_title}"/>')
+        # Microsoft/Windows Specific
+        if meta.ms_tile_color:
+            tags.append(f'<meta name="msapplication-TileColor" content="{meta.ms_tile_color}"/>')
+        if meta.ms_tile_image:
+            tags.append(f'<meta name="msapplication-TileImage" content="{meta.ms_tile_image}"/>')
+        # Link-based Metadata (using <link> tags or special meta for theme-color)
+        if meta.canonical:
+            tags.append(f'<link rel="canonical" href="{meta.canonical}"/>')
+        if meta.favicon:
+            tags.append(f'<link rel="icon" href="{meta.favicon}"/>')
+        if meta.apple_touch_icon:
+            tags.append(f'<link rel="apple-touch-icon" href="{meta.apple_touch_icon}"/>')
+        if meta.apple_mask_icon and meta.apple_mask_icon_color:
+            tags.append(f'<link rel="mask-icon" href="{meta.apple_mask_icon}" color="{meta.mask_icon_color}"/>')
+        if meta.theme_color:
+            tags.append(f'<meta name="theme-color" content="{meta.theme_color}"/>')
+        if meta.manifest:
+            tags.append(f'<link rel="manifest" href="{meta.manifest}"/>')
+        for lang, url in meta.alternate_hreflang.items():
+            tags.append(f'<link rel="alternate" hreflang="{lang}" href="{url}"/>')
+        for url in meta.prefetch:
+            tags.append(f'<link rel="prefetch" href="{url}"/>')
+        for url in meta.preload:
+            tags.append(f'<link rel="preload" href="{url}"/>')
+        for url in meta.dns_prefetch:
+            tags.append(f'<link rel="dns-prefetch" href="{url}"/>')
+        for url in meta.preconnect:
+            tags.append(f'<link rel="preconnect" href="{url}"/>')
+        # Custom Meta Tags
+        for name, content in meta.custom_meta.items():
+            tags.append(f'<meta name="{name}" content="{content}"/>')
+
+        return "\n    ".join(tags)
     except Exception as e:
         raise HelperErr(e)

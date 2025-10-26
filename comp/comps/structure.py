@@ -72,14 +72,11 @@ def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "scrip
             rendered_inner = _render_inner(inner)
         else:
             rendered_inner = ""
+        from comp.mods.helper.comps  import _generate_meta_tags
+        meta_tags = _generate_meta_tags(head.head_meta)
         return f"""jinja
 <head{ if_head(head) }>
-    [% if head.head_meta.meta_charset %]<meta charset="[[ head.head_meta.meta_charset ]]"/>[% endif %]
-    [% if head.head_meta.meta_viewport %]<meta name="viewport" content="[[ head.head_meta.meta_viewport ]]"/>[% endif %]
-    [% if head.head_meta.meta_title %]<title>[[ head.head_meta.meta_title ]]</title>[% endif %]
-    [% if head.head_meta.meta_description %]<meta name="description" content="[[ head.head_meta.meta_description ]]"/>[% endif %]
-    [% if head.head_meta.meta_keywords %]<meta name="keywords" content="[[ head.head_meta.meta_keywords ]]"/>[% endif %]
-    [% if head.head_meta.meta_author %]<meta name="author" content="[[ head.head_meta.meta_author ]]"/>[% endif %]
+    { meta_tags }
     [% if head.head_assets %][% for a in head.head_assets %]
     [[ asset(asset=a) ]][% endfor %][% endif %]
     [% if head.head_scripts %][% for s in head.head_scripts %]
