@@ -5,4 +5,8 @@ from comp.models.form       import Input, Form
 from comp.models.includes   import Script, Asset
 from comp.models.lists      import Item, Unordered, Ul, Ordered, Ol, NavItem, CustomNav, Nav
 from comp.models.responsive import Desktop, Tablet, Phone
-from comp.models.structure  import Div, Flex, Inline, Block, Head, Main, Body, Page, Header, Footer, Aside, Sidebar, Column, Col, Row, Grid
+from comp.models.structure  import (
+    Div, Flex, Inline, Block,
+    Metadata, Head, Main, Body, Page, Header, Footer, Aside, Sidebar,
+    Column, Col, Row, Grid
+)
