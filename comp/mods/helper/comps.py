@@ -637,7 +637,7 @@ def _generate_meta_tags(meta: Maybe(Metadata)=Metadata()) -> Str:
         # Standard SEO
         if meta.meta_description:
             tags.append(f'<meta name="description" content="{meta.meta_description}"/>')
-        if head_meta.meta_keywords:
+        if meta.meta_keywords:
             tags.append(f'<meta name="keywords" content="{", ".join(meta.meta_keywords)}"/>')
         if meta.meta_author:
             tags.append(f'<meta name="author" content="{meta.meta_author}"/>')
