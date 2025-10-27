@@ -29,8 +29,6 @@ def build_col(model: MODEL) -> Typed:
     frame = frame_info.frame
     caller_globals = frame.f_globals
 
-    print(model.__bases__)
-
     if len(model.__bases__) != 5:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
@@ -52,8 +50,6 @@ def build_col(model: MODEL) -> Typed:
     attrs = {}
     col_attrs = tuple(Col.__dict__.get('optional_attrs', {}).keys())
     base_model_attrs = tuple(base_model.__dict__.get('optional_attrs', {}).keys())
-    print(base_model)
-    print(base_model_attrs)
     for k, v in model.__dict__.get('optional_attrs', {}).items():
         if k not in col_attrs:
             if k not in base_model_attrs:
