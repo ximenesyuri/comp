@@ -35,8 +35,8 @@ Block.__display__ = "Block"
 
 @optional
 class Metadata:
-    meta_charset:     Str = "utf-8"
-    meta_viewport:    Str = "width=device-width, initial-scale=1"
+    meta_charset:     Str="utf-8"
+    meta_viewport:    Str="width=device-width, initial-scale=1"
     meta_title:       Str
     meta_description: Str
     meta_keywords:    List(Str)
@@ -74,7 +74,7 @@ class Metadata:
     apple_pwa_title:            Str
     apple_touch_icon:           Extension('png', 'jpg', 'jpeg', 'webp')='/assets/apple-touch-icon.png'
     apple_mask_icon:            Extension('svg')='assets/apple-mask-icon.svg'
-    apple_mark_icon_color:      HEX
+    apple_mask_icon_color:      HEX
     ms_tile_color: HEX='#0072C6'
     ms_tile_image: Extension('png', 'jpg', 'jpeg', 'webp')='/assets/ms-icon.png'
     custom_meta: Dict(Str)
