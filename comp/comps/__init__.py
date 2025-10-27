@@ -32,3 +32,4 @@ from comp.comps.structure import (
     row, grid
 )
 from comp.comps.icons import *
+from comp.comps.special import content

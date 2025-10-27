@@ -178,7 +178,7 @@ def if_alpine(alpine: Maybe(Alpine)=Alpine()) -> Str:
           + if_key(alpine.x_data, "x-data")
           + if_bool(alpine.x_cloak, "x-cloak")
         )
-    
+
     except Exception as e:
         raise HelperErr(e)
 
