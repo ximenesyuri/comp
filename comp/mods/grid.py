@@ -29,11 +29,13 @@ def build_col(model: MODEL) -> Typed:
     frame = frame_info.frame
     caller_globals = frame.f_globals
 
-    if len(model.__bases__) != 6:
+    print(model.__bases__)
+
+    if len(model.__bases__) != 5:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
             f"  ==> '{model_name}': model extends an unexpected number of types.\n"
-             "      [expected_number] 3+3\n"
+             "      [expected_number] 3+2\n"
             f"      [received_number] {len(model.__bases__)}"
         )
 
@@ -43,12 +45,15 @@ def build_col(model: MODEL) -> Typed:
             f"  ==> '{model_name}': model does not extends 'Col'."
         )
 
-    base_model = [b for b in model.__bases__ if b is not Col][1]
+    base_model = [b for b in model.__bases__ if b is not Col]
+    base_model = base_model[0]
     base_model_name = base_model.__name__
 
     attrs = {}
     col_attrs = tuple(Col.__dict__.get('optional_attrs', {}).keys())
     base_model_attrs = tuple(base_model.__dict__.get('optional_attrs', {}).keys())
+    print(base_model)
+    print(base_model_attrs)
     for k, v in model.__dict__.get('optional_attrs', {}).items():
         if k not in col_attrs:
             if k not in base_model_attrs:
