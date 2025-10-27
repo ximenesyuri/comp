@@ -120,9 +120,9 @@ def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "asi
     [% if body.body_header is defined %][[ header(header=body.body_header) ]][% endif %]
     [% if body.body_asides is defined %][% for a in body.body_asides %]
     [[ aside(aside=a) ]][% endfor %][% endif %]
-    [% if body.body_main %][[ main(main=body.body_main) ]][% endif %]
+    [% if body.body_main is defined %][[ main(main=body.body_main) ]][% endif %]
     { rendered_inner }
-    [% if body.body_footer %][[ footer(footer=body.body_footer) ]][% endif %]
+    [% if body.body_footer is defined %][[ footer(footer=body.body_footer) ]][% endif %]
 </body>
 """
     except Exception as e:
