@@ -30,7 +30,8 @@ from comp.models import (
     Body,
     Page,
     Metadata,
-    Logo
+    Logo,
+    Search
 )
 
 @typed
