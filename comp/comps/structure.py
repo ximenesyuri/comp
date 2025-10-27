@@ -80,9 +80,9 @@ def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "scrip
         return f"""jinja
 <head{ if_head(head) }>
     { meta_tags }
-    [% if head.head_assets %][% for a in head.head_assets %]
+    [% if head.head_assets is defined %][% for a in head.head_assets %]
     [[ asset(asset=a) ]][% endfor %][% endif %]
-    [% if head.head_scripts %][% for s in head.head_scripts %]
+    [% if head.head_scripts is defined %][% for s in head.head_scripts %]
     [[ script(script=s) ]][% endfor %][% endif %]
     { rendered_inner }
 </head>

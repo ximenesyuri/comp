@@ -29,7 +29,8 @@ from comp.models import (
     Main,
     Body,
     Page,
-    Metadata
+    Metadata,
+    Logo
 )
 
 @typed
