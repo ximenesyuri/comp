@@ -74,10 +74,10 @@ class Link:
     link_id:       Str="link"
     link_class:    Str
     link_style:    Str
-    link_href:     PathUrl="https://"
+    link_href:     PathUrl
     link_target:   Enum(Str, "_self", "_blank", "_parent", "_top")="_self"
     link_rel:      Enum(Str, 'nofollow', 'noopener', 'noreferrer', 'sponsored', 'ugc')
-    link_download: PathUrl=""
+    link_download: PathUrl
     link_inner:    Any
 
 Link.__display__ = "Link"
