@@ -91,8 +91,3 @@ def component(arg: Function) -> COMPONENT:
         f" ==> '{name(arg)}': is of type Function\n"
         f"     [received_type] '{name(TYPE(arg))}'"
     )
-
-@typed
-def page(comp: Function) -> PAGE:
-    comp = component(comp)
-    return comp

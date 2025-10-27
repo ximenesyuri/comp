@@ -1,1 +1,1 @@
-from comp.mods.decorators import component, page
+from comp.mods.decorators import component, jinja
