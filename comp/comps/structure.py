@@ -73,7 +73,10 @@ def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "scrip
         else:
             rendered_inner = ""
         from comp.mods.helper.comps  import _generate_meta_tags
-        meta_tags = _generate_meta_tags(head.head_meta)
+        if head.head_meta:
+            meta_tags = _generate_meta_tags(head.head_meta)
+        else:
+            meta_tags = ""
         return f"""jinja
 <head{ if_head(head) }>
     { meta_tags }
