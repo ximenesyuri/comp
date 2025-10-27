@@ -80,9 +80,9 @@ def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "scrip
         return f"""jinja
 <head{ if_head(head) }>
     { meta_tags }
-    [% if head.head_assets is defined %][% for a in head.head_assets %]
+    [% if head.head_assets is defined and head.head_assets %][% for a in head.head_assets %]
     [[ asset(asset=a) ]][% endfor %][% endif %]
-    [% if head.head_scripts is defined %][% for s in head.head_scripts %]
+    [% if head.head_scripts is defined and head.head_scripts %][% for s in head.head_scripts %]
     [[ script(script=s) ]][% endfor %][% endif %]
     { rendered_inner }
 </head>
@@ -117,12 +117,12 @@ def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "asi
 
         return f"""jinja
 <body{ if_body(body) }>
-    [% if body.body_header is defined %][[ header(header=body.body_header) ]][% endif %]
-    [% if body.body_asides is defined %][% for a in body.body_asides %]
+    [% if body.body_header is defined and body.body_header %][[ header(header=body.body_header) ]][% endif %]
+    [% if body.body_asides is defined and body.body_asides %][% for a in body.body_asides %]
     [[ aside(aside=a) ]][% endfor %][% endif %]
-    [% if body.body_main is defined %][[ main(main=body.body_main) ]][% endif %]
+    [% if body.body_main is defined and body.body_main %][[ main(main=body.body_main) ]][% endif %]
     { rendered_inner }
-    [% if body.body_footer is defined %][[ footer(footer=body.body_footer) ]][% endif %]
+    [% if body.body_footer is defined and body.body_footer %][[ footer(footer=body.body_footer) ]][% endif %]
 </body>
 """
     except Exception as e:
@@ -140,8 +140,8 @@ def page(page: Page=Page(), inner: Inner="", __context__={"head": head, "body": 
         return f"""jinja
 <!DOCTYPE html>
 <html{ if_page(page) }>
-    [% if page.page_head is defined %][[ head(head=page.page_head) ]][% endif %]
-    [% if page.page_body is defined %][[ body(body=page.page_body) ]][% endif %]
+    [% if page.page_head is defined and page.page_head %][[ head(head=page.page_head) ]][% endif %]
+    [% if page.page_body is defined and page.page_body %][[ body(body=page.page_body) ]][% endif %]
     { rendered_inner }
 </html>
 """
