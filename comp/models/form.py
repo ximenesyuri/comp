@@ -10,6 +10,7 @@ class Input:
     input_type:         _InputType="text"
     input_id:           Str="input"
     input_class:        Str
+    input_style:        Str
     input_placeholder:  Str
     input_name:         Str
     input_autocomplete: Bool
