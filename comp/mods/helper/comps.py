@@ -709,7 +709,7 @@ def _generate_meta_tags(meta: Maybe(Metadata)=Metadata()) -> Str:
         if meta.alternate_hreflang:
             for lang, url in meta.alternate_hreflang.items():
                 tags.append(f'<link rel="alternate" hreflang="{lang}" href="{url}"/>')
-        if meta.prefetch
+        if meta.prefetch:
             for url in meta.prefetch:
                 tags.append(f'<link rel="prefetch" href="{url}"/>')
         if meta.preload:
