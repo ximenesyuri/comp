@@ -706,19 +706,25 @@ def _generate_meta_tags(meta: Maybe(Metadata)=Metadata()) -> Str:
             tags.append(f'<meta name="theme-color" content="{meta.theme_color}"/>')
         if meta.manifest:
             tags.append(f'<link rel="manifest" href="{meta.manifest}"/>')
-        for lang, url in meta.alternate_hreflang.items():
-            tags.append(f'<link rel="alternate" hreflang="{lang}" href="{url}"/>')
-        for url in meta.prefetch:
-            tags.append(f'<link rel="prefetch" href="{url}"/>')
-        for url in meta.preload:
-            tags.append(f'<link rel="preload" href="{url}"/>')
-        for url in meta.dns_prefetch:
-            tags.append(f'<link rel="dns-prefetch" href="{url}"/>')
-        for url in meta.preconnect:
-            tags.append(f'<link rel="preconnect" href="{url}"/>')
+        if meta.alternate_hreflang:
+            for lang, url in meta.alternate_hreflang.items():
+                tags.append(f'<link rel="alternate" hreflang="{lang}" href="{url}"/>')
+        if meta.prefetch
+            for url in meta.prefetch:
+                tags.append(f'<link rel="prefetch" href="{url}"/>')
+        if meta.preload:
+            for url in meta.preload:
+                tags.append(f'<link rel="preload" href="{url}"/>')
+        if meta.dns_prefetch:
+            for url in meta.dns_prefetch:
+                tags.append(f'<link rel="dns-prefetch" href="{url}"/>')
+        if meta.preconnect:
+            for url in meta.preconnect:
+                tags.append(f'<link rel="preconnect" href="{url}"/>')
         # Custom Meta Tags
-        for name, content in meta.custom_meta.items():
-            tags.append(f'<meta name="{name}" content="{content}"/>')
+        if meta.custom_meta:
+            for name, content in meta.custom_meta.items():
+                tags.append(f'<meta name="{name}" content="{content}"/>')
 
         return "\n    ".join(tags)
     except Exception as e:
