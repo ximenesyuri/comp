@@ -25,7 +25,7 @@ class GridFactory:
 def build_col(model: MODEL) -> Typed:
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
-    frame_info = inspect.stack()[3]
+    frame_info = inspect.stack()[2]
     frame = frame_info.frame
     caller_globals = frame.f_globals
 
@@ -115,7 +115,7 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
             f"  ==> '{model_name}': model does not extends 'Row'."
         )
 
-    frame_info = inspect.stack()[3]
+    frame_info = inspect.stack()[2]
     frame = frame_info.frame
     caller_globals = frame.f_globals
     caller_module_name = caller_globals.get('__name__', None)

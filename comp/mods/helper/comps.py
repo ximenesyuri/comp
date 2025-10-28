@@ -584,14 +584,14 @@ def _render_inner(obj):
         from comp.comps.content    import text, title, link, img, figure, button, logo
         from comp.comps.lists      import item, unordered, ordered, nav
         from comp.comps.includes   import asset, script
-        from comp.comps.buttons    import button_close, button_menu, button_search, button_home, button_theme_switcher
-        from comp.comps.extensions import alpine, search, search_script
+        from comp.comps.extensions import alpine, search
         from comp.comps.form       import input
-        from comp.comps.responsive import desktop, tablet, phone, mobile, not_desktop, not_tablet, not_phone, not_mobile
         from comp.comps.structure  import (
-            div, header, footer, aside, body, head, page,
-            col, col_1, col_2, col_3, col_4, col_5, row, grid
+            div, header, footer, aside, body, head, page, main,
+            col, row, grid
         )
+        from comp.comps.special import markdown
+        from comp.models import Markdown
 
         if isinstance(obj, Text):       return text(obj)
         if isinstance(obj, Title):      return title(obj)
@@ -620,6 +620,7 @@ def _render_inner(obj):
         if isinstance(obj, Column):     return col(obj)
         if isinstance(obj, Row):        return row(obj)
         if isinstance(obj, Grid):       return grid(obj)
+        if isinstance(obj, Markdown):   return markdown(obj)
         if isinstance(obj, str):        return obj
         return str(obj)
     except Exception as e:

@@ -10,3 +10,4 @@ from comp.models.structure  import (
     Metadata, Head, Main, Body, Page, Header, Footer, Aside, Sidebar,
     Column, Col, Row, Grid
 )
+from comp.models.special import Markdown
