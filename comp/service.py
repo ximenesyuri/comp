@@ -1,1 +1,1 @@
-from comp.mods.service import render, mock, preview
+from comp.mods.service import render, mock, preview, minify

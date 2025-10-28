@@ -200,3 +200,5 @@ def mock(entity: COMPONENT, **kwargs: Dict(Any)) -> PAGE:
         raise MockErr(e)
 
 preview = _Preview()
+
+minify = _minify
