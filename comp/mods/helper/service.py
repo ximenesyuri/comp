@@ -848,13 +848,14 @@ def _minify(html: Str) -> Str:
     )
 
     html = re.sub(r'<!--(?!\[if)[\s\S]*?-->', '', html)
-    html = re.sub(r'>\s+<', '><', html)
+    html = re.sub(r'>\s{2,}<', '> <', html)
     html = re.sub(r'\s{2,}', ' ', html)
     html = re.sub(r'[\n\t\r]', '', html)
-    html = re.sub(r'>\s+', '>', html)
-    html = re.sub(r'\s+<', '<', html)
+    html = re.sub(r'>\s+', '> ', html)
+    html = re.sub(r'\s+<', ' <', html)
     html = html.strip()
     return html
+
 
 class _PREVIEW:
     _instance = None
