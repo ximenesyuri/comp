@@ -135,7 +135,7 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
         if mod.exists(cols_module):
             for attr_name in tuple(attrs.keys()):
                 try:
-                    obj = mod.get_global(cols_module, attr_name)
+                    obj = mod.get(attr_name, cols_module)
                 except:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
@@ -193,7 +193,7 @@ def build_row(model: MODEL, cols_module: Str = '') -> Typed:
     else:
         for attr_name in tuple(attrs.keys()):
             try:
-                obj = mod.get_global(caller_module_name, attr_name)
+                obj = mod.get(attr_name, caller_module_name)
             except:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
@@ -310,7 +310,7 @@ def build_grid(model: MODEL, rows_module: Str='') -> Typed:
         if mod.exists(rows_module):
             for attr_name in tuple(attrs.keys()):
                 try:
-                    obj = mod.get_global(rows_module, attr_name)
+                    obj = mod.get(attr_name, rows_module)
                 except:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
@@ -360,7 +360,7 @@ def build_grid(model: MODEL, rows_module: Str='') -> Typed:
     else:
         for attr_name in tuple(attrs.keys()):
             try:
-                obj = mod.get_global(caller_module_name, attr_name)
+                obj = mod.get(attr_name, caller_module_name)
             except:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
@@ -455,7 +455,7 @@ def build_factory(model: MODEL, grids_module: Str='') -> GridFactory:
         if mod.exists(grids_module):
             for attr_name in tuple(attrs.keys()):
                 try:
-                    obj = mod.get_global(grids_module, attr_name)
+                    obj = mod.get(attr_name, grids_module)
                 except:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
@@ -513,7 +513,7 @@ def build_factory(model: MODEL, grids_module: Str='') -> GridFactory:
     else:
         for attr_name in tuple(attrs.keys()):
             try:
-                obj = mod.get_global(caller_module_name, attr_name)
+                obj = mod.get(attr_name, caller_module_name)
             except:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
