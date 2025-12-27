@@ -60,6 +60,6 @@ CustomNav.__display__ = "CustomNav"
 
 @optional
 class Nav(CustomNav):
-    nav_items:     List(NavItem)
+    nav_items: List(NavItem)=[]
 
 Nav.__display__ = "Nav"
