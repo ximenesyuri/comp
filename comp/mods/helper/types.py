@@ -1,10 +1,6 @@
 import re
-from inspect import signature, getsource
-from jinja2 import meta
-from typed import typed, Any, optional, TYPE, Str, Dict, Json, Bool, Union, Extension, Path, Typed, name
-from typed.models import model, Optional
-from comp.mods.types.meta import _COMPONENT, _RESPONSIVE
-from comp.mods.helper.helper import _jinja_env
+from typed import typed, TYPE, Str, Dict, Bool, Union, Extension, Typed, name
+from comp.mods.types.meta import _COMPONENT
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
     if n < 0:
