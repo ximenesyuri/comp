@@ -1,11 +1,7 @@
-import sys
 from inspect import signature, Parameter
 from functools import wraps
 from typed import TYPE, name, typed, Function, Dict, Typed, Any, Union, Str
-from comp.mods.types.base import PAGE
-from collections import UserList
-from types import SimpleNamespace
-from inspect import signature, Parameter, isclass, currentframe
+from inspect import signature, Parameter
 from functools import wraps
 from comp.mods.helper.types import COMPONENT
 from comp.mods.helper.helper import _jinja

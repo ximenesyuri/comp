@@ -1,5 +1,5 @@
-from typed import Str, Any, Enum, List, Dict, Url, PathUrl, Bool, HEX, Extension
-from typed.models import optional
+from typed import optional, Str, Any, Enum, List, Dict, Bool
+from utils.types import Url, PathUrl, Extension, HEX
 from comp.models.base import Globals, Aria
 from comp.models.includes import Script, Asset
 

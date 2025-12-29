@@ -1,12 +1,5 @@
 import re
-from typed import (
-    TYPE,
-    Str,
-    Typed,
-    names,
-    MODEL,
-    name
-)
+from typed import TYPE, Str, Typed, names, MODEL, name
 
 class JINJA(TYPE(Str)):
     def __instancecheck__(cls, instance):

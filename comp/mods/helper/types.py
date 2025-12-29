@@ -1,5 +1,6 @@
 import re
-from typed import typed, TYPE, Str, Dict, Bool, Union, Extension, Typed, name
+from typed import typed, TYPE, Str, Dict, Bool, Union, Typed, name
+from utils.types import Extension
 from comp.mods.types.meta import _COMPONENT
 
 def _has_vars_of_given_type(instance, BASE, typ, n):

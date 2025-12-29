@@ -1,12 +1,11 @@
 import re
 from inspect import signature
-from typed import typed, Bool, List, Str, Nill, Dict, Any, Extension, Url, Union
+from typed import typed, Bool, List, Str, Dict, Any, Union
+from utils.types import Extension, Url
 from markdown import markdown
-from jinja2 import DictLoader, StrictUndefined, meta
 from comp.mods.types.base import Content
 from comp.mods.helper.helper import (
     _jinja,
-    _jinja_env,
     _extract_raw_jinja,
     _render_jinja,
     _find_jinja_inner_vars,

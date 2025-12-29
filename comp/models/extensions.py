@@ -1,5 +1,5 @@
-from typed import Str, Bool, Dict, Int, List, Extension, Union
-from utils.types import Json
+from typed import Str, Bool, Dict, Int, List, Union
+from utils.types import Json, Extension
 from typed.models import optional
 from comp.models.base import Globals, Aria
 from comp.models.structure import Div

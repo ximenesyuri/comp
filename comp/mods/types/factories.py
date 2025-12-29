@@ -1,10 +1,9 @@
 import re
-from typed import factory, Union, Str, List, Int, TYPE, Tuple
+from typed import factory, Str, TYPE, Tuple
 
 @factory
 def Tag(*tags: Tuple(Str)) -> TYPE:
     from comp.mods.types.base    import Jinja
-    from comp.mods.helper.helper import _jinja_regex
 
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 

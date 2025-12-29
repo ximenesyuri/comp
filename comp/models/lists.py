@@ -1,5 +1,4 @@
-from typed import Str, Any, List, Enum
-from typed.models import optional
+from typed import optional, Str, Any, List, Enum
 from comp.models.base import Globals, Aria
 from comp.models.content import Link
 

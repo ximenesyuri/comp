@@ -1,5 +1,5 @@
-from typed import Str, Bool, Float, HEX, Any, PathUrl, Enum
-from typed.models import optional
+from typed import optional, Str, Bool, Float, Any, Enum
+from utils.types import HEX, PathUrl
 from comp.models.base import Globals, Aria
 
 @optional

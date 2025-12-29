@@ -5,14 +5,12 @@ import time
 import os
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse
 from socketserver import ThreadingMixIn
-from inspect import signature, Parameter, getsourcefile
-from jinja2 import Environment, DictLoader, StrictUndefined, meta
-from typed import typed, Dict, Str, List
+from inspect import getsourcefile
+from typed import typed, Str
 from comp.mods.helper.types import COMPONENT
 from bs4 import BeautifulSoup, NavigableString
-from comp.mods.err import StyleErr, MinifyErr, PreviewErr
+from comp.mods.err import StyleErr, PreviewErr
 
 @typed
 def _style(html: Str) -> Str:

@@ -1,4 +1,5 @@
-from typed import Typed, Str, Union, Extension
+from typed import Typed, Str, Union
+from utils.types import Extension
 from comp.mods.types.meta import JINJA, INNER, _RESPONSIVE, _RESPONSIVE_
 from comp.mods.helper.types import (
     COMPONENT,
