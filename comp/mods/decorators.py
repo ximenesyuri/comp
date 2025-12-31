@@ -15,7 +15,6 @@ def jinja(arg: Union(Typed(Any, cod=Str), Str)) -> Jinja:
         if arg.codomain <= Jinja:
             return arg
 
-@typed
 def component(arg: Function) -> COMPONENT:
     from comp.mods.helper.types import COMPONENT
     if arg in Function:
@@ -37,13 +36,11 @@ def component(arg: Function) -> COMPONENT:
                         f"     [received_type]: '{name(param.annotation)}'"
                     )
 
-        typed_arg = typed(arg)
+        typed_arg = typed(arg, lazy=False)
         from comp.mods.helper.types import COMPONENT
         typed_arg.__class__ = COMPONENT
         from comp.mods.types.base import Jinja
         if not typed_arg.codomain <= Jinja:
-            print(typed_arg.codomain)
-            print(Jinja)
             raise TypeError(
                 "A component should create a Jinja string:\n"
                 f" ==> '{name(arg)}' codomain is not a subclass of Jinja\n"
