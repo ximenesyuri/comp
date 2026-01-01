@@ -1,5 +1,6 @@
 import re
-from typed import TYPE, Str, Typed, names, MODEL, name
+from typed import TYPE, Str, Typed, names, name
+from typed.models import MODEL, LAZY_MODEL
 
 class JINJA(TYPE(Str)):
     def __instancecheck__(cls, instance):
@@ -20,7 +21,7 @@ class JINJA(TYPE(Str)):
             print(f"{e}")
             return False
 
-class INNER(TYPE(Str), TYPE(MODEL)):
+class INNER(TYPE(Str), TYPE(MODEL), TYPE(LAZY_MODEL)):
     def __instancecheck__(cls, instance):
         if not instance in Str and not instance in MODEL:
             return False

@@ -1,6 +1,7 @@
 import inspect
 from utils import text, mod, func
-from typed import typed, optional, null, Str, Typed, MODEL, Any, TYPE, name, Maybe
+from typed import typed, optional, null, Str, Typed, Any, Union, Lazy, name, Maybe
+from typed.models import LAZY_MODEL, MODEL
 from typed.mods.helper.helper import _check_codomain
 from comp.models.structure import Grid, Row, Col
 from comp.comps.structure import grid
@@ -22,7 +23,7 @@ class GridFactory:
     phone: Typed(Any, cod=Grid)
 
 @typed
-def build_col(model: MODEL) -> Typed:
+def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
     frame_info = inspect.stack()[2]
@@ -105,7 +106,7 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Col:
     return local_ns[model_snake]
 
 @typed
-def build_row(model: MODEL, cols_module: Str = '') -> Typed:
+def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(Typed, Lazy):
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
 
@@ -280,7 +281,7 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Row:
     return local_ns[model_snake]
 
 @typed
-def build_grid(model: MODEL, rows_module: Str='') -> Typed:
+def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Typed, Lazy):
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
 
@@ -432,7 +433,7 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Grid:
     return local_ns[model_snake]
 
 @typed
-def build_factory(model: MODEL, grids_module: Str='') -> GridFactory:
+def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> GridFactory:
     frame_info = inspect.stack()[2]
     frame = frame_info.frame
     caller_globals = frame.f_globals
@@ -587,6 +588,7 @@ def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMPONENT:
                 f"     [received_arguments] {len(grid_factory.desktop.domain)}"
             )
         if not grid_entity.desktop in grid_factory.desktop.domain[0]:
+            from typed import TYPE
             raise GridErr(
                 "Could no build the responsive grid.\n"
                 f" ==> '{name(grid_entity.desktop)}': has unexpected type\n"

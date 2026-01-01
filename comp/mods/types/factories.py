@@ -1,9 +1,8 @@
 import re
-from typed import factory, Str, TYPE, Tuple
 
-@factory
-def Tag(*tags: Tuple(Str)) -> TYPE:
-    from comp.mods.types.base    import Jinja
+def Tag(*tags):
+    from typed import TYPE, Str
+    from comp.mods.types.base import Jinja
 
     void_tags = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param'}
 
@@ -27,12 +26,12 @@ def Tag(*tags: Tuple(Str)) -> TYPE:
             return bool(tag_regex.match(jinja))
     return _Tag(f'Tag({tags})', (Jinja,), {'__display__': f'Tag({','.join(tags)})'})
 
-@factory
-def TAG(tag_name: Str) -> TYPE:
+def TAG(tag):
+    from typed import TYPE
     from comp.mods.helper.types import COMPONENT
-    class _TAG(type(COMPONENT)):
+    class _TAG(TYPE(COMPONENT)):
         def __instancecheck__(cls, instance):
             if not isinstance(instance, COMPONENT):
                 return False
-            return issubclass(instance.codomain, Tag(tag_name))
-    return _TAG(f'TagComponent({tag_name})', (COMPONENT,), {'__display__': f'TagComponent({tag_name})'})
+            return issubclass(instance.codomain, Tag(tag))
+    return _TAG(f'TagComponent({tag})', (COMPONENT,), {'__display__': f'TagComponent({tag})'})
