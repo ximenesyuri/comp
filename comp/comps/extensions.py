@@ -1,10 +1,9 @@
 from typed import Maybe
 from comp.mods.types.base import Jinja, Inner
-from comp.mods.decorators import component
-from comp.models import Div, Button, Search, Alpine
-from comp.comps.buttons import button_search
+from comp.mods.decorators import comp
+from comp.models import Button, Search, Alpine
 from comp.comps.form import input
-from comp.mods.err import ComponentErr
+from comp.mods.err import CompErr
 from comp.mods.helper.comps import (
     if_div,
     if_class,
@@ -14,7 +13,7 @@ from comp.mods.helper.comps import (
     _render_inner
 )
 
-@component
+@comp
 def alpine(alpine: Maybe(Alpine)=None, inner: Inner="") -> Jinja:
     try:
         if alpine is None:
@@ -29,9 +28,9 @@ def alpine(alpine: Maybe(Alpine)=None, inner: Inner="") -> Jinja:
 <div{ if_alpine(alpine) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def search(search: Maybe(Search)=None, __context__={}) -> Jinja:
     try:
         if search is None:
@@ -61,9 +60,9 @@ def search(search: Maybe(Search)=None, __context__={}) -> Jinja:
 </div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def search_script(search: Maybe(Search)=None, __context__={}) -> Jinja:
     try:
         if search is None:
@@ -238,4 +237,4 @@ document.addEventListener("DOMContentLoaded", function() {{
 </script>    
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)

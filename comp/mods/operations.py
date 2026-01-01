@@ -1,18 +1,17 @@
 import re
 from inspect import signature, Parameter, Signature
 from typed import typed, Tuple, Dict, Str
-from comp.mods.decorators import component
-from comp.mods.types.base import Jinja, COMPONENT, Inner
+from comp.mods.types.base import Jinja, COMP, Inner
 from comp.mods.err import ConcatErr, JoinErr, EvalErr
 from comp.mods.helper.operations import _merge_context, _get_context, _copy, _order_params
 from comp.mods.helper.helper import _get_jinja, _jinja
 
 @typed
-def copy(comp: COMPONENT, **renamed_args: Dict(Str)) -> COMPONENT:
-    return component(_copy(comp, **renamed_args))
+def copy(comp: COMP, **renamed_args: Dict(Str)) -> COMP:
+    return comp(_copy(comp, **renamed_args))
 
 @typed
-def concat(comp_1: COMPONENT, comp_2: COMPONENT) -> COMPONENT:
+def concat(comp_1: COMP, comp_2: COMP) -> COMP:
     try:
         sig1 = signature(comp_1)
         sig2 = signature(comp_2)
@@ -63,7 +62,7 @@ def concat(comp_1: COMPONENT, comp_2: COMPONENT) -> COMPONENT:
 
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
-        comp = component(wrapper)
+        comp = comp(wrapper)
         jinja1 = _get_jinja(comp_1)
         jinja2 = _get_jinja(comp_2)
         concat_jinja = jinja1
@@ -76,10 +75,10 @@ def concat(comp_1: COMPONENT, comp_2: COMPONENT) -> COMPONENT:
         raise ConcatErr(e)
 
 @typed
-def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
+def join(*comps: Tuple(COMP)) -> COMP:
     try:
         if not comps:
-            raise ValueError("At least one component must be provided")
+            raise ValueError("At least one comp must be provided")
         sigs = [signature(comp) for comp in comps]
         param_names = set()
         param_map = {}
@@ -150,7 +149,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
 
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
-        comp = component(wrapper)
+        comp = comp(wrapper)
 
         joined_jinja_list = [_get_jinja(c) for c in comps]
         for i in range(len(joined_jinja_list)):
@@ -163,7 +162,7 @@ def join(*comps: Tuple(COMPONENT)) -> COMPONENT:
         raise JoinErr(e)
 
 @typed
-def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
+def eval(func: COMP, **fixed_kwargs: Dict) -> COMP:
     try:
         sig = signature(func)
         old_params = list(sig.parameters.items())
@@ -210,7 +209,7 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
         if hasattr(func, '__annotations__'):
             wrapper.__annotations__ = dict(func.__annotations__)
         wrapper.__annotations__["__context__"] = Dict
-        comp = component(wrapper)
+        comp = comp(wrapper)
 
         base_jinja = _get_jinja(func)
         base_jinja = re.sub(r'^jinja\s*\n?', '', base_jinja)
@@ -224,4 +223,3 @@ def eval(func: COMPONENT, **fixed_kwargs: Dict) -> COMPONENT:
         return comp
     except Exception as e:
         raise EvalErr(e)
-

@@ -1,5 +1,4 @@
-from typed import Str, Bool, List, Len
-from typed.models import optional
+from typed import optional, Str, Bool, List, Len
 from utils.types import Nat
 
 @optional

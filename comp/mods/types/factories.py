@@ -28,10 +28,10 @@ def Tag(*tags):
 
 def TAG(tag):
     from typed import TYPE
-    from comp.mods.helper.types import COMPONENT
-    class _TAG(TYPE(COMPONENT)):
+    from comp.mods.helper.types import COMP
+    class _TAG(TYPE(COMP)):
         def __instancecheck__(cls, instance):
-            if not isinstance(instance, COMPONENT):
+            if not isinstance(instance, COMP):
                 return False
             return issubclass(instance.codomain, Tag(tag))
-    return _TAG(f'TagComponent({tag})', (COMPONENT,), {'__display__': f'TagComponent({tag})'})
+    return _TAG(f'TagComponent({tag})', (COMP,), {'__display__': f'TagComponent({tag})'})

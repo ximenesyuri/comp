@@ -27,7 +27,7 @@ class INNER(TYPE(Str), TYPE(MODEL), TYPE(LAZY_MODEL)):
             return False
         return True
 
-class _COMPONENT(TYPE(Typed)):
+class _COMP_(TYPE(Typed)):
     _param_cache = {}
 
     def __call__(self, *args, **kwargs):
@@ -37,7 +37,7 @@ class _COMPONENT(TYPE(Typed)):
            and isinstance(args[2], dict):
             return type.__call__(self, *args, **kwargs)
 
-        from comp.mods.helper.types import COMPONENT as BASE
+        from comp.mods.helper.types import COMP as BASE
         from typed import name
 
         if self is BASE:
@@ -62,14 +62,14 @@ class _COMPONENT(TYPE(Typed)):
                 "_param_inner":   inner,
                 "_param_content": content,
             }
-            ParamComponent = self.__class__(class_name, (BASE,), attrs)
-            self._param_cache[key] = ParamComponent
-            return ParamComponent
+            ParamComp = self.__class__(class_name, (BASE,), attrs)
+            self._param_cache[key] = ParamComp
+            return ParamComp
 
         return type.__call__(self, *args, **kwargs)
 
     def __instancecheck__(self, instance):
-        from comp.mods.helper.types import COMPONENT as BASE
+        from comp.mods.helper.types import COMP as BASE
 
         if not TYPE(instance) <= BASE:
             return False
@@ -193,10 +193,10 @@ class _RESPONSIVE(TYPE(Typed)):
                     return False
             return True
 
-class _RESPONSIVE_(_COMPONENT):
+class _RESPONSIVE_(_COMP_):
     def __instancecheck__(cls, instance):
-        from comp.mods.types.base import Responsive, COMPONENT
-        if not instance in COMPONENT:
+        from comp.mods.types.base import Responsive, COMP
+        if not instance in COMP:
             return False
         return all(x in Responsive for x in instance.domain)
 
@@ -207,8 +207,8 @@ class _RESPONSIVE_(_COMPONENT):
            and isinstance(args[2], dict):
             return type.__call__(cls, *args, **kwargs)
 
-        from comp.mods.types.base import RESPONSIVE, COMPONENT, Responsive
-        class _CALL_RESPONSIVE_(_COMPONENT):
+        from comp.mods.types.base import RESPONSIVE, COMP, Responsive
+        class _CALL_RESPONSIVE_(_COMP_):
             def __instancecheck__(cls, instance):
                 if not instance in RESPONSIVE:
                     return False
@@ -219,7 +219,7 @@ class _RESPONSIVE_(_COMPONENT):
             kws = ('desktop', 'tablet', 'phone')
             inner_name = [f"{k}={kwargs[k]}" for k in kws]
             class_name = f"RESPONSIVE({', '.join(inner_name)})"
-        return _CALL_RESPONSIVE_(class_name, (COMPONENT,), {
+        return _CALL_RESPONSIVE_(class_name, (COMP,), {
             "__display__": class_name,
             "__null__": None
         })

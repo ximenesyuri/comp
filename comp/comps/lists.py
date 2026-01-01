@@ -1,7 +1,7 @@
 from typed import Maybe
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.mods.types.base import Jinja, Inner
-from comp.mods.err import ComponentErr
+from comp.mods.err import CompErr
 from comp.models.lists import Item, Unordered, Ordered, Nav
 from comp.comps.content import link
 from comp.mods.helper.comps import (
@@ -15,7 +15,7 @@ from comp.mods.helper.comps import (
     _render_inner
 )
 
-@component
+@comp
 def item(item: Maybe(Item)=None, inner: Inner="") -> Jinja:
     try:
         if item is None:
@@ -30,10 +30,10 @@ def item(item: Maybe(Item)=None, inner: Inner="") -> Jinja:
 <li{ if_item(item) }>{ rendered_inner }</li>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 li = item
 
-@component
+@comp
 def unordered(ul: Maybe(Unordered)=None, __context__={"item": item}) -> Jinja:
     try:
         if ul is None:
@@ -44,10 +44,10 @@ def unordered(ul: Maybe(Unordered)=None, __context__={"item": item}) -> Jinja:
 </ul>[% else %]</ul>[% endif %]
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 ul = unordered
 
-@component
+@comp
 def ordered(ol: Maybe(Ordered)=None, __context__={"item": item}) -> Jinja:
     try:
         if ol is None:
@@ -58,10 +58,10 @@ def ordered(ol: Maybe(Ordered)=None, __context__={"item": item}) -> Jinja:
 </ol>[% else %]</ol>[% endif %]
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 ol = ordered
 
-@component
+@comp
 def nav(nav: Maybe(Nav)=None, __context__={"link": link, "item": item}) -> Jinja:
     try:
         if nav is None:
@@ -80,4 +80,4 @@ def nav(nav: Maybe(Nav)=None, __context__={"link": link, "item": item}) -> Jinja
 </nav>[% else %]</nav>[% endif %]
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)

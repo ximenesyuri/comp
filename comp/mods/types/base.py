@@ -2,11 +2,9 @@ from typed import Typed, Str, Union
 from utils.types import Extension
 from comp.mods.types.meta import JINJA, INNER, _RESPONSIVE, _RESPONSIVE_
 from comp.mods.helper.types import (
-    COMPONENT,
+    COMP,
     _PAGE
 )
-from comp.models.structure import Grid
-
 class Jinja(Str, metaclass=JINJA):
     @property
     def vars(self):
@@ -34,12 +32,11 @@ Inner = INNER('Inner', (Str,), {
     "__display__": 'Inner',
     "__null__": ''
 })
-PAGE = _PAGE('PAGE', (COMPONENT, ), {
+PAGE = _PAGE('PAGE', (COMP, ), {
     "__display__": 'PAGE',
     "__null__": None
 })
 
-GRID = COMPONENT(Grid)
 Content = Union(Str, Extension('md'))
 
 Responsive = _RESPONSIVE('Responsive', (Typed,), {
@@ -47,15 +44,15 @@ Responsive = _RESPONSIVE('Responsive', (Typed,), {
     "__null__": None
 })
 
-RESPONSIVE = _RESPONSIVE_('RESPONSIVE', (COMPONENT,), {
+RESPONSIVE = _RESPONSIVE_('RESPONSIVE', (COMP,), {
     "__display__": "RESPONSIVE",
     "__null__": None
 })
 
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.mods.types.base import Jinja
 def _nill_comp() -> Jinja:
     return """jinja """
 
-COMPONENT.__display__ = "COMPONENT"
-COMPONENT.__null__ = component(_nill_comp)
+COMP.__display__ = "COMP"
+COMP.__null__ = comp(_nill_comp)

@@ -6,6 +6,6 @@ class PreviewErr(Exception): pass
 class ConcatErr(Exception): pass
 class JoinErr(Exception): pass
 class EvalErr(Exception): pass
-class ComponentErr(Exception): pass
+class CompErr(Exception): pass
 class HelperErr(Exception): pass
 class GridErr(Exception): pass

@@ -1,9 +1,9 @@
 from typed import Maybe
 from comp.mods.types.base import Inner, Jinja
 from comp.mods.types.factories import Tag
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.models.content import Text, Title, Link, Img, Figure, Button, Logo
-from comp.mods.err import ComponentErr
+from comp.mods.err import CompErr
 from comp.mods.helper.comps import (
     if_text,
     if_title,
@@ -14,7 +14,7 @@ from comp.mods.helper.comps import (
     _render_inner
 )
 
-@component
+@comp
 def text(text: Maybe(Text)=None, inner: Inner="") -> Jinja:
     try:
         if text is None:
@@ -29,9 +29,9 @@ def text(text: Maybe(Text)=None, inner: Inner="") -> Jinja:
 <p{ if_text(text) }>{ rendered_inner }</p>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def title(title: Maybe(Title)=None, inner: Inner="") -> Jinja:
     try:
         if title is None:
@@ -46,9 +46,9 @@ def title(title: Maybe(Title)=None, inner: Inner="") -> Jinja:
 <{ title.title_tag }{ if_title(title) }>{ rendered_inner }</{ title.title_tag }>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def link(link: Maybe(Link)=None, inner: Inner="") -> Jinja:
     try:
         if link is None:
@@ -63,9 +63,9 @@ def link(link: Maybe(Link)=None, inner: Inner="") -> Jinja:
 <a{ if_link(link) }>{ rendered_inner }</a>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def image(img: Maybe(Img)=None) -> Tag('img'):
     try:
         if img is None:
@@ -74,10 +74,10 @@ def image(img: Maybe(Img)=None) -> Tag('img'):
 <img{ if_img(img) }/>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 img = image
 
-@component
+@comp
 def figure(figure: Maybe(Figure)=None) -> Tag('figure'):
     try:
         if figure is None:
@@ -89,10 +89,10 @@ def figure(figure: Maybe(Figure)=None) -> Tag('figure'):
 </figure>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 fig = figure
 
-@component
+@comp
 def button(button: Maybe(Button)=None, inner: Inner="") -> Jinja:
     try:
         if button is None:
@@ -107,9 +107,9 @@ def button(button: Maybe(Button)=None, inner: Inner="") -> Jinja:
 <button{ if_button(button) }>{ rendered_inner }</button>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def logo(logo: Maybe(Logo)=None) -> Jinja:
     try:
         if logo is None:
@@ -118,4 +118,4 @@ def logo(logo: Maybe(Logo)=None) -> Jinja:
 <a{ if_img(logo.logo_img) }><img{ if_link(logo.logo_link) }></a>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)

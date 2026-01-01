@@ -1,7 +1,7 @@
 from typed import Maybe
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.mods.types.base import Jinja, Inner
-from comp.mods.err import ComponentErr
+from comp.mods.err import CompErr
 from comp.models.structure import Div, Header, Column, Row, Grid, Aside, Footer, Head, Main, Body, Page
 from comp.mods.helper.comps import (
     if_div,
@@ -19,7 +19,7 @@ from comp.mods.helper.comps import (
 )
 from comp.comps.includes import asset, script
 
-@component
+@comp
 def header(header: Maybe(Header)=None, inner: Inner="") -> Jinja:
     try:
         if header is None:
@@ -34,9 +34,9 @@ def header(header: Maybe(Header)=None, inner: Inner="") -> Jinja:
 <header{ if_header(header) }>{ rendered_inner }</header>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def aside(aside: Maybe(Aside)=None, inner: Inner="") -> Jinja:
     try:
         if aside is None:
@@ -51,9 +51,9 @@ def aside(aside: Maybe(Aside)=None, inner: Inner="") -> Jinja:
 <aside{ if_aside(aside) }>{ rendered_inner }</aside>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def footer(footer: Maybe(Footer)=None, inner: Inner="") -> Jinja:
     try:
         if footer is None:
@@ -68,9 +68,9 @@ def footer(footer: Maybe(Footer)=None, inner: Inner="") -> Jinja:
 <footer{ if_footer(footer) }>{ rendered_inner }</footer>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def head(head: Maybe(Head)=None, inner: Inner="", __context__={"asset": asset, "script": script}) -> Jinja:
     try:
         if head is None:
@@ -97,9 +97,9 @@ def head(head: Maybe(Head)=None, inner: Inner="", __context__={"asset": asset, "
 </head>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def main(main: Maybe(Main)=None, inner: Inner="") -> Jinja:
     try:
         if main is None:
@@ -114,9 +114,9 @@ def main(main: Maybe(Main)=None, inner: Inner="") -> Jinja:
 <main{ if_main(main) }>{ rendered_inner }</main>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def body(body: Maybe(Body)=None, inner: Inner="", __context__={"header": header, "aside": aside, "main": main, "footer": footer}) -> Jinja:
     try:
         if body is None:
@@ -139,9 +139,9 @@ def body(body: Maybe(Body)=None, inner: Inner="", __context__={"header": header,
 </body>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def page(page: Maybe(Page)=None, inner: Inner="", __context__={"head": head, "body": body}) -> Jinja:
     try:
         if page is None:
@@ -161,9 +161,9 @@ def page(page: Maybe(Page)=None, inner: Inner="", __context__={"head": head, "bo
 </html>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def div(div: Maybe(Div)=None, inner: Inner="") -> Jinja:
     try:
         if div is None:
@@ -178,9 +178,9 @@ def div(div: Maybe(Div)=None, inner: Inner="") -> Jinja:
 <div{ if_div(div) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def col(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
         if col is None:
@@ -198,9 +198,9 @@ def col(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
 <div{ if_col(col) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def col_1(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
         if col is None:
@@ -218,9 +218,9 @@ def col_1(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
 <div{ if_col(col) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def col_2(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
         if col is None:
@@ -238,9 +238,9 @@ def col_2(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
 <div{ if_col(col) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def col_3(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
         if col is None:
@@ -258,9 +258,9 @@ def col_3(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
 <div{ if_col(col) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def col_4(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
         if col is None:
@@ -278,9 +278,9 @@ def col_4(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
 <div{ if_col(col) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def col_5(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
         if col is None:
@@ -298,9 +298,9 @@ def col_5(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
 <div{ if_col(col) }>{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def row(row: Maybe(Row)=None, __context__={"col": col}) -> Jinja:
     try:
         if row is None:
@@ -314,9 +314,9 @@ def row(row: Maybe(Row)=None, __context__={"col": col}) -> Jinja:
 </div>[% else %]</div>[% endif %]
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def grid(grid: Maybe(Grid)=None, __context__={"row": row}) -> Jinja:
     try:
         if grid is None:
@@ -327,4 +327,4 @@ def grid(grid: Maybe(Grid)=None, __context__={"row": row}) -> Jinja:
 </div>[% else %]</div>[% endif %]
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)

@@ -1,7 +1,6 @@
 import re
 import os
-from typed import typed, Str, Pattern, Bool, Set, Dict
-from jinja2 import Environment, meta, StrictUndefined
+from jinja2 import meta
 
 _VAR_DELIM = {
     ("[[", "]]"),
@@ -53,32 +52,44 @@ _jinja_delim = dict(_JINJA_DELIM)
 def _set_jinja_delim(**kwargs):
     _jinja_delim.update(kwargs)
 
-def _jinja_env(undefined=StrictUndefined, **kwargs):
-    params = {
-        "undefined": undefined,
-        **_jinja_delim,
-        **kwargs
-    }
-    return Environment(**params)
+_JINJA_ENV_CLS = None
+_JINJA_META = None
+_JINJA_STRICT = None
 
-@typed
-def _jinja_regex(tag_name: Str = "") -> Pattern:
+def _ensure_jinja():
+   global _JINJA_ENV_CLS, _JINJA_META, _JINJA_STRICT
+   if _JINJA_ENV_CLS is None:
+       from jinja2 import Environment, meta, StrictUndefined
+       _JINJA_ENV_CLS, _JINJA_META, _JINJA_STRICT = Environment, meta, StrictUndefined
+
+_env_cache = None
+
+def _jinja_env(undefined=None, **kwargs):
+    global _env_cache
+    _ensure_jinja()
+    if undefined is None:
+        undefined = _JINJA_STRICT
+    if _env_cache is None and not kwargs:
+        _env_cache = _JINJA_ENV_CLS(undefined=undefined, **_jinja_delim)
+    if not kwargs:
+        return _env_cache
+    params = {"undefined": undefined, **_jinja_delim, **kwargs}
+    return _JINJA_ENV_CLS(**params)
+
+def _jinja_regex(tag_name=""):
     if tag_name:
         return rf"^jinja\s*\n?\s*<{tag_name}\b[^>]*>(.*?)</{tag_name}>\s*$"
     return r"^jinja\s*\n?\s*(.*?)\s*$"
 
-@typed
-def _is_jinja(jinja_string: Str, tag_name: Str="") -> Bool:
+def _is_jinja(jinja_string, tag_name=""):
     pattern = _jinja_regex(tag_name)
     regex = re.compile(pattern, re.DOTALL)
     return regex.match(jinja_string) is not None
 
-@typed
-def _extract_raw_jinja(jinja_string: Str) -> Str:
+def _extract_raw_jinja(jinja_string):
     return re.sub(r"jinja\n?", "", jinja_string)
 
-@typed
-def _jinja(string: Str) -> Str:
+def _jinja(string):
     if _is_jinja(string):
         return string
     else:
@@ -92,8 +103,7 @@ def _get_jinja(comp):
         return comp._jinja
     return ""
 
-@typed
-def _find_jinja_vars(source: Str) -> Set(Str):
+def _find_jinja_vars(source):
     regex_str = re.compile(_jinja_regex(), re.DOTALL)
     match = regex_str.match(source)
     if not match:
@@ -120,8 +130,7 @@ def _find_jinja_inner_vars(jinja_src, block_start="[%", block_end="%]"):
         inner_vars[var] = val2
     return inner_vars
 
-@typed
-def _render_jinja(jinja_string: Str, **context: Dict) -> Str:
+def _render_jinja(jinja_string, **context):
     jinja_src = _extract_raw_jinja(jinja_string)
     env = _jinja_env()
     template = env.from_string(jinja_src)

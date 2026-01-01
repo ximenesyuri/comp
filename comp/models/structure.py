@@ -5,8 +5,8 @@ from comp.models.includes import Script, Asset
 
 @optional
 class Div:
-    div_globals: Globals=Globals()
-    div_aria:    Aria=Aria()
+    div_globals: Globals
+    div_aria:    Aria
     div_id:      Str
     div_class:   Str
     div_style:   Str
@@ -83,9 +83,9 @@ Metadata.__display__ = "Metadata"
 
 @optional
 class Head:
-    head_globals: Globals=Globals()
-    head_aria:    Aria=Aria()
-    head_meta:    Metadata=Metadata()
+    head_globals: Globals
+    head_aria:    Aria
+    head_meta:    Metadata
     head_assets:  List(Asset)=[]
     head_scripts: List(Script)=[]
     head_inner:   Any
@@ -94,8 +94,8 @@ Head.__display__ = "Head"
 
 @optional
 class Header:
-    header_globals: Globals=Globals()
-    header_aria:    Aria=Aria()
+    header_globals: Globals
+    header_aria:    Aria
     header_id:      Str="header"
     header_class:   Str
     header_style:   Str
@@ -105,8 +105,8 @@ Header.__display__ = "Header"
 
 @optional
 class Footer:
-    footer_globals: Globals=Globals()
-    footer_aria:    Aria=Aria()
+    footer_globals: Globals
+    footer_aria:    Aria
     footer_id:      Str="footer"
     footer_class:   Str
     footer_style:   Str
@@ -116,8 +116,8 @@ Footer.__display__ = "Footer"
 
 @optional
 class Aside:
-    aside_globals: Globals=Globals()
-    aside_aria:    Aria=Aria()
+    aside_globals: Globals
+    aside_aria:    Aria
     aside_id:      Str="aside"
     aside_class:   Str
     aside_style:   Str
@@ -127,8 +127,8 @@ Aside.__display__ = "Aside"
 
 @optional
 class Sidebar:
-    sidebar_globals: Globals=Globals()
-    sidebar_aria:    Aria=Aria()
+    sidebar_globals: Globals
+    sidebar_aria:    Aria
     sidebar_id:      Str="sidebar"
     sidebar_class:   Str
     sidebar_style:   Str
@@ -138,8 +138,8 @@ Sidebar.__display__ = "Sidebar"
 
 @optional
 class Main:
-    main_globals: Globals=Globals()
-    main_aria:    Aria=Aria()
+    main_globals: Globals
+    main_aria:    Aria
     main_id:      Str="main"
     main_class:   Str
     main_style:   Str
@@ -149,8 +149,8 @@ Main.__display__ = "Main"
 
 @optional
 class Body:
-    body_globals: Globals=Globals()
-    body_aria:    Aria=Aria()
+    body_globals: Globals
+    body_aria:    Aria
     body_header:  Header
     body_footer:  Footer
     body_asides:  List(Aside)=[]
@@ -169,8 +169,8 @@ Page.__display__ = "Page"
 
 @optional
 class Column:
-    col_globals: Globals=Globals()
-    col_aria:    Aria=Aria()
+    col_globals: Globals
+    col_aria:    Aria
     col_id:      Str
     col_class:   Str
     col_style:   Str
@@ -181,8 +181,8 @@ Column.__display__ = "Column"
 
 @optional
 class Row:
-    row_globals: Globals=Globals()
-    row_aria:    Aria=Aria()
+    row_globals: Globals
+    row_aria:    Aria
     row_id:      Str
     row_class:   Str
     row_style:   Str
@@ -192,8 +192,8 @@ Row.__display__ = "Row"
 
 @optional
 class Grid:
-    grid_globals: Globals=Globals()
-    grid_aria:    Aria=Aria()
+    grid_globals: Globals
+    grid_aria:    Aria
     grid_id:      Str
     grid_class:   Str
     grid_style:   Str

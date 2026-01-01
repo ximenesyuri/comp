@@ -1,7 +1,7 @@
 import re
 from typed import typed, TYPE, Str, Dict, Bool, Union, Typed, name
 from utils.types import Extension
-from comp.mods.types.meta import _COMPONENT
+from comp.mods.types.meta import _COMP_
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
     if n < 0:
@@ -16,7 +16,7 @@ def _has_vars_of_given_type(instance, BASE, typ, n):
             pass
     return (instance in BASE) and count == n
 
-class COMPONENT(Typed, metaclass=_COMPONENT):
+class COMP(Typed, metaclass=_COMP_):
     @property
     def jinja(self):
         if hasattr(self, '_jinja'):
@@ -40,29 +40,29 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
         return preview.add(self, **context)
 
     def __add__(self, other):
-        if not other in COMPONENT:
+        if not other in COMP:
             raise TypeError(
                     "Could not realize components 'join' operation:\n"
                 f" ==> '{name(other)}') has wrong type.\n"
-                 "     [expected_type] COMPONENT\n"
+                 "     [expected_type] COMP\n"
                 f"     [received_type] {name(TYPE(other))}"
             )
         from comp.mods.operations import join
         return join(self, other)
 
     def __mul__(self, other):
-        if not other in COMPONENT:
+        if not other in COMP:
             raise TypeError(
                 "Could not realize components 'concat' operation:\n"
                 f" ==> '{name(other)}' has wrong type.\n"
-                 "      [expected_type] COMPONENT\n"
+                 "      [expected_type] COMP\n"
                 f"      [received_type] {name(TYPE(other))}"
             )
-        if not self in COMPONENT:
+        if not self in COMP:
             raise TypeError(
                 "Could not realize components 'concat' operation:\n"
                 f"' ==> {name(self)}' has wrong type.\n"
-                 "      [expected_type] COMPONENT\n"
+                 "      [expected_type] COMP\n"
                 f"      [received_type] {name(TYPE(self))}"
             )
 
@@ -77,29 +77,29 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
                  "     [expected_type] Dict\n"
                 f"     [received_type] {name(TYPE(other))}"
             )
-        if not self in COMPONENT:
+        if not self in COMP:
             raise TypeError(
                 "Could not realize component 'eval' operation:\n"
                 f" ==> '{name(self)}' has wrong type.\n"
-                 "     [expected_type] COMPONENT\n"
+                 "     [expected_type] COMP\n"
                 f"     [received_type] {name(TYPE(self))}"
             )
         from comp.mods.operations import eval
         return eval(self, **other)
 
     def __xor__(self, other):
-        if not isinstance(other, Dict(Str)):
+        if not other in Dict(Str):
             raise TypeError(
                 "Could not realize component 'copy' operation:\n"
                 f" ==> '{name(other)}' has wrong type.\n"
                  "     [expected_type] Dict(Str)\n"
                 f"     [received_type] {name(TYPE(other))}"
             )
-        if not isinstance(self, COMPONENT):
+        if not self in COMP:
             raise TypeError(
                 "Could not realize component 'copy' operation:\n"
                 f" ==> '{name(self)}' has wrong type.\n"
-                 "     [expected_type] COMPONENT\n"
+                 "     [expected_type] COMP\n"
                 f"     [received_type] {name(TYPE(self))}"
             )
         from comp.mods.operations import copy
@@ -123,7 +123,7 @@ class COMPONENT(Typed, metaclass=_COMPONENT):
 Content = Union(Str, Extension('md'))
 
 @typed
-def _check_page(page: COMPONENT) -> Bool:
+def _check_page(page: COMP) -> Bool:
     from comp.mods.service import render
     errors = []
     html = render(page)
@@ -164,8 +164,8 @@ def _check_page(page: COMPONENT) -> Bool:
             return False
     return True
 
-class _PAGE(TYPE(COMPONENT)):
+class _PAGE(TYPE(COMP)):
     def __instancecheck__(cls, instance):
-        if not isinstance(instance, COMPONENT):
+        if not isinstance(instance, COMP):
             return False
         return _check_page(instance)

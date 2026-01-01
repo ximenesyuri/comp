@@ -1,10 +1,10 @@
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.mods.types.base import Inner
 from comp.mods.types.factories import Tag
 from comp.mods.helper.comps import _render_inner
-from comp.mods.err import ComponentErr
+from comp.mods.err import CompErr
 
-@component
+@comp
 def desktop(inner: Inner="") -> Tag('div'):
     try:
         div_class="desktop"
@@ -17,9 +17,9 @@ def desktop(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def tablet(inner: Inner="") -> Tag('div'):
     try:
         div_class="tablet"
@@ -32,9 +32,9 @@ def tablet(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def phone(inner: Inner="") -> Tag('div'):
     try:
         div_class="phone"
@@ -47,9 +47,9 @@ def phone(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def mobile(inner: Inner="") -> Tag('div'):
     try:
         div_class="mobile"
@@ -62,9 +62,9 @@ def mobile(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def not_desktop(inner: Inner="") -> Tag('div'):
     try:
         div_class="not:desktop"
@@ -77,9 +77,9 @@ def not_desktop(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def not_tablet(inner: Inner="") -> Tag('div'):
     try:
         div_class="not:tablet"
@@ -92,9 +92,9 @@ def not_tablet(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def not_phone(inner: Inner="") -> Tag('div'):
     try:
         div_class="not:phone"
@@ -107,9 +107,9 @@ def not_phone(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def not_mobile(inner: Inner="") -> Tag('div'):
     try:
         div_class="not:mobile"
@@ -122,4 +122,4 @@ def not_mobile(inner: Inner="") -> Tag('div'):
 <div class="{ div_class }">{ rendered_inner }</div>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)

@@ -7,13 +7,11 @@ import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from inspect import getsourcefile
-from typed import typed, Str
-from comp.mods.helper.types import COMPONENT
+from comp.mods.helper.types import COMP
 from bs4 import BeautifulSoup, NavigableString
 from comp.mods.err import StyleErr, PreviewErr
 
-@typed
-def _style(html: Str) -> Str:
+def _style(html):
     try:
         soup = BeautifulSoup(html, "html.parser")
         for row in soup.find_all(class_="row"):
@@ -603,7 +601,7 @@ def _style(html: Str) -> Str:
 
             return None
 
-        def parse_prefixed_class(class_name: str):
+        def parse_prefixed_class(class_name):
             parts = class_name.split(':')
             orig = class_name
             found_media = None
@@ -794,8 +792,7 @@ def _style(html: Str) -> Str:
     except Exception as e:
         raise StyleErr(e)
 
-@typed
-def _minify(html: Str) -> Str:
+def _minify(html):
     def minify_js(match):
         open_tag = match.group(1)
         js_code = match.group(2)
@@ -877,7 +874,7 @@ class _PREVIEW:
         self._reloader_thread = None
         self._browser_opened = False
 
-    def _add(self, comp: COMPONENT, __name__=None, __scripts__=None, __assets__=None, **kwargs):
+    def _add(self, comp: COMP, __name__=None, __scripts__=None, __assets__=None, **kwargs):
         """
         Adds a component to the preview stack.
         Can optionally accept a __name__ for the component instance, and lists of __scripts__ and __assets__.
@@ -1050,7 +1047,7 @@ class _PREVIEW:
         return f"""<!DOCTYPE html>
 <html>
 <head>
-    <title>Component Preview</title>
+    <title>Comp Preview</title>
     <meta charset="utf-8">
     {js}
 </head>

@@ -110,7 +110,7 @@ def if_aria(aria: Any=None) -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-def if_globals(globals: Maybe(Globals) = None) -> Str:
+def if_globals(globals: Maybe(Globals)=None) -> Str:
     try:
         if not globals:
             return ""
@@ -125,21 +125,21 @@ def if_globals(globals: Maybe(Globals) = None) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_id(entry: Any = None) -> Str:
+def if_id(entry: Any=None) -> Str:
     try:
         return if_key(entry, "id")
     except Exception as e:
         raise HelperErr(e)
 
 @typed
-def if_class(entry: Any = None) -> Str:
+def if_class(entry: Any=None) -> Str:
     try:
         return if_key(entry, "class")
     except Exception as e:
         raise HelperErr(e)
 
 @typed
-def if_style(entry: Any = None) -> Str:
+def if_style(entry: Any=None) -> Str:
     try:
         return if_key(entry, "style")
     except Exception as e:

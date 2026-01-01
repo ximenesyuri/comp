@@ -1,10 +1,10 @@
 from typed import Maybe
 from comp.mods.types.factories import Tag
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.models.content import Icon
 from comp.mods.helper.comps import if_icon
 
-@component
+@comp
 def icon_search(icon: Maybe(Icon)=None) -> Tag('svg'):
     if icon is None:
         icon = Icon()
@@ -14,7 +14,7 @@ def icon_search(icon: Maybe(Icon)=None) -> Tag('svg'):
 </svg>
 """
 
-@component
+@comp
 def icon_menu(icon: Maybe(Icon)=None) -> Tag('svg'):
     if icon is None:
         icon = Icon()
@@ -24,7 +24,7 @@ def icon_menu(icon: Maybe(Icon)=None) -> Tag('svg'):
 </svg>
 """
 
-@component
+@comp
 def icon_close(icon: Maybe(Icon)=None) -> Tag('svg'):
     if icon is None:
         icon = Icon()
@@ -34,7 +34,7 @@ def icon_close(icon: Maybe(Icon)=None) -> Tag('svg'):
 </svg>
 """
 
-@component
+@comp
 def icon_home(icon: Maybe(Icon)=None) -> Tag('svg'):
     if icon is None:
         icon = Icon()
@@ -44,7 +44,7 @@ def icon_home(icon: Maybe(Icon)=None) -> Tag('svg'):
 </svg>
 """
 
-@component
+@comp
 def icon_theme_switcher(icon: Maybe(Icon)=None) -> Tag('svg'):
     if icon is None:
         icon = Icon()

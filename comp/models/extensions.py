@@ -99,8 +99,8 @@ class _SearchIndex:
 
 @optional
 class Search:
-    search_globals:        Globals=Globals()
-    search_aria:           Aria=Aria()
+    search_globals:        Globals
+    search_aria:           Aria
     search_div:            Div=Div(div_id="search-div")
     search_input_div:      Div=Div(div_id="search-input-div")
     search_input:          Input=Input(input_type="search", input_id="search-input")

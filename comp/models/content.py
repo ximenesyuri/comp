@@ -4,8 +4,8 @@ from comp.models.base import Globals, Aria
 
 @optional
 class Button:
-    button_globals:    Globals=Globals()
-    button_aria:       Aria=Aria()
+    button_globals:    Globals
+    button_aria:       Aria
     button_id:         Str="button"
     button_class:      Str
     button_style:      Str
@@ -18,8 +18,8 @@ Button.__display__ = "Button"
 
 @optional
 class Icon:
-    icon_globals: Globals=Globals()
-    icon_aria:    Aria=Aria()
+    icon_globals: Globals
+    icon_aria:    Aria
     icon_id:      Str="icon"
     icon_class:   Str
     icon_style:   Str
@@ -32,8 +32,8 @@ Icon.__display__ = "Icon"
 
 @optional
 class Image:
-    img_globals: Globals=Globals()
-    img_aria:    Aria=Aria()
+    img_globals: Globals
+    img_aria:    Aria
     img_id:      Str="img"
     img_class:   Str
     img_style:   Str
@@ -46,8 +46,8 @@ Image.__display__ = "Image"
 
 @optional
 class Text:
-    text_globals: Globals=Globals()
-    text_aria:    Aria=Aria()
+    text_globals: Globals
+    text_aria:    Aria
     text_id:      Str="text"
     text_class:   Str
     text_style:   Str
@@ -57,8 +57,8 @@ Text.__display__ = "Text"
 
 @optional
 class Title:
-    title_globals: Globals=Globals()
-    title_aria:    Aria=Aria()
+    title_globals: Globals
+    title_aria:    Aria
     title_id:      Str="title"
     title_class:   Str
     title_style:   Str
@@ -69,8 +69,8 @@ Title.__display__ = "Title"
 
 @optional
 class Link:
-    link_globals:  Globals=Globals()
-    link_aria:     Aria=Aria()
+    link_globals:  Globals
+    link_aria:     Aria
     link_id:       Str="link"
     link_class:    Str
     link_style:    Str
@@ -84,18 +84,18 @@ Link.__display__ = "Link"
 
 @optional
 class Figure:
-    figure_globals: Globals=Globals()
-    figure_aria:    Aria=Aria()
-    figure_img:     Image=Image()
+    figure_globals: Globals
+    figure_aria:    Aria
+    figure_img:     Image
     figure_caption: Str
 
 Figure.__display__ = "Figure"
 
 @optional
 class Logo:
-    logo_globals: Globals=Globals()
-    logo_aria:    Aria=Aria()
-    logo_img:     Image=Image()
+    logo_globals: Globals
+    logo_aria:    Aria
+    logo_img:     Image
     logo_link:    Link=Link(link_href="/")
 
 Logo.__display__ = "Logo"

@@ -4,8 +4,8 @@ from comp.models.content import Link
 
 @optional
 class Item:
-    item_globals: Globals=Globals()
-    item_aria:    Aria=Aria()
+    item_globals: Globals
+    item_aria:    Aria
     item_id:      Str="item"
     item_class:   Str
     item_style:   Str
@@ -15,8 +15,8 @@ Item.__display__ = "Item"
 
 @optional
 class Unordered:
-    ul_globals: Globals=Globals()
-    ul_aria:    Aria=Aria()
+    ul_globals: Globals
+    ul_aria:    Aria
     ul_id:      Str="ul"
     ul_class:   Str
     ul_style:   Str
@@ -27,8 +27,8 @@ Unordered.__display__ = "Unordered"
 
 @optional
 class Ordered:
-    ol_globals: Globals=Globals()
-    ol_aria:    Aria=Aria()
+    ol_globals: Globals
+    ol_aria:    Aria
     ol_id:      Str
     ol_class:   Str
     ol_style:   Str
@@ -45,8 +45,8 @@ NavItem.__display__ = "NavItem"
 
 @optional
 class CustomNav:
-    nav_globals:   Globals=Globals()
-    nav_aria:      Aria=Aria()
+    nav_globals:   Globals
+    nav_aria:      Aria
     nav_id:        Str="nav"
     nav_class:     Str
     nav_style:     Str

@@ -1,9 +1,9 @@
 from typed import Maybe
 from comp.mods.types.base import Jinja
-from comp.mods.decorators import component
+from comp.mods.decorators import comp
 from comp.comps.content import button as _button
 from comp.models import Button, Icon
-from comp.mods.err import ComponentErr
+from comp.mods.err import CompErr
 from comp.comps.icons.line import (
     icon_close,
     icon_menu,
@@ -12,7 +12,7 @@ from comp.comps.icons.line import (
     icon_theme_switcher
 )
 
-@component
+@comp
 def button_close(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
         if button is None:
@@ -21,9 +21,9 @@ def button_close(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
             icon = Icon()
         return (_button * icon_close)(button=button, icon=icon)
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def button_menu(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
         if button is None:
@@ -32,9 +32,9 @@ def button_menu(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
             icon = Icon()
         return (_button * icon_menu)(button=button, icon=icon)
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def button_search(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
         if button is None:
@@ -43,9 +43,9 @@ def button_search(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
             icon = Icon()
         return (_button * icon_search)(button=button, icon=icon)
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def button_home(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
         if button is None:
@@ -54,9 +54,9 @@ def button_home(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
             icon = Icon()
         return (_button * icon_home)(button=button, icon=icon)
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def button_theme_switcher(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
         if button is None:
@@ -65,4 +65,4 @@ def button_theme_switcher(button: Maybe(Button)=None, icon: Maybe(Icon)=None) ->
             icon = Icon()
         return (_button * icon_theme_switcher)(button=button, icon=icon)
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)

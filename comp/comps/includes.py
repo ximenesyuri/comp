@@ -1,8 +1,8 @@
 from typed import Maybe
 from comp.mods.types.base import Inner, Jinja
 from comp.mods.types.factories import Tag
-from comp.mods.decorators import component
-from comp.mods.err import ComponentErr
+from comp.mods.decorators import comp
+from comp.mods.err import CompErr
 from comp.models import Script, Asset
 from comp.mods.helper.comps import (
     if_script,
@@ -11,7 +11,7 @@ from comp.mods.helper.comps import (
 )
 
 
-@component
+@comp
 def asset(asset: Maybe(Asset)=None) -> Tag('link'):
     try:
         if asset is None:
@@ -20,9 +20,9 @@ def asset(asset: Maybe(Asset)=None) -> Tag('link'):
 <link{ if_asset(asset) }/>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
 
-@component
+@comp
 def script(script: Maybe(Script)=None, inner: Inner="") -> Jinja:
     try:
         if script is None:
@@ -38,4 +38,4 @@ def script(script: Maybe(Script)=None, inner: Inner="") -> Jinja:
 <script{ if_script(script) }>{ rendered_inner }</script>
 """
     except Exception as e:
-        raise ComponentErr(e)
+        raise CompErr(e)
