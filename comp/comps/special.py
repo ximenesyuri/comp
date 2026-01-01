@@ -1,3 +1,4 @@
+from typed import Maybe
 from comp.mods.decorators import component
 from comp.mods.types.base import Content, Jinja
 from comp.models.special import Markdown
@@ -13,8 +14,10 @@ def content(content: Content='') -> Jinja:
         raise ComponentErr(e)
 
 @component
-def markdown(markdown: Markdown=Markdown()) -> Jinja:
+def markdown(markdown: Maybe(Markdown)=None) -> Jinja:
     try:
+        if markdown is None:
+            markdown = Markdown()
         return f"""jinja
 { markdown.content }        
 """

@@ -1,3 +1,4 @@
+from typed import Maybe
 from comp.mods.types.base import Jinja
 from comp.mods.decorators import component
 from comp.comps.content import button as _button
@@ -12,36 +13,56 @@ from comp.comps.icons.line import (
 )
 
 @component
-def button_close(button: Button=Button(), icon: Icon=Icon()) -> Jinja:
+def button_close(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
+        if button is None:
+            button = Button()
+        if icon is None:
+            icon = Icon()
         return (_button * icon_close)(button=button, icon=icon)
     except Exception as e:
         raise ComponentErr(e)
 
 @component
-def button_menu(button: Button=Button(), icon: Icon=Icon()) -> Jinja:
+def button_menu(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
+        if button is None:
+            button = Button()
+        if icon is None:
+            icon = Icon()
         return (_button * icon_menu)(button=button, icon=icon)
     except Exception as e:
         raise ComponentErr(e)
 
 @component
-def button_search(button: Button=Button(), icon: Icon=Icon()) -> Jinja:
+def button_search(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
+        if button is None:
+            button = Button()
+        if icon is None:
+            icon = Icon()
         return (_button * icon_search)(button=button, icon=icon)
     except Exception as e:
         raise ComponentErr(e)
 
 @component
-def button_home(button: Button=Button(), icon: Icon=Icon()) -> Jinja:
+def button_home(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
+        if button is None:
+            button = Button()
+        if icon is None:
+            icon = Icon()
         return (_button * icon_home)(button=button, icon=icon)
     except Exception as e:
         raise ComponentErr(e)
 
 @component
-def button_theme_switcher(button: Button=Button(), icon: Icon=Icon()) -> Jinja:
+def button_theme_switcher(button: Maybe(Button)=None, icon: Maybe(Icon)=None) -> Jinja:
     try:
+        if button is None:
+            button = Button()
+        if icon is None:
+            icon = Icon()
         return (_button * icon_theme_switcher)(button=button, icon=icon)
     except Exception as e:
         raise ComponentErr(e)

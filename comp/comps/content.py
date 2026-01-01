@@ -1,3 +1,4 @@
+from typed import Maybe
 from comp.mods.types.base import Inner, Jinja
 from comp.mods.types.factories import Tag
 from comp.mods.decorators import component
@@ -14,8 +15,10 @@ from comp.mods.helper.comps import (
 )
 
 @component
-def text(text: Text=Text(), inner: Inner="") -> Jinja:
+def text(text: Maybe(Text)=None, inner: Inner="") -> Jinja:
     try:
+        if text is None:
+            text = Text()
         if text.text_inner:
             rendered_inner = _render_inner(text.text_inner)
         elif inner:
@@ -29,8 +32,10 @@ def text(text: Text=Text(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def title(title: Title=Title(), inner: Inner="") -> Jinja:
+def title(title: Maybe(Title)=None, inner: Inner="") -> Jinja:
     try:
+        if title is None:
+            title = Title()
         if title.title_inner:
             rendered_inner = _render_inner(title.title_inner)
         elif inner:
@@ -44,8 +49,10 @@ def title(title: Title=Title(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def link(link: Link=Link(), inner: Inner="") -> Jinja:
+def link(link: Maybe(Link)=None, inner: Inner="") -> Jinja:
     try:
+        if link is None:
+            link = Link()
         if link.link_inner:
             rendered_inner = _render_inner(link.link_inner)
         elif inner:
@@ -59,8 +66,10 @@ def link(link: Link=Link(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def image(img: Img=Img()) -> Tag('img'):
+def image(img: Maybe(Img)=None) -> Tag('img'):
     try:
+        if img is None:
+            img = Img()
         return f"""jinja
 <img{ if_img(img) }/>
 """
@@ -69,8 +78,10 @@ def image(img: Img=Img()) -> Tag('img'):
 img = image
 
 @component
-def figure(figure: Figure=Figure()) -> Tag('figure'):
+def figure(figure: Maybe(Figure)=None) -> Tag('figure'):
     try:
+        if figure is None:
+            figure = Figure()
         return f"""jinja
 <figure{ if_figure(figure) }>
     <img{ if_img(figure.figure_img) }>
@@ -82,8 +93,10 @@ def figure(figure: Figure=Figure()) -> Tag('figure'):
 fig = figure
 
 @component
-def button(button: Button=Button(), inner: Inner="") -> Jinja:
+def button(button: Maybe(Button)=None, inner: Inner="") -> Jinja:
     try:
+        if button is None:
+            button = Button()
         if button.button_inner:
             rendered_inner = _render_inner(button.button_inner)
         elif inner:
@@ -97,8 +110,10 @@ def button(button: Button=Button(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def logo(logo: Logo=Logo()) -> Jinja:
+def logo(logo: Maybe(Logo)=None) -> Jinja:
     try:
+        if logo is None:
+            logo = Logo()
         return f"""jinja
 <a{ if_img(logo.logo_img) }><img{ if_link(logo.logo_link) }></a>
 """

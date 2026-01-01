@@ -1,3 +1,4 @@
+from typed import Maybe
 from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, Inner
 from comp.mods.err import ComponentErr
@@ -19,8 +20,10 @@ from comp.mods.helper.comps import (
 from comp.comps.includes import asset, script
 
 @component
-def header(header: Header=Header(), inner: Inner="") -> Jinja:
+def header(header: Maybe(Header)=None, inner: Inner="") -> Jinja:
     try:
+        if header is None:
+            header = Header()
         if header.header_inner:
             rendered_inner = _render_inner(header.header_inner)
         elif inner:
@@ -34,8 +37,10 @@ def header(header: Header=Header(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def aside(aside: Aside=Aside(), inner: Inner="") -> Jinja:
+def aside(aside: Maybe(Aside)=None, inner: Inner="") -> Jinja:
     try:
+        if aside is None:
+            aside = Aside()
         if aside.aside_inner:
             rendered_inner = _render_inner(aside.aside_inner)
         elif inner:
@@ -49,8 +54,10 @@ def aside(aside: Aside=Aside(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def footer(footer: Footer=Footer(), inner: Inner="") -> Jinja:
+def footer(footer: Maybe(Footer)=None, inner: Inner="") -> Jinja:
     try:
+        if footer is None:
+            footer = Footer()
         if footer.footer_inner:
             rendered_inner = _render_inner(footer.footer_inner)
         elif inner:
@@ -64,8 +71,10 @@ def footer(footer: Footer=Footer(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "script": script}) -> Jinja:
+def head(head: Maybe(Head)=None, inner: Inner="", __context__={"asset": asset, "script": script}) -> Jinja:
     try:
+        if head is None:
+            head = Head()
         if head.head_inner:
             rendered_inner = _render_inner(head.head_inner)
         elif inner:
@@ -91,8 +100,10 @@ def head(head: Head=Head(), inner: Inner="", __context__={"asset": asset, "scrip
         raise ComponentErr(e)
 
 @component
-def main(main: Main=Main(), inner: Inner="") -> Jinja:
+def main(main: Maybe(Main)=None, inner: Inner="") -> Jinja:
     try:
+        if main is None:
+            main = Main()
         if main.main_inner:
             rendered_inner = _render_inner(main.main_inner)
         elif inner:
@@ -106,8 +117,10 @@ def main(main: Main=Main(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "aside": aside, "main": main, "footer": footer}) -> Jinja:
+def body(body: Maybe(Body)=None, inner: Inner="", __context__={"header": header, "aside": aside, "main": main, "footer": footer}) -> Jinja:
     try:
+        if body is None:
+            body = Body()
         if body.body_inner:
             rendered_inner = _render_inner(body.body_inner)
         elif inner:
@@ -129,8 +142,10 @@ def body(body: Body=Body(), inner: Inner="", __context__={"header": header, "asi
         raise ComponentErr(e)
 
 @component
-def page(page: Page=Page(), inner: Inner="", __context__={"head": head, "body": body}) -> Jinja:
+def page(page: Maybe(Page)=None, inner: Inner="", __context__={"head": head, "body": body}) -> Jinja:
     try:
+        if page is None:
+            page = Page()
         if page.page_inner:
             rendered_inner = _render_inner(page.page_inner)
         elif inner:
@@ -149,8 +164,10 @@ def page(page: Page=Page(), inner: Inner="", __context__={"head": head, "body": 
         raise ComponentErr(e)
 
 @component
-def div(div: Div=Div(), inner: Inner="") -> Jinja:
+def div(div: Maybe(Div)=None, inner: Inner="") -> Jinja:
     try:
+        if div is None:
+            div = Div()
         if div.div_inner:
             rendered_inner = _render_inner(div.div_inner)
         elif inner:
@@ -164,8 +181,10 @@ def div(div: Div=Div(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def col(col: Column=Column(), inner: Inner="") -> Jinja:
+def col(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
+        if col is None:
+            col = Column()
         existing = col.col_class or ""
         if "col" not in existing.split():
             col.col_class = (existing + " col").strip()
@@ -182,8 +201,10 @@ def col(col: Column=Column(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def col_1(col: Column=Column(), inner: Inner="") -> Jinja:
+def col_1(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
+        if col is None:
+            col = Column()
         existing = col.col_class or ""
         if "col-1" not in existing.split():
             col.col_class = (existing + " col-1").strip()
@@ -200,8 +221,10 @@ def col_1(col: Column=Column(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def col_2(col: Column=Column(), inner: Inner="") -> Jinja:
+def col_2(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
+        if col is None:
+            col = Column()
         existing = col.col_class or ""
         if "col-2" not in existing.split():
             col.col_class = (existing + " col-2").strip()
@@ -218,8 +241,10 @@ def col_2(col: Column=Column(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def col_3(col: Column=Column(), inner: Inner="") -> Jinja:
+def col_3(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
+        if col is None:
+            col = Column()
         existing = col.col_class or ""
         if "col-3" not in existing.split():
             col.col_class = (existing + " col-3").strip()
@@ -236,8 +261,10 @@ def col_3(col: Column=Column(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def col_4(col: Column=Column(), inner: Inner="") -> Jinja:
+def col_4(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
+        if col is None:
+            col = Column()
         existing = col.col_class or ""
         if "col-4" not in existing.split():
             col.col_class = (existing + " col-4").strip()
@@ -254,8 +281,10 @@ def col_4(col: Column=Column(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def col_5(col: Column=Column(), inner: Inner="") -> Jinja:
+def col_5(col: Maybe(Column)=None, inner: Inner="") -> Jinja:
     try:
+        if col is None:
+            col = Column()
         existing = col.col_class or ""
         if "col-5" not in existing.split():
             col.col_class = (existing + " col-5").strip()
@@ -272,8 +301,10 @@ def col_5(col: Column=Column(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def row(row: Row=Row(), __context__={"col": col}) -> Jinja:
+def row(row: Maybe(Row)=None, __context__={"col": col}) -> Jinja:
     try:
+        if row is None:
+            row = Row()
         existing = row.row_class or ""
         if "row" not in existing.split():
             row.row_class = (existing + " row").strip()
@@ -286,8 +317,10 @@ def row(row: Row=Row(), __context__={"col": col}) -> Jinja:
         raise ComponentErr(e)
 
 @component
-def grid(grid: Grid=Grid(), __context__={"row": row}) -> Jinja:
+def grid(grid: Maybe(Grid)=None, __context__={"row": row}) -> Jinja:
     try:
+        if grid is None:
+            grid = Grid()
         return f"""jinja
 <div{ if_grid(grid) }>[% if grid.grid_rows is defined %][% for r in grid.grid_rows %]
     [[ row(row=r) ]][% endfor %]

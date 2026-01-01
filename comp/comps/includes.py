@@ -1,4 +1,4 @@
-from typed import null
+from typed import Maybe
 from comp.mods.types.base import Inner, Jinja
 from comp.mods.types.factories import Tag
 from comp.mods.decorators import component
@@ -12,8 +12,10 @@ from comp.mods.helper.comps import (
 
 
 @component
-def asset(asset: Asset=Asset()) -> Tag('link'):
+def asset(asset: Maybe(Asset)=None) -> Tag('link'):
     try:
+        if asset is None:
+            asset = Asset()
         return f"""jinja
 <link{ if_asset(asset) }/>
 """
@@ -21,8 +23,11 @@ def asset(asset: Asset=Asset()) -> Tag('link'):
         raise ComponentErr(e)
 
 @component
-def script(script: Script=Script(), inner: Inner="") -> Jinja:
+def script(script: Maybe(Script)=None, inner: Inner="") -> Jinja:
     try:
+        if script is None:
+            script = Script()
+
         if script.script_inner:
             rendered_inner = _render_inner(script.script_inner)
         elif inner:

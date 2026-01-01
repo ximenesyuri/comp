@@ -1,3 +1,4 @@
+from typed import Maybe
 from comp.mods.types.base import Jinja, Inner
 from comp.mods.decorators import component
 from comp.models import Div, Button, Search, Alpine
@@ -14,8 +15,10 @@ from comp.mods.helper.comps import (
 )
 
 @component
-def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
+def alpine(alpine: Maybe(Alpine)=None, inner: Inner="") -> Jinja:
     try:
+        if alpine is None:
+            alpine = Alpine()
         if alpine.alpine_inner:
             rendered_inner = _render_inner(alpine.alpine_inner)
         elif inner:
@@ -29,8 +32,10 @@ def alpine(alpine: Alpine=Alpine(), inner: Inner="") -> Jinja:
         raise ComponentErr(e)
 
 @component
-def search(search: Search=Search(), __context__={}) -> Jinja:
+def search(search: Maybe(Search)=None, __context__={}) -> Jinja:
     try:
+        if search is None:
+            search = Search()
         search_div    = if_div(search.search_div)
         button_div    = if_div(search.search_button_div)
         input_div     = if_div(search.search_input_div)
@@ -59,8 +64,10 @@ def search(search: Search=Search(), __context__={}) -> Jinja:
         raise ComponentErr(e)
 
 @component
-def search_script(search: Search=Search(), __context__={}) -> Jinja:
+def search_script(search: Maybe(Search)=None, __context__={}) -> Jinja:
     try:
+        if search is None:
+            search = Search()
         results_div         = if_div(search.search_results_div)
         results_cover_div   = if_div(search.search_results.results_cover.cover_div)
         results_cover_id    = if_id(search.search_results.results_cover.cover_id)

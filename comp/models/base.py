@@ -1,5 +1,6 @@
-from typed import Str, Bool, List, Nat, Len
+from typed import Str, Bool, List, Len
 from typed.models import optional
+from utils.types import Nat
 
 @optional
 class Aria:

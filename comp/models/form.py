@@ -1,4 +1,5 @@
-from typed import optional, Str, Bool, Int, Pattern, Union, Enum, Single, Num
+from typed import optional, Str, Bool, Int, Pattern, Union, Enum, Single
+from utils.types import Num
 from comp.models.base import Aria, Globals
 from comp.mods.helper.models import _FormEnc, _InputType
 

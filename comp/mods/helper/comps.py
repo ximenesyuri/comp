@@ -34,7 +34,6 @@ from comp.models import (
     Search
 )
 
-@typed
 def if_key(entry: Any=None, what: Str="") -> Str:
     try:
         if entry is not None and entry != "":
@@ -43,7 +42,6 @@ def if_key(entry: Any=None, what: Str="") -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-@typed
 def if_bool(entry: Any=None, what: Str="") -> Str:
     try:
         if entry:
@@ -52,7 +50,6 @@ def if_bool(entry: Any=None, what: Str="") -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-@typed
 def if_size(size: Any=None, key_w: Str="width", key_h: Str="height") -> Str:
     try:
         if size is not None and size != "":
@@ -61,7 +58,6 @@ def if_size(size: Any=None, key_w: Str="width", key_h: Str="height") -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-@typed
 def if_defined(entry: Any=None, default: Any="") -> Str:
     try:
         if entry:
@@ -70,7 +66,6 @@ def if_defined(entry: Any=None, default: Any="") -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-@typed
 def if_aria(aria: Any=None) -> Str:
     try:
         if not aria:
@@ -115,7 +110,6 @@ def if_aria(aria: Any=None) -> Str:
     except Exception as e:
         raise HelperErr(e)
 
-@typed
 def if_globals(globals: Maybe(Globals) = None) -> Str:
     try:
         if not globals:
@@ -152,7 +146,7 @@ def if_style(entry: Any = None) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_div(div: Maybe(Div)=Div()) -> Str:
+def if_div(div: Maybe(Div)=None) -> Str:
     try:
         if not div:
             return ""
@@ -167,7 +161,7 @@ def if_div(div: Maybe(Div)=Div()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_alpine(alpine: Maybe(Alpine)=Alpine()) -> Str:
+def if_alpine(alpine: Maybe(Alpine)=None) -> Str:
     try:
         if not alpine:
             return ""
@@ -183,7 +177,7 @@ def if_alpine(alpine: Maybe(Alpine)=Alpine()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_header(header: Maybe(Header)=Header()) -> Str:
+def if_header(header: Maybe(Header)=None) -> Str:
     try:
         if not header:
             return ""
@@ -198,7 +192,7 @@ def if_header(header: Maybe(Header)=Header()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_aside(aside: Maybe(Aside)=Aside()) -> Str:
+def if_aside(aside: Maybe(Aside)=None) -> Str:
     try:
         if not aside:
             return ""
@@ -213,7 +207,7 @@ def if_aside(aside: Maybe(Aside)=Aside()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_sidebar(sidebar: Maybe(Sidebar)=Sidebar()) -> Str:
+def if_sidebar(sidebar: Maybe(Sidebar)=None) -> Str:
     try:
         if not sidebar:
             return ""
@@ -228,7 +222,7 @@ def if_sidebar(sidebar: Maybe(Sidebar)=Sidebar()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_footer(footer: Maybe(Footer)=Footer()) -> Str:
+def if_footer(footer: Maybe(Footer)=None) -> Str:
     try:
         if not footer:
             return ""
@@ -243,7 +237,7 @@ def if_footer(footer: Maybe(Footer)=Footer()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_head(head: Maybe(Head)=Head()) -> Str:
+def if_head(head: Maybe(Head)=None) -> Str:
     try:
         if not head:
             return ""
@@ -255,7 +249,7 @@ def if_head(head: Maybe(Head)=Head()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_main(main: Maybe(Main)=Main()) -> Str:
+def if_main(main: Maybe(Main)=None) -> Str:
     try:
         if not main:
             return ""
@@ -270,7 +264,7 @@ def if_main(main: Maybe(Main)=Main()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_body(body: Maybe(Body)=Body()) -> Str:
+def if_body(body: Maybe(Body)=None) -> Str:
     try:
         if not body:
             return ""
@@ -282,14 +276,14 @@ def if_body(body: Maybe(Body)=Body()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_page(page: Maybe(Page)=Page()) -> Str:
+def if_page(page: Maybe(Page)=None) -> Str:
     try:
         return ""
     except Exception as e:
         raise HelperErr(e)
 
 @typed
-def if_col(col: Maybe(Column)=Column()) -> Str:
+def if_col(col: Maybe(Column)=None) -> Str:
     try:
         if not col:
             return ""
@@ -304,7 +298,7 @@ def if_col(col: Maybe(Column)=Column()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_row(row: Maybe(Row)=Row()) -> Str:
+def if_row(row: Maybe(Row)=None) -> Str:
     try:
         if not row:
             return ""
@@ -319,7 +313,7 @@ def if_row(row: Maybe(Row)=Row()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_grid(grid: Maybe(Grid)=Grid()) -> Str:
+def if_grid(grid: Maybe(Grid)=None) -> Str:
     try:
         if not grid:
             return ""
@@ -334,7 +328,7 @@ def if_grid(grid: Maybe(Grid)=Grid()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_text(text: Maybe(Text)=Text()) -> Str:
+def if_text(text: Maybe(Text)=None) -> Str:
     try:
         if not text:
             return ""
@@ -349,7 +343,7 @@ def if_text(text: Maybe(Text)=Text()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_title(title: Maybe(Title)=Title()) -> Str:
+def if_title(title: Maybe(Title)=None) -> Str:
     try:
         if not title:
             return ""
@@ -364,7 +358,7 @@ def if_title(title: Maybe(Title)=Title()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_link(link: Maybe(Link)=Link()) -> Str:
+def if_link(link: Maybe(Link)=None) -> Str:
     try:
         if not link:
             return ""
@@ -383,7 +377,7 @@ def if_link(link: Maybe(Link)=Link()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_button(button: Maybe(Button)=Button()) -> Str:
+def if_button(button: Maybe(Button)=None) -> Str:
     try:
         if not button:
             return ""
@@ -400,7 +394,7 @@ def if_button(button: Maybe(Button)=Button()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_img(img: Maybe(Image)=Image()) -> Str:
+def if_img(img: Maybe(Image)=None) -> Str:
     try:
         if not img:
             return ""
@@ -418,7 +412,7 @@ def if_img(img: Maybe(Image)=Image()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_figure(figure: Maybe(Figure)=Figure()) -> Str:
+def if_figure(figure: Maybe(Figure)=None) -> Str:
     try:
         if not figure:
             return ""
@@ -430,7 +424,7 @@ def if_figure(figure: Maybe(Figure)=Figure()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_script(script: Maybe(Script)=Script()) -> Str:
+def if_script(script: Maybe(Script)=None) -> Str:
     try:
         if not script:
             return ""
@@ -446,7 +440,7 @@ def if_script(script: Maybe(Script)=Script()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_asset(asset: Maybe(Asset)=Asset()) -> Str:
+def if_asset(asset: Maybe(Asset)=None) -> Str:
     try:
         if not asset:
             return ""
@@ -461,7 +455,7 @@ def if_asset(asset: Maybe(Asset)=Asset()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_item(item: Maybe(Item)=Item()) -> Str:
+def if_item(item: Maybe(Item)=None) -> Str:
     try:
         if not item:
             return ""
@@ -476,7 +470,7 @@ def if_item(item: Maybe(Item)=Item()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_ul(ul: Maybe(Unordered)=Unordered()) -> Str:
+def if_ul(ul: Maybe(Unordered)=None) -> Str:
     try:
         if not ul:
             return ""
@@ -491,7 +485,7 @@ def if_ul(ul: Maybe(Unordered)=Unordered()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_ol(ol: Maybe(Ordered)=Ordered()) -> Str:
+def if_ol(ol: Maybe(Ordered)=None) -> Str:
     try:
         if not ol:
             return ""
@@ -506,7 +500,7 @@ def if_ol(ol: Maybe(Ordered)=Ordered()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_nav(nav: Maybe(Nav)=Nav()) -> Str:
+def if_nav(nav: Maybe(Nav)=None) -> Str:
     try:
         if not nav:
             return ""
@@ -521,7 +515,7 @@ def if_nav(nav: Maybe(Nav)=Nav()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_icon(icon: Maybe(Icon)=Icon()) -> Str:
+def if_icon(icon: Maybe(Icon)=None) -> Str:
     try:
         if not icon:
             return ""
@@ -541,7 +535,7 @@ def if_icon(icon: Maybe(Icon)=Icon()) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_input(input: Maybe(Input)=Input()) -> Str:
+def if_input(input: Maybe(Input)=None) -> Str:
     try:
         if not input:
             return ""
@@ -627,8 +621,10 @@ def _render_inner(obj):
         raise HelperErr(e)
 
 @typed
-def _generate_meta_tags(meta: Maybe(Metadata)=Metadata()) -> Str:
+def _generate_meta_tags(meta: Maybe(Metadata)=None) -> Str:
     try:
+        if meta is None:
+            meta = Metadata()
         tags = []
         # Essential
         if meta.meta_charset:

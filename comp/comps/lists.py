@@ -1,7 +1,8 @@
+from typed import Maybe
 from comp.mods.decorators import component
 from comp.mods.types.base import Jinja, Inner
 from comp.mods.err import ComponentErr
-from comp.models.lists import Item, Unordered, Ordered, NavItem, Nav
+from comp.models.lists import Item, Unordered, Ordered, Nav
 from comp.comps.content import link
 from comp.mods.helper.comps import (
     if_item,
@@ -15,8 +16,10 @@ from comp.mods.helper.comps import (
 )
 
 @component
-def item(item: Item=Item(), inner: Inner="") -> Jinja:
+def item(item: Maybe(Item)=None, inner: Inner="") -> Jinja:
     try:
+        if item is None:
+            item = Item()
         if item.item_inner:
             rendered_inner = _render_inner(item.item_inner)
         elif inner:
@@ -31,8 +34,10 @@ def item(item: Item=Item(), inner: Inner="") -> Jinja:
 li = item
 
 @component
-def unordered(ul: Unordered=Unordered(), __context__={"item": item}) -> Jinja:
+def unordered(ul: Maybe(Unordered)=None, __context__={"item": item}) -> Jinja:
     try:
+        if ul is None:
+            ul = Unordered()
         return f"""jinja
 <ul{ if_ul(ul) }>[% if ul.ul_items is defined %][% for i in ul.ul_items %]
     [[ item(item=i) ]][% endfor %]
@@ -43,8 +48,10 @@ def unordered(ul: Unordered=Unordered(), __context__={"item": item}) -> Jinja:
 ul = unordered
 
 @component
-def ordered(ol: Ordered=Ordered(), __context__={"item": item}) -> Jinja:
+def ordered(ol: Maybe(Ordered)=None, __context__={"item": item}) -> Jinja:
     try:
+        if ol is None:
+            ol = Ordered()
         return f"""jinja
 <ol{ if_ol(ol) }>[% if ol.ol_items is defined %][% for i in ol.ol_items %]
     [[ item(item=i) ]][% endfor %]
@@ -55,8 +62,10 @@ def ordered(ol: Ordered=Ordered(), __context__={"item": item}) -> Jinja:
 ol = ordered
 
 @component
-def nav(nav: Nav=Nav(), __context__={"link": link, "item": item}) -> Jinja:
+def nav(nav: Maybe(Nav)=None, __context__={"link": link, "item": item}) -> Jinja:
     try:
+        if nav is None:
+            nav = Nav()
         ul_style = if_style(nav.ul_style)
         if nav.nav_direction == "horizontal":
             ul_style = f" style='display: flex; flex-direction: row; {nav.ul_style}'"
