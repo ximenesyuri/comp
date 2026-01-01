@@ -7,7 +7,7 @@ __imports__ = {
     "build_row":     "comp.mods.grid",
     "build_grid":    "comp.mods.grid",
     "build_factory": "comp.mods.grid",
-    "build_comp":    "comp.mods.grid",
+    "build_comp":    "comp.mods.grid"
 }
 
 if lazy(__imports__):
