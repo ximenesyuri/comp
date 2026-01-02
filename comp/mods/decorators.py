@@ -81,33 +81,8 @@ def comp(arg=None, *, lazy=True):
         return typed_wrapper
 
     def _make_lazy_wrapper(func):
-        class LazyComp(Lazy):
-            is_lazy = True
-
-            def __init__(self, f):
-                self._orig = f
-                self._wrapped = None
-                self.func = f
-                self.lazy = True
-
-                update_wrapper(self, f)
-
-            def _materialize(self):
-                if self._wrapped is None:
-                    self._wrapped = _build_comp(self._orig)
-                return self._wrapped
-
-            def __call__(self, *a, **kw):
-                return self._materialize()(*a, **kw)
-
-            def __getattr__(self, name_):
-                return getattr(self._materialize(), name_)
-
-            def __repr__(self):
-                return f"<LazyComp for {getattr(self._orig, '__name__', 'anonymous')}>"
-
-        inst = type.__call__(LazyComp, func)
-        return inst
+        from comp.mods.types.base import LAZY_COMP
+        return type.__call__(LAZY_COMP, func)
 
     def decorator(func):
         if not lazy:
