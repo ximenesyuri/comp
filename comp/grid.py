@@ -2,7 +2,7 @@ from utils.general import lazy
 
 __imports__ = {
     "GridEntity":    "comp.mods.grid",
-    "GridFactory":  "comp.mods.grid",
+    "GridFactory":   "comp.mods.grid",
     "build_col":     "comp.mods.grid",
     "build_row":     "comp.mods.grid",
     "build_grid":    "comp.mods.grid",

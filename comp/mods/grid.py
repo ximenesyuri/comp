@@ -18,9 +18,9 @@ class GridEntity:
 
 @optional
 class GridFactory:
-    desktop: Typed(Any, cod=Grid)
-    tablet: Typed(Any, cod=Grid)
-    phone: Typed(Any, cod=Grid)
+    desktop: Union(Typed(Any, cod=Grid), Lazy)
+    tablet: Union(Typed(Any, cod=Grid), Lazy)
+    phone: Union(Typed(Any, cod=Grid), Lazy)
 
 from typed.models import MODEL, LAZY_MODEL
 from comp.models.structure import Grid, Row, Col
