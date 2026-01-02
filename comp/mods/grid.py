@@ -229,7 +229,7 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
                     f"      [expected_name]: {attr_name}\n"
                     f"      [received_name]: {attr_param_name}"
                 )
-            attr_type = domain[1]
+            attr_type = domain[0]
             if attr_type.__name__ != text.snake_to_camel(attr_name):
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
