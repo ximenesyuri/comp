@@ -16,7 +16,26 @@ def _has_vars_of_given_type(instance, BASE, typ, n):
             pass
     return (instance in BASE) and count == n
 
+class CompNull:
+    def __get__(self, obj, owner):
+        if not hasattr(owner, "_null_cache"):
+            from comp.mods.helper.null import nill_comp
+            owner._null_cache = nill_comp()
+        return owner._null_cache
+
+
+class LazyCompNull:
+    def __get__(self, obj, owner):
+        if not hasattr(owner, "_null_cache"):
+            from comp.mods.helper.null import nill_lazy_comp
+            owner._null_cache = nill_lazy_comp()
+        return owner._null_cache
+
 class COMP(Typed, metaclass=_COMP_):
+    __display__ = "COMP"
+    from comp.mods.helper.null import nill_comp
+    __null__ = CompNull()
+
     @property
     def jinja(self):
         if hasattr(self, '_jinja'):
@@ -126,15 +145,32 @@ class COMP(Typed, metaclass=_COMP_):
             return func.__annotations__
         return {}
 
-    __display__ = "COMP"
-
-    from comp.mods.helper.null import nill_comp
-    __null__ = nill_comp
-
 class LAZY_COMP(Lazy, metaclass=_LAZY_COMP_):
     __display__ = 'LAZY_COMP'
     from comp.mods.helper.null import nill_lazy_comp
-    __null__ =  nill_lazy_comp
+    __null__ =  LazyCompNull()
+
+    @property
+    def jinja(self):
+        if hasattr(self, '_jinja'):
+            return self._jinja.encode('utf-8').decode('unicode_escape')
+        import inspect
+        func = getattr(self, 'func', self)
+        while hasattr(func, '__wrapped__'):
+            func = func.__wrapped__
+        return inspect.getsource(func)
+
+    def render(self, **context):
+        from comp.mods.service import render
+        return render(self, **context)
+
+    def mock(self, **context):
+        from comp.mods.service import mock
+        return mock(self, **context)
+
+    def preview(self, **context):
+        from comp.mods.service import preview
+        return preview.add(self, **context)
 
     def __init__(self, f):
         self._orig = f
