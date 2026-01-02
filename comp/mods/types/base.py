@@ -42,34 +42,6 @@ PAGE = _PAGE('PAGE', (COMP, ), {
 
 Content = Union(Str, Extension('md'))
 
-class LAZY_COMP(Lazy, metaclass=_LAZY_COMP_):
-    __display__ = 'LAZY_COMP'
-    __null__ =  nill_lazy_comp
-
-    def __init__(self, f):
-        self._orig = f
-        self._wrapped = None
-        self.func = f
-        self.lazy = True
-        self.is_lazy = True
-        update_wrapper(self, f)
-
-    def _materialize(self):
-        if getattr(self, "_wrapped", None) is None:
-            from comp.mods.decorators import comp as _comp
-            self._wrapped = _comp(self._orig, lazy=False)
-        return self._wrapped
-
-    def __call__(self, *a, **kw):
-        return self._materialize()(*a, **kw)
-
-    def __getattr__(self, name_):
-        return getattr(self._materialize(), name_)
-
-    def __repr__(self):
-        name = getattr(getattr(self, "_orig", None), "__name__", "anonymous")
-        return f"<LAZY_COMP for {name}>"
-
 Responsive = _RESPONSIVE('Responsive', (Typed,), {
     "__display__": "Responsive",
     "__null__": None
