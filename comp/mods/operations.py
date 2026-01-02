@@ -13,7 +13,7 @@ def copy(comp: Union(COMP, LAZY_COMP), **renamed_args: Dict(Str)) -> Union(COMP,
     return _comp(_copy(comp, **renamed_args))
 
 @typed
-def concat(comp_1: Union(COMP, LAZY_COMP), comp_2: Union(COMP, LAZY_COMP)) -> COMP:
+def concat(comp_1: Union(COMP, LAZY_COMP), comp_2: Union(COMP, LAZY_COMP)) -> Union(COMP, LAZY_COMP):
     try:
         sig1 = signature(comp_1)
         sig2 = signature(comp_2)
