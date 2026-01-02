@@ -1,6 +1,5 @@
 import re
-from typed import typed, TYPE, Str, Dict, Bool, Union, Typed, name
-from utils.types import Extension
+from typed import typed, TYPE, Str, Dict, Bool, Typed, name
 from comp.mods.types.meta import _COMP_
 
 def _has_vars_of_given_type(instance, BASE, typ, n):
@@ -126,7 +125,10 @@ class COMP(Typed, metaclass=_COMP_):
             return func.__annotations__
         return {}
 
-Content = Union(Str, Extension('md'))
+    __display__ = "COMP"
+
+    from comp.mods.helper.null import nill_comp
+    __null__ = nill_comp
 
 @typed
 def _check_page(page: COMP) -> Bool:

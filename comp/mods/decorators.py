@@ -4,7 +4,7 @@ from functools import wraps, update_wrapper
 from typed import TYPE, name, typed, Dict, Lazy, Typed, Any, Union, Str
 from comp.mods.helper.types_ import COMP
 from comp.mods.helper.helper import _jinja, _jinja_env
-from comp.mods.types.base import Jinja
+from comp.mods.types.base import Jinja, LAZY_COMP
 
 @typed
 def jinja(arg: Union(Typed(Any, cod=Str), Lazy, Str)) -> Jinja:
@@ -88,6 +88,8 @@ def comp(arg=None, *, lazy=True):
                 self._orig = f
                 self._wrapped = None
                 self.func = f
+                self.lazy = True
+
                 update_wrapper(self, f)
 
             def _materialize(self):
@@ -105,7 +107,6 @@ def comp(arg=None, *, lazy=True):
                 return f"<LazyComp for {getattr(self._orig, '__name__', 'anonymous')}>"
 
         inst = type.__call__(LazyComp, func)
-        inst.__class__ = COMP
         return inst
 
     def decorator(func):

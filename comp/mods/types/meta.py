@@ -1,5 +1,5 @@
 import re
-from typed import TYPE, Str, Typed, names, name
+from typed import TYPE, Str, Typed, Lazy, names, name
 from typed.models import MODEL, LAZY_MODEL
 
 class JINJA(TYPE(Str)):
@@ -71,6 +71,12 @@ class _COMP_(TYPE(Typed)):
     def __instancecheck__(self, instance):
         from comp.mods.helper.types_ import COMP
 
+        if getattr(instance, "is_lazy", False):
+            wrapped = getattr(instance, "_wrapped", None)
+            if wrapped is None:
+                return False
+            instance = wrapped
+
         if not TYPE(instance) <= COMP:
             return False
 
@@ -101,6 +107,12 @@ class _COMP_(TYPE(Typed)):
                 return False
 
         return True
+
+class _LAZY_COMP_(TYPE(Lazy)):
+    def __instancecheck__(cls, instance):
+        if not getattr(instance, "is_lazy", False):
+            return False
+        return getattr(instance, "_wrapped", None) is None
 
 class _RESPONSIVE(TYPE(Typed)):
     _param_cache = {}

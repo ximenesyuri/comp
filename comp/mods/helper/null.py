@@ -1,9 +1,13 @@
-from comp.mods.decorators import comp
-from comp.mods.types.base import Jinja
-from comp.mods.helper.types_ import COMP
+def nill_comp():
+    from comp.mods.types.base import Jinja
+    from comp.mods.decorators import comp
+    def _nill_comp() -> Jinja:
+        return """jinja """
+    return comp(_nill_comp, lazy=False)
 
-def _nill_comp() -> Jinja:
-    return """jinja """
-
-COMP.__display__ = "COMP"
-COMP.__null__ = comp(_nill_comp)
+def nill_lazy_comp():
+    from comp.mods.types.base import Jinja
+    from comp.mods.decorators import comp
+    def _nill_lazy_comp() -> Jinja:
+        return """jinja """
+    return comp(_nill_lazy_comp, lazy=True)

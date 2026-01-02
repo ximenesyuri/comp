@@ -1,10 +1,12 @@
-from typed import Typed, Str, Union
+from typed import Typed, Lazy, Str, Union
 from utils.types import Extension
-from comp.mods.types.meta import JINJA, INNER, _RESPONSIVE, _RESPONSIVE_
+from comp.mods.types.meta import JINJA, INNER, _RESPONSIVE, _RESPONSIVE_, _LAZY_COMP_
 from comp.mods.helper.types_ import (
     COMP,
     _PAGE
 )
+from comp.mods.helper.null import nill_lazy_comp
+
 class Jinja(Str, metaclass=JINJA):
     @property
     def vars(self):
@@ -38,6 +40,11 @@ PAGE = _PAGE('PAGE', (COMP, ), {
 })
 
 Content = Union(Str, Extension('md'))
+
+LAZY_COMP = _LAZY_COMP_('LAZY_COMP', (Lazy,), {
+    "__display__": 'LAZY_COMP',
+    "__null__": nill_lazy_comp
+})
 
 Responsive = _RESPONSIVE('Responsive', (Typed,), {
     "__display__": "Responsive",
