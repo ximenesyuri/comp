@@ -7,7 +7,7 @@ from comp.models.structure import Grid, Row, Col
 from comp.comps.structure import grid
 from comp.comps.responsive import desktop, tablet, phone
 from comp.mods.operations import eval
-from comp.mods.types.base import COMP
+from comp.mods.helper.types_ import COMP, LAZY_COMP
 from comp.mods.err import GridErr
 
 @optional
@@ -580,7 +580,7 @@ from comp.grid import GridFactory
     return local_ns[model_snake]
 
 @typed
-def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMP:
+def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> Union(COMP, LAZY_COMP):
     if grid_entity.desktop:
         if not grid_factory.desktop:
             raise GridErr(
@@ -604,7 +604,7 @@ def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMP:
             )
         desktop_grid = desktop * eval(grid, grid=grid_factory.desktop(grid_entity.desktop))
     else:
-        desktop_grid = null(COMP)
+        desktop_grid = null(LAZY_COMP)
     if grid_entity.tablet:
         if not grid_entity.tablet:
             raise GridErr(
@@ -627,7 +627,7 @@ def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMP:
             )
         tablet_grid = tablet * eval(grid, grid=grid_factory.tablet(grid_entity.tablet))
     else:
-        tablet_grid = null(COMP)
+        tablet_grid = null(LAZY_COMP)
     if grid_entity.phone:
         if not grid_factory.phone:
             raise GridErr(
@@ -650,5 +650,5 @@ def build_comp(grid_entity: GridEntity, grid_factory: GridFactory) -> COMP:
             )
         phone_grid = phone * eval(grid, grid=grid_factory.phone(grid_entity.phone))
     else:
-        phone_grid = null(COMP)
+        phone_grid = null(LAZY_COMP)
     return desktop_grid + tablet_grid + phone_grid

@@ -1,10 +1,10 @@
 import re
 from inspect import signature, Parameter
-from functools import wraps, update_wrapper
+from functools import wraps
 from typed import TYPE, name, typed, Dict, Lazy, Typed, Any, Union, Str
 from comp.mods.helper.types_ import COMP
 from comp.mods.helper.helper import _jinja, _jinja_env
-from comp.mods.types.base import Jinja, LAZY_COMP
+from comp.mods.types.base import Jinja
 
 @typed
 def jinja(arg: Union(Typed(Any, cod=Str), Lazy, Str)) -> Jinja:
@@ -81,7 +81,7 @@ def comp(arg=None, *, lazy=True):
         return typed_wrapper
 
     def _make_lazy_wrapper(func):
-        from comp.mods.types.base import LAZY_COMP
+        from comp.mods.helper.types_ import LAZY_COMP
         return type.__call__(LAZY_COMP, func)
 
     def decorator(func):

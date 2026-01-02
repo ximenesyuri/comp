@@ -14,7 +14,8 @@ from comp.mods.helper.helper import (
 )
 from comp.mods.helper.service import _style, _minify, _Preview
 from comp.mods.err import RenderErr, MockErr
-from comp.mods.types.base import COMP, LAZY_COMP, Jinja, PAGE
+from comp.mods.types.base import Jinja, PAGE
+from comp.mods.helper.types_ import COMP, LAZY_COMP
 from comp.comps.includes import script as script_entity, asset as asset_entity
 from comp.models import Script, Asset
 

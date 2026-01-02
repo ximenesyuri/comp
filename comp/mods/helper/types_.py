@@ -142,7 +142,11 @@ class LAZY_COMP(Lazy, metaclass=_LAZY_COMP_):
         self.func = f
         self.lazy = True
         self.is_lazy = True
-        update_wrapper(self, f)
+        update_wrapper(
+            self,
+            f,
+            assigned=('__module__', '__name__', '__qualname__', '__doc__', '__wrapped__'),
+        )
 
     def _materialize(self):
         if getattr(self, "_wrapped", None) is None:

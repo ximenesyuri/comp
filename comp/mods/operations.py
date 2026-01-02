@@ -1,7 +1,8 @@
 import re
 from inspect import signature, Parameter, Signature
 from typed import typed, Tuple, Dict, Str, Union
-from comp.mods.types.base import Jinja, COMP, LAZY_COMP, Inner
+from comp.mods.types.base import Jinja, Inner
+from comp.mods.helper.types_ import COMP, LAZY_COMP
 from comp.mods.err import ConcatErr, JoinErr, EvalErr
 from comp.mods.helper.operations import _merge_context, _get_context, _copy, _order_params
 from comp.mods.helper.helper import _get_jinja, _jinja
