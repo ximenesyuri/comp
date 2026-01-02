@@ -45,11 +45,10 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
         )
 
     payload_bases = [b for b in user_bases if b not in col_like_bases]
-    if len(payload_bases) != 1:
+    if len(payload_bases) == 0:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
-            f"  ==> '{model_name}': could not determine unique payload base.\n"
-            f"      [bases_found] {[b.__name__ for b in payload_bases]}"
+            f"  ==> '{model_name}': extends no model.\n"
         )
 
     base_model = payload_bases[0]
