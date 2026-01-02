@@ -5,7 +5,7 @@ __imports__ = {
     "comp":    "comp.mods.decorators",
     "Jinja":   "comp.mods.types.base",
     "Inner":   "comp.mods.types.base",
-    "COMP":    "comp.mods.helper.types",
+    "COMP":    "comp.mods.helper.types_",
     "Tag":     "comp.mods.types.factories",
     "TAG":     "comp.mods.types.factories",
     "copy":    "comp.mods.operations",
@@ -21,7 +21,7 @@ __imports__ = {
 if lazy(__imports__):
     from comp.mods.decorators import jinja, comp
     from comp.mods.types.base import Jinja, Inner
-    from comp.mods.helper.types import COMP
+    from comp.mods.helper.types_ import COMP
     from comp.mods.types.factories import Tag, TAG
     from comp.mods.operations import copy, concat, join, eval
     from comp.mods.service import render, mock, preview, minify
