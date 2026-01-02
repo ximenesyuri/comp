@@ -30,22 +30,25 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     frame = frame_info.frame
     caller_globals = frame.f_globals
 
-    if len(model.__bases__) != 5:
+    mro = list(model.__mro__[1:])
+    framework_bases = {object, MODEL, LAZY_MODEL}
+    user_bases = [b for b in mro if b not in framework_bases]
+
+    if Col not in user_bases:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
-            f"  ==> '{model_name}': model extends an unexpected number of types.\n"
-             "      [expected_number] 3+2\n"
-            f"      [received_number] {len(model.__bases__)}"
+            f"  ==> '{model_name}': model does not extend 'Col'."
         )
 
-    if Col not in model.__bases__:
+    payload_bases = [b for b in user_bases if b is not Col]
+    if len(payload_bases) != 1:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
-            f"  ==> '{model_name}': model does not extends 'Col'."
+            f"  ==> '{model_name}': could not determine unique payload base.\n"
+            f"      [bases_found] {[b.__name__ for b in payload_bases]}"
         )
 
-    base_model = [b for b in model.__bases__ if b is not Col]
-    base_model = base_model[0]
+    base_model = payload_bases[0]
     base_model_name = base_model.__name__
 
     attrs = {}
