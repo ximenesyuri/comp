@@ -7,6 +7,7 @@ requires-python = ">=3.9"
 license = {text = "BSD"}
 dependencies = [
     "typed @ git+https://github.com/ximenesyuri/typed",
+    "utils @ git+https://github.com/ximenesyuri/utils",
     "beautifulsoup4",
     "markdown",
     "pyyaml",

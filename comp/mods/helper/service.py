@@ -7,7 +7,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from inspect import getsourcefile
-from comp.mods.helper.types import COMP
+from comp.mods.helper.types_ import COMP
 from bs4 import BeautifulSoup, NavigableString
 from comp.mods.err import StyleErr, PreviewErr
 

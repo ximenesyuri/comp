@@ -2,7 +2,7 @@ import re
 from inspect import signature, Parameter
 from functools import wraps, update_wrapper
 from typed import TYPE, name, typed, Dict, Lazy, Typed, Any, Union, Str
-from comp.mods.helper.types import COMP
+from comp.mods.helper.types_ import COMP
 from comp.mods.helper.helper import _jinja, _jinja_env
 from comp.mods.types.base import Jinja
 

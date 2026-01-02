@@ -1,7 +1,7 @@
 from typed import Typed, Str, Union
 from utils.types import Extension
 from comp.mods.types.meta import JINJA, INNER, _RESPONSIVE, _RESPONSIVE_
-from comp.mods.helper.types import (
+from comp.mods.helper.types_ import (
     COMP,
     _PAGE
 )
@@ -48,11 +48,3 @@ RESPONSIVE = _RESPONSIVE_('RESPONSIVE', (COMP,), {
     "__display__": "RESPONSIVE",
     "__null__": None
 })
-
-from comp.mods.decorators import comp
-from comp.mods.types.base import Jinja
-def _nill_comp() -> Jinja:
-    return """jinja """
-
-COMP.__display__ = "COMP"
-COMP.__null__ = comp(_nill_comp)
