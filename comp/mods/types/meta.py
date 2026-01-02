@@ -37,10 +37,10 @@ class _COMP_(TYPE(Typed)):
            and isinstance(args[2], dict):
             return type.__call__(self, *args, **kwargs)
 
-        from comp.mods.helper.types import COMP as BASE
+        from comp.mods.helper.types_ import COMP
         from typed import name
 
-        if self is BASE:
+        if self is COMP:
             types   = args
             cod     = kwargs.get('cod',     None)
             inner   = kwargs.get('inner',   None)
@@ -53,7 +53,7 @@ class _COMP_(TYPE(Typed)):
                 parts.append(names(types))
             if cod is not None:
                 parts.append(f"cod={name(cod)}")
-            class_name = f"{name(BASE)}({", ".join(parts)})" if parts else name(BASE)
+            class_name = f"{name(COMP)}({", ".join(parts)})" if parts else name(COMP)
 
             attrs = {
                 "__display__":    class_name,
@@ -62,19 +62,19 @@ class _COMP_(TYPE(Typed)):
                 "_param_inner":   inner,
                 "_param_content": content,
             }
-            ParamComp = self.__class__(class_name, (BASE,), attrs)
+            ParamComp = self.__class__(class_name, (COMP,), attrs)
             self._param_cache[key] = ParamComp
             return ParamComp
 
         return type.__call__(self, *args, **kwargs)
 
     def __instancecheck__(self, instance):
-        from comp.mods.helper.types import COMP as BASE
+        from comp.mods.helper.types_ import COMP
 
-        if not TYPE(instance) <= BASE:
+        if not TYPE(instance) <= COMP:
             return False
 
-        if self is BASE:
+        if self is COMP:
             return True
 
         types   = getattr(self, "_param_types", ())
