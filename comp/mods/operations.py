@@ -1,18 +1,18 @@
 import re
 from inspect import signature, Parameter, Signature
-from typed import typed, Tuple, Dict, Str
-from comp.mods.types.base import Jinja, COMP, Inner
+from typed import typed, Tuple, Dict, Str, Union
+from comp.mods.types.base import Jinja, COMP, LAZY_COMP, Inner
 from comp.mods.err import ConcatErr, JoinErr, EvalErr
 from comp.mods.helper.operations import _merge_context, _get_context, _copy, _order_params
 from comp.mods.helper.helper import _get_jinja, _jinja
 
 @typed
-def copy(comp: COMP, **renamed_args: Dict(Str)) -> COMP:
+def copy(comp: Union(COMP, LAZY_COMP), **renamed_args: Dict(Str)) -> Union(COMP, LAZY_COMP):
     from comp.mods.decorators import comp as _comp
     return _comp(_copy(comp, **renamed_args))
 
 @typed
-def concat(comp_1: COMP, comp_2: COMP) -> COMP:
+def concat(comp_1: Union(COMP, LAZY_COMP), comp_2: Union(COMP, LAZY_COMP)) -> COMP:
     try:
         sig1 = signature(comp_1)
         sig2 = signature(comp_2)
@@ -77,7 +77,7 @@ def concat(comp_1: COMP, comp_2: COMP) -> COMP:
         raise ConcatErr(e)
 
 @typed
-def join(*comps: Tuple(COMP)) -> COMP:
+def join(*comps: Tuple(COMP, LAZY_COMP)) -> Union(COMP, LAZY_COMP):
     try:
         if not comps:
             raise ValueError("At least one comp must be provided")
@@ -165,7 +165,7 @@ def join(*comps: Tuple(COMP)) -> COMP:
         raise JoinErr(e)
 
 @typed
-def eval(func: COMP, **fixed_kwargs: Dict) -> COMP:
+def eval(func: Union(COMP, LAZY_COMP), **fixed_kwargs: Dict) -> Union(COMP, LAZY_COMP):
     try:
         sig = signature(func)
         old_params = list(sig.parameters.items())

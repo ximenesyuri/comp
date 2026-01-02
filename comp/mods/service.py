@@ -1,7 +1,8 @@
 import re
 from inspect import signature
 from typed import typed, Bool, List, Str, Dict, Any, Union
-from utils.types import Extension, Url
+from utils import file
+from utils.types import Extension, Url, File
 from markdown import markdown
 from comp.mods.types.base import Content
 from comp.mods.helper.helper import (
@@ -13,12 +14,12 @@ from comp.mods.helper.helper import (
 )
 from comp.mods.helper.service import _style, _minify, _Preview
 from comp.mods.err import RenderErr, MockErr
-from comp.mods.types.base import COMP, Jinja, PAGE
+from comp.mods.types.base import COMP, LAZY_COMP, Jinja, PAGE
 from comp.comps.includes import script as script_entity, asset as asset_entity
 from comp.models import Script, Asset
 
 @typed
-def jinja_vars(entity: Union(Jinja, COMP)) -> Dict(Any):
+def jinja_vars(entity: Union(Jinja, COMP, LAZY_COMP)) -> Dict(Any):
     if entity in Jinja:
         inner = _find_jinja_inner_vars(_extract_raw_jinja(entity))
         all_vars = set(_find_jinja_vars(entity))
@@ -28,15 +29,15 @@ def jinja_vars(entity: Union(Jinja, COMP)) -> Dict(Any):
         return jinja_vars(_jinja(entity.jinja))
 
 @typed
-def jinja_inner_vars(entity: Union(Jinja, COMP)) -> Dict(Any):
+def jinja_inner_vars(entity: Union(Jinja, COMP, LAZY_COMP)) -> Dict(Any):
     return jinja_vars(entity)["inner"]
 
 @typed
-def jinja_free_vars(entity: Union(Jinja, COMP)) -> Dict(Any):
+def jinja_free_vars(entity: Union(Jinja, COMP, LAZY_COMP)) -> Dict(Any):
     return jinja_vars(entity)["free"]
 
 def render(
-        entity: Union(Jinja, COMP),
+        entity: Union(Jinja, COMP, LAZY_COMP),
         __scripts__:    List(Script)=[],
         __assets__:     List(Asset)=[],
         __styled__:     Bool=True,
@@ -73,9 +74,9 @@ def render(
         for cname, param in content_params.items():
             if cname in kwargs:
                 value = kwargs[cname]
-                if isinstance(value, Str):
+                if value in Str:
                     kwargs[cname] = markdown(value)
-                elif isinstance(value, str) and value.lower().endswith(".md") and os.path.isfile(value):
+                if value.lower() in Extension('md') and value in File:
                     md_text = file.read(value)
                     kwargs[cname] = markdown(md_text)
                 else:
@@ -171,7 +172,7 @@ def render(
         raise RenderErr(e)
 
 @typed
-def mock(entity: COMP, **kwargs: Dict(Any)) -> PAGE:
+def mock(entity: Union(COMP, LAZY_COMP), **kwargs: Dict(Any)) -> PAGE:
     try:
         html = render(entity, **kwargs)
         html_match = re.search(r"<html[^>]*>(.*?)</html>", html, flags=re.IGNORECASE | re.DOTALL)
