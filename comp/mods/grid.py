@@ -44,7 +44,7 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
             f"  ==> '{model_name}': model does not extend 'Col'."
         )
 
-    payload_bases = [b for b in user_bases if not issubclass(b, Col)]
+    payload_bases = [b for b in user_bases if b not in col_like_bases]
     if len(payload_bases) != 1:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
@@ -86,7 +86,7 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
 
     func_code = f"""
 from typed import typed
-from comp import Col, {base_model_name}
+from comp.models import Col, {base_model_name}
 
 @typed
 def {model_snake}({model_snake}: {model_name}={model_name}()) -> Col:
@@ -255,7 +255,7 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
 
     func_code = f"""
 from typed import typed
-from comp import Row
+from comp.models import Row
 
 {import_line}
 
@@ -414,7 +414,7 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
 
     func_code = f"""
 from typed import typed
-from comp import Grid
+from comp.models import Grid
 {import_line}
 
 @typed
@@ -563,7 +563,7 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
     attr_code_line = ", ".join([f"{attr.split('_')[-1]}={attr}" for attr in tuple(attrs.keys())])
 
     func_code = f"""
-from comp import GridFactory
+from comp.grid import GridFactory
 
 {import_line}
 {model_snake} = GridFactory({attr_code_line})
