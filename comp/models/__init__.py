@@ -1,6 +1,6 @@
 from utils.general import lazy
 
-_imports__ = {
+__imports__ = {
     "Aria": "comp.models.base",
     "Globals": "comp.models.base",
     "Button": "comp.models.content",
