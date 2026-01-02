@@ -107,11 +107,17 @@ class COMP(Typed, metaclass=_COMP_):
 
     @property
     def __signature__(self):
-        func = getattr(self, 'func', None)
-        if func and hasattr(func, '__signature__'):
-            return func.__signature__
         import inspect
-        return inspect.signature(self)
+
+        func = getattr(self, 'func', None)
+        if func is not None:
+            return inspect.signature(func)
+
+        call = getattr(type(self), "__call__", None)
+        if call is not None and call is not object.__call__:
+            return inspect.signature(call)
+
+        return inspect.Signature()
 
     @property
     def __annotations__(self):
