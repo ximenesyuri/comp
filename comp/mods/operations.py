@@ -8,7 +8,8 @@ from comp.mods.helper.helper import _get_jinja, _jinja
 
 @typed
 def copy(comp: COMP, **renamed_args: Dict(Str)) -> COMP:
-    return comp(_copy(comp, **renamed_args))
+    from comp.mods.decorators import comp as _comp
+    return _comp(_copy(comp, **renamed_args))
 
 @typed
 def concat(comp_1: COMP, comp_2: COMP) -> COMP:
@@ -62,7 +63,8 @@ def concat(comp_1: COMP, comp_2: COMP) -> COMP:
 
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
-        comp = comp(wrapper)
+        from comp.mods.decorators import comp as _comp
+        comp = _comp(wrapper)
         jinja1 = _get_jinja(comp_1)
         jinja2 = _get_jinja(comp_2)
         concat_jinja = jinja1
@@ -210,7 +212,8 @@ def eval(func: COMP, **fixed_kwargs: Dict) -> COMP:
         if hasattr(func, '__annotations__'):
             wrapper.__annotations__ = dict(func.__annotations__)
         wrapper.__annotations__["__context__"] = Dict
-        comp = comp(wrapper)
+        from comp.mods.decorators import comp as _comp
+        comp = _comp(wrapper)
 
         base_jinja = _get_jinja(func)
         base_jinja = re.sub(r'^jinja\s*\n?', '', base_jinja)
