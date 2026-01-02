@@ -22,6 +22,9 @@ class GridFactory:
     tablet: Typed(Any, cod=Grid)
     phone: Typed(Any, cod=Grid)
 
+from typed.models import MODEL, LAZY_MODEL
+from comp.models.structure import Grid, Row, Col
+
 @typed
 def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     model_name = model.__name__
@@ -34,13 +37,14 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     framework_bases = {object, MODEL, LAZY_MODEL}
     user_bases = [b for b in mro if b not in framework_bases]
 
-    if Col not in user_bases:
+    col_like_bases = [b for b in user_bases if b <= Col]
+    if not col_like_bases:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
             f"  ==> '{model_name}': model does not extend 'Col'."
         )
 
-    payload_bases = [b for b in user_bases if b is not Col]
+    payload_bases = [b for b in user_bases if not issubclass(b, Col)]
     if len(payload_bases) != 1:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
@@ -107,6 +111,7 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Col:
     })
     exec(func_code, global_ns, local_ns)
     return local_ns[model_snake]
+
 
 @typed
 def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(Typed, Lazy):
