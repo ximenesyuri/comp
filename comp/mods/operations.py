@@ -149,7 +149,8 @@ def join(*comps: Tuple(COMP)) -> COMP:
 
         wrapper.__signature__ = new_sig
         wrapper.__annotations__ = dict(new_annotations)
-        comp = comp(wrapper)
+        from comp.mods.decorators import comp as _comp
+        comp = _comp(wrapper)
 
         joined_jinja_list = [_get_jinja(c) for c in comps]
         for i in range(len(joined_jinja_list)):
