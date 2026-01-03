@@ -5,8 +5,8 @@ from comp.mods.helper.models import _FormEnc, _InputType
 
 @optional
 class Input:
-    input_globals:      Globals=Globals()
-    input_aria:         Aria=Aria()
+    input_globals:      Globals
+    input_aria:         Aria
     input_type:         _InputType="text"
     input_id:           Str="input"
     input_class:        Str

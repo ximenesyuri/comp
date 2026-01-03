@@ -4,8 +4,8 @@ from comp.models.base import Globals, Aria
 
 @optional
 class Script:
-    script_globals: Globals=Globals()
-    script_aria:    Aria=Aria()
+    script_globals: Globals
+    script_aria:    Aria
     script_src:     Str
     script_defer:   Bool
     script_type:    Enum(Str, "module", "importmap")
@@ -16,8 +16,8 @@ Script.__display__ = "Script"
 
 @optional
 class Asset:
-    asset_globals: Globals=Globals()
-    asset_aria:    Aria=Aria()
+    asset_globals: Globals
+    asset_aria:    Aria
     asset_href:    Str
     asset_mime:    Str
     asset_rel:     Str="stylesheet"

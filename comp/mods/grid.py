@@ -198,8 +198,9 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
                 f"  ==> '{cols_module}': module does not exist."
             )
     else:
-        for attr_name in tuple(attrs.keys()):
-            obj = mod.get(attr_name, caller_module_name)
+        for attr_name, attr_obj in attrs.items():
+            module_name = getattr(attr_obj, '__module__', None)
+            obj = mod.get(attr_name, module_name)
             if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
@@ -353,8 +354,9 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
                 f"  ==> '{rows_module}': module does not exist."
             )
     else:
-        for attr_name in tuple(attrs.keys()):
-            obj = mod.get(attr_name, caller_module_name)
+        for attr_name, attr_obj in attrs.items():
+            module_name = getattr(attr_obj, '__module__', None)
+            obj = mod.get(attr_name, module_name) 
             if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
@@ -502,12 +504,13 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
                 f"  ==> '{grids_module}': module does not exist."
             )
     else:
-        for attr_name in tuple(attrs.keys()):
-            obj = mod.get(attr_name, caller_module_name)
+        for attr_name, attr_obj in attrs.items():
+            module_name = getattr(attr_obj, '__module__', None)
+            obj = mod.get(attr_name, module_name)
             if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
-                    f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                    f"  ==> '{attr_name}': object does not exist in module '{module_name}'."
                 ) from None
             codomain= getattr(obj, 'codomain', None)
             if codomain and codomain is not Grid:
