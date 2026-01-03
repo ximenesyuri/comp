@@ -304,10 +304,10 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
     caller_module_name = caller_globals.get('__name__', None)
     attrs = {}
     grid_attrs = tuple(Grid.__dict__.get('optional_attrs', {}).keys())
-    for k, v in model.__dict__.get('optional_attrs', {}).items():
+    for k, v in model.__json__.get('optional_attrs', {}).items():
         if k not in grid_attrs:
             attrs.update({k: v['type']})
-    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+    for k, v in model.__json__.get('mandatory_attrs', {}).items():
         if k not in grid_attrs:
             attrs.update({k: v['type']})
 
