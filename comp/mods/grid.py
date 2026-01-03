@@ -163,7 +163,6 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
                         f"      [received_args]: {len(domain)}"
                     )
                 attr_param_name = func.params.name(func.unwrap(obj))[0]
-                print(attr_param_name)
                 if attr_param_name != attr_name:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
