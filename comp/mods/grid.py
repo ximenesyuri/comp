@@ -449,10 +449,10 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
     model_snake = text.camel_to_snake(model_name)
     responsive_attrs = ('desktop', 'tablet', 'phone')
     attrs = {}
-    for k, v in model.__dict__.get('optional_attrs', {}).items():
+    for k, v in model.__json__.get('optional_attrs', {}).items():
         if k.split('_')[-1] in responsive_attrs:
             attrs.update({k: v['type']})
-    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+    for k, v in model.__json__.get('mandatory_attrs', {}).items():
         if k.split('_')[-1] in responsive_attrs:
             attrs.update({k: v['type']})
 
