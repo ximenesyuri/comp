@@ -25,14 +25,6 @@ class GridFactory:
 from typed.models import MODEL, LAZY_MODEL
 from comp.models.structure import Grid, Row, Col
 
-def _get_user_caller():
-    for fi in inspect.stack()[1:]:
-        mod_name = fi.frame.f_globals.get('__name__', '')
-        if not mod_name.startswith('typed.'):
-            return fi.frame, mod_name
-    f = inspect.currentframe()
-    f = f.f_back if f and f.f_back else f
-    return f, f.f_globals.get('__name__', None)
 
 @typed
 def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
@@ -46,7 +38,7 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     framework_bases = {object, MODEL, LAZY_MODEL}
     user_bases = [b for b in mro if b not in framework_bases]
 
-    col_like_bases = [b for b in user_bases if b <= Col] 
+    col_like_bases = [b for b in user_bases if b <= Col]
     if not col_like_bases:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
@@ -132,8 +124,6 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
             f"  ==> '{model_name}': model does not extends 'Row'."
         )
 
-    frame, caller_module_name = _get_user_caller()
-    caller_globals = frame.f_globals
     attrs = {}
     row_attrs = tuple(Row.__json__.get('optional_attrs', {}).keys())
     for k, v in model.__json__.get('optional_attrs', {}).items():
@@ -146,8 +136,10 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
     available_attr_names = []
     import_line = ''
 
+    global_ns = {}
     if cols_module:
         if mod.exists(cols_module):
+            global_ns = mod.globals(cols_module)
             for attr_name in tuple(attrs.keys()):
                 obj = mod.get(attr_name, cols_module)
                 if not obj:
@@ -199,12 +191,12 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
             )
     else:
         for attr_name, attr_obj in attrs.items():
-            module_name = getattr(attr_obj, '__module__', None)
+            module_name = attr_obj.__module__
             obj = mod.get(attr_name, module_name)
             if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
-                    f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                    f"  ==> '{attr_name}': object does not exist in module '{module_name}'."
                 ) from None
             codomain= getattr(obj, 'codomain', None)
             if codomain is not Col:
@@ -261,7 +253,6 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Row:
     )
 """
     local_ns = {}
-    global_ns = caller_globals.copy()
 
     global_ns.update({
         'typed': typed,
@@ -289,8 +280,6 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
             f"  ==> '{model_name}': model does not extends 'Grid'."
         )
 
-    frame, caller_module_name = _get_user_caller()
-    caller_globals = frame.f_globals
     attrs = {}
     grid_attrs = tuple(Grid.__json__.get('optional_attrs', {}).keys())
     for k, v in model.__json__.get('optional_attrs', {}).items():
@@ -303,14 +292,17 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
     available_attr_names = []
     import_line = ''
 
+    global_ns = {}
+
     if rows_module:
         if mod.exists(rows_module):
+            global_ns = mod.globals(rows_module)
             for attr_name in tuple(attrs.keys()):
                 obj = mod.get(attr_name, rows_module)
                 if not obj:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
-                        f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                        f"  ==> '{attr_name}': object does not exist in module '{rows_module}'."
                     ) from None
                 codomain = getattr(obj, 'codomain', None)
                 if codomain and codomain is not Row:
@@ -355,12 +347,12 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
             )
     else:
         for attr_name, attr_obj in attrs.items():
-            module_name = getattr(attr_obj, '__module__', None)
-            obj = mod.get(attr_name, module_name) 
+            module_name = attr_obj.__module__
+            obj = mod.get(attr_name, module_name)
             if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
-                    f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
+                    f"  ==> '{attr_name}': object does not exist in module '{module_name}'."
                 ) from None
             codomain= getattr(obj, 'codomain', None)
             if codomain and codomain is not Row:
@@ -416,7 +408,6 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Grid:
     )
 """
     local_ns = {}
-    global_ns = caller_globals.copy()
 
     global_ns.update({
         'typed': typed,
@@ -429,8 +420,6 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Grid:
 
 @typed
 def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> GridFactory:
-    frame, caller_module_name = _get_user_caller()
-    caller_globals = frame.f_globals
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
     responsive_attrs = ('desktop', 'tablet', 'phone')
@@ -445,8 +434,11 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
     available_attr_names = []
     import_line = ''
 
+    global_ns = {}
+
     if grids_module:
         if mod.exists(grids_module):
+            global_ns = mod.globals(grids_module)
             for attr_name in tuple(attrs.keys()):
                 obj = mod.get(attr_name, grids_module)
                 if not obj:
@@ -505,7 +497,7 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
             )
     else:
         for attr_name, attr_obj in attrs.items():
-            module_name = getattr(attr_obj, '__module__', None)
+            module_name = attr_obj.__module__
             obj = mod.get(attr_name, module_name)
             if not obj:
                 raise GridErr(
@@ -553,7 +545,6 @@ from comp.grid import GridFactory
 {model_snake} = GridFactory({attr_code_line})
 """
     local_ns = {}
-    global_ns = caller_globals.copy()
 
     global_ns.update({
         'typed': typed,
