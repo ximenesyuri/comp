@@ -5,7 +5,7 @@ __imports__ = {
     "comp":      "comp.mods.decorators",
     "Jinja":     "comp.mods.types.base",
     "Inner":     "comp.mods.types.base",
-    "LAZY_COMP": "comp.mods.helper_types_",
+    "LAZY_COMP": "comp.mods.helper.types_",
     "COMP":      "comp.mods.helper.types_",
     "Tag":       "comp.mods.types.factories",
     "TAG":       "comp.mods.types.factories",
