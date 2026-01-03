@@ -25,6 +25,15 @@ class GridFactory:
 from typed.models import MODEL, LAZY_MODEL
 from comp.models.structure import Grid, Row, Col
 
+def _get_user_caller():
+    for fi in inspect.stack()[1:]:
+        mod_name = fi.frame.f_globals.get('__name__', '')
+        if not mod_name.startswith('typed.'):
+            return fi.frame, mod_name
+    f = inspect.currentframe()
+    f = f.f_back if f and f.f_back else f
+    return f, f.f_globals.get('__name__', None)
+
 @typed
 def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     model_name = model.__name__
@@ -37,7 +46,7 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     framework_bases = {object, MODEL, LAZY_MODEL}
     user_bases = [b for b in mro if b not in framework_bases]
 
-    col_like_bases = [b for b in user_bases if b <= Col]
+    col_like_bases = [b for b in user_bases if b <= Col] 
     if not col_like_bases:
         raise GridErr(
             f"Could not create a col factory for model '{model_name}':\n"
@@ -55,9 +64,9 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
     base_model_name = base_model.__name__
 
     attrs = {}
-    col_attrs = tuple(Col.__dict__.get('optional_attrs', {}).keys())
-    base_model_attrs = tuple(base_model.__dict__.get('optional_attrs', {}).keys())
-    for k, v in model.__dict__.get('optional_attrs', {}).items():
+    col_attrs = tuple(Col.__json__.get('optional_attrs', {}).keys())
+    base_model_attrs = tuple(base_model.__json__.get('optional_attrs', {}).keys())
+    for k, v in model.__json__.get('optional_attrs', {}).items():
         if k not in col_attrs:
             if k not in base_model_attrs:
                 from typed import name
@@ -67,7 +76,7 @@ def build_col(model: Union(MODEL, LAZY_MODEL)) -> Union(Typed, Lazy):
                     f"      [received_attr] '{name(k)}'"
                 )
             attrs.update({k: v['type']})
-    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+    for k, v in model.__json__.get('mandatory_attrs', {}).items():
         if k not in col_attrs:
             if k not in base_model_attrs:
                 from typed import name
@@ -123,16 +132,14 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
             f"  ==> '{model_name}': model does not extends 'Row'."
         )
 
-    frame_info = inspect.stack()[2]
-    frame = frame_info.frame
+    frame, caller_module_name = _get_user_caller()
     caller_globals = frame.f_globals
-    caller_module_name = caller_globals.get('__name__', None)
     attrs = {}
-    row_attrs = tuple(Row.__dict__.get('optional_attrs', {}).keys())
-    for k, v in model.__dict__.get('optional_attrs', {}).items():
+    row_attrs = tuple(Row.__json__.get('optional_attrs', {}).keys())
+    for k, v in model.__json__.get('optional_attrs', {}).items():
         if k not in row_attrs:
             attrs.update({k: v['type']})
-    for k, v in model.__dict__.get('mandatory_attrs', {}).items():
+    for k, v in model.__json__.get('mandatory_attrs', {}).items():
         if k not in row_attrs:
             attrs.update({k: v['type']})
 
@@ -142,9 +149,8 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
     if cols_module:
         if mod.exists(cols_module):
             for attr_name in tuple(attrs.keys()):
-                try:
-                    obj = mod.get(attr_name, cols_module)
-                except:
+                obj = mod.get(attr_name, cols_module)
+                if not obj:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
                         f"  ==> '{attr_name}': object does not exist in module '{cols_module}'."
@@ -165,6 +171,7 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
                         f"      [received_args]: {len(domain)}"
                     )
                 attr_param_name = func.params.name(func.unwrap(obj))[0]
+                print(attr_param_name)
                 if attr_param_name != attr_name:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
@@ -180,14 +187,6 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
                         f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
                         f"      [received_type]: {attr_type.__name__}"
                     )
-                try:
-                    from typed import null
-                    _check_codomain(obj, Col, codomain, obj(null(attr_type)))
-                except:
-                    raise GridErr(
-                        f"Could not create a row factory for model '{model_name}':\n"
-                        f"  ==> '{name(attr_name)}': is not returning an instance of Col"
-                    )
                 available_attr_names.append(attr_name)
 
             if available_attr_names:
@@ -200,9 +199,8 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
             )
     else:
         for attr_name in tuple(attrs.keys()):
-            try:
-                obj = mod.get(attr_name, caller_module_name)
-            except:
+            obj = mod.get(attr_name, caller_module_name)
+            if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
@@ -236,14 +234,6 @@ def build_row(model: Union(MODEL, LAZY_MODEL), cols_module: Str = '') -> Union(T
                     f"  ==> '{name(attr_name)}': attribute has an unexpected type\n"
                     f"      [expected_type]: {text.snake_to_camel(attr_name)}\n"
                     f"      [received_type]: {name(attr_type)}"
-                )
-            try:
-                from typed import null
-                _check_codomain(obj, Col, codomain, obj(null(attr_type)))
-            except:
-                raise GridErr(
-                    f"Could not create a row factory for model '{model_name}':\n"
-                    f"  ==> '{name(attr_name)}': is not returning an instance of Col"
                 )
             available_attr_names.append(attr_name)
 
@@ -298,12 +288,10 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
             f"  ==> '{model_name}': model does not extends 'Grid'."
         )
 
-    frame_info = inspect.stack()[2]
-    frame = frame_info.frame
+    frame, caller_module_name = _get_user_caller()
     caller_globals = frame.f_globals
-    caller_module_name = caller_globals.get('__name__', None)
     attrs = {}
-    grid_attrs = tuple(Grid.__dict__.get('optional_attrs', {}).keys())
+    grid_attrs = tuple(Grid.__json__.get('optional_attrs', {}).keys())
     for k, v in model.__json__.get('optional_attrs', {}).items():
         if k not in grid_attrs:
             attrs.update({k: v['type']})
@@ -317,9 +305,8 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
     if rows_module:
         if mod.exists(rows_module):
             for attr_name in tuple(attrs.keys()):
-                try:
-                    obj = mod.get(attr_name, rows_module)
-                except:
+                obj = mod.get(attr_name, rows_module)
+                if not obj:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
                         f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
@@ -338,7 +325,7 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
                          "      [expected_args]: 1\n"
                         f"      [received_args]: {len(domain)}"
                     )
-                attr_param_name = func.params.name(func.unwrap(obj))[1]
+                attr_param_name = func.params.name(func.unwrap(obj))[0]
                 if attr_param_name != attr_name:
                     raise GridErr(
                         f"Could not create a grid factory for model '{model_name}':\n"
@@ -367,9 +354,8 @@ def build_grid(model: Union(MODEL, LAZY_MODEL), rows_module: Str='') -> Union(Ty
             )
     else:
         for attr_name in tuple(attrs.keys()):
-            try:
-                obj = mod.get(attr_name, caller_module_name)
-            except:
+            obj = mod.get(attr_name, caller_module_name)
+            if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
@@ -441,10 +427,8 @@ def {model_snake}({model_snake}: {model_name}={model_name}()) -> Grid:
 
 @typed
 def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> GridFactory:
-    frame_info = inspect.stack()[2]
-    frame = frame_info.frame
+    frame, caller_module_name = _get_user_caller()
     caller_globals = frame.f_globals
-    caller_module_name = caller_globals.get('__name__', None)
     model_name = model.__name__
     model_snake = text.camel_to_snake(model_name)
     responsive_attrs = ('desktop', 'tablet', 'phone')
@@ -462,9 +446,8 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
     if grids_module:
         if mod.exists(grids_module):
             for attr_name in tuple(attrs.keys()):
-                try:
-                    obj = mod.get(attr_name, grids_module)
-                except:
+                obj = mod.get(attr_name, grids_module)
+                if not obj:
                     raise GridErr(
                         f"Could not create a row factory for model '{model_name}':\n"
                         f"  ==> '{attr_name}': object does not exist in module '{grids_module}'."
@@ -520,9 +503,8 @@ def build_factory(model: Union(MODEL, LAZY_MODEL), grids_module: Str='') -> Grid
             )
     else:
         for attr_name in tuple(attrs.keys()):
-            try:
-                obj = mod.get(attr_name, caller_module_name)
-            except:
+            obj = mod.get(attr_name, caller_module_name)
+            if not obj:
                 raise GridErr(
                     f"Could not create a row factory for model '{model_name}':\n"
                     f"  ==> '{attr_name}': object does not exist in module '{caller_module_name}'."
