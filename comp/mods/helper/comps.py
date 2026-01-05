@@ -22,9 +22,6 @@ from comp.models import (
     Sidebar,
     Icon,
     Input,
-    Column,
-    Row,
-    Grid,
     Head,
     Main,
     Body,
@@ -283,51 +280,6 @@ def if_page(page: Maybe(Page)=None) -> Str:
         raise HelperErr(e)
 
 @typed
-def if_col(col: Maybe(Column)=None) -> Str:
-    try:
-        if not col:
-            return ""
-        return (
-            if_globals(col.col_globals)
-          + if_aria(col.col_aria)
-          + if_key(col.col_id,    "id")
-          + if_key(col.col_class, "class")
-          + if_key(col.col_style, "style")
-        )
-    except Exception as e:
-        raise HelperErr(e)
-
-@typed
-def if_row(row: Maybe(Row)=None) -> Str:
-    try:
-        if not row:
-            return ""
-        return (
-            if_globals(row.row_globals)
-          + if_aria(row.row_aria)
-          + if_key(row.row_id,    "id")
-          + if_key(row.row_class, "class")
-          + if_key(row.row_style, "style")
-        )
-    except Exception as e:
-        raise HelperErr(e)
-
-@typed
-def if_grid(grid: Maybe(Grid)=None) -> Str:
-    try:
-        if not grid:
-            return ""
-        return (
-            if_globals(grid.grid_globals)
-          + if_aria(grid.grid_aria)
-          + if_key(grid.grid_id,    "id")
-          + if_key(grid.grid_class, "class")
-          + if_key(grid.grid_style, "style")
-        )
-    except Exception as e:
-        raise HelperErr(e)
-
-@typed
 def if_text(text: Maybe(Text)=None) -> Str:
     try:
         if not text:
@@ -581,8 +533,7 @@ def _render_inner(obj):
         from comp.comps.extensions import alpine, search
         from comp.comps.form       import input
         from comp.comps.structure  import (
-            div, header, footer, aside, body, head, page, main,
-            col, row, grid
+            div, header, footer, aside, body, head, page, main
         )
         from comp.comps.special import markdown
         from comp.models import Markdown
@@ -611,9 +562,6 @@ def _render_inner(obj):
         if type(obj) is Head:       return head(obj)
         if type(obj) is Page:       return page(obj)
         if type(obj) is Aside:      return aside(obj)
-        if type(obj) is Column:     return col(obj)
-        if type(obj) is Row:        return row(obj)
-        if type(obj) is Grid:       return grid(obj)
         if type(obj) is Markdown:   return markdown(obj)
         if isinstance(obj, str):    return obj
         return str(obj)

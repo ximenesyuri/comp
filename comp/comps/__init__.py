@@ -43,15 +43,6 @@ __imports__ = {
     "main": "comp.comps.structure",
     "page": "comp.comps.structure",
     "div": "comp.comps.structure",
-    "col": "comp.comps.structure",
-    "col_1": "comp.comps.structure",
-    "col_2": "comp.comps.structure",
-    "col_3": "comp.comps.structure",
-    "col_4": "comp.comps.structure",
-    "col_5": "comp.comps.structure",
-    "row": "comp.comps.structure",
-    "grid": "comp.comps.structure",
-    "content": "comp.comps.special",
     "markdown": "comp.comps.special",
 }
 
@@ -84,10 +75,7 @@ if lazy(__imports__):
         mobile, not_mobile
     )
     from comp.comps.structure import (
-        header, aside, footer, head, body, main, page,
-        div,
-        col, col_1, col_2, col_3, col_4, col_5,
-        row, grid
+        header, aside, footer, head, body, main, page, div
     )
     from comp.comps.special import content, markdown
 
