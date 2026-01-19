@@ -24,11 +24,11 @@ def Tag(*tags):
             from comp.mods.helper.helper import _extract_raw_jinja
             jinja = _extract_raw_jinja(instance)
             return bool(tag_regex.match(jinja))
-    return _Tag(f'Tag({tags})', (Jinja,), {'__display__': f'Tag({','.join(tags)})'})
+    return _Tag(f'Tag({tags})', (Jinja,), {'__display__': f"Tag({','.join(tags)})"})
 
 def TAG(tag):
     from typed import TYPE
-    from comp.mods.helper.types import COMP
+    from comp.mods.types import COMP
     class _TAG(TYPE(COMP)):
         def __instancecheck__(cls, instance):
             if not isinstance(instance, COMP):
