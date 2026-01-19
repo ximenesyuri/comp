@@ -53,7 +53,7 @@ class _COMP_(TYPE(Typed)):
                 parts.append(names(types))
             if cod is not None:
                 parts.append(f"cod={name(cod)}")
-            class_name = f"{name(COMP)}({", ".join(parts)})" if parts else name(COMP)
+            class_name = f"{name(COMP)}({', '.join(parts)})" if parts else name(COMP)
 
             attrs = {
                 "__display__":    class_name,
